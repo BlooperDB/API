@@ -39,6 +39,7 @@ func ProcessResponse(handle GenericHandle) httprouter.Handle {
 		response := handle(r, p)
 
 		format := r.URL.Query().Get("format")
+		pretty := r.URL.Query().Get("pretty") != ""
 
 		switch format {
 		default:
@@ -54,11 +55,19 @@ func ProcessResponse(handle GenericHandle) httprouter.Handle {
 		switch format {
 		default:
 			encoder := json.NewEncoder(w)
-			encoder.SetIndent("", "    ")
+
+			if pretty {
+				encoder.SetIndent("", "    ")
+			}
+
 			encoder.Encode(response)
 		case "xml":
 			encoder := xml.NewEncoder(w)
-			encoder.Indent("", "    ")
+
+			if pretty {
+				encoder.Indent("", "    ")
+			}
+
 			encoder.Encode(response)
 		}
 	}
