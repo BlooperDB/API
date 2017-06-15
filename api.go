@@ -1,9 +1,3 @@
-// @APIVersion 1.0.0
-// @APITitle Blooper
-// @APIDescription Factorio blueprint database
-// @License MIT
-// @LicenseUrl https://opensource.org/licenses/MIT
-
 package blooper
 
 import (
