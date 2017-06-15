@@ -38,28 +38,30 @@ func ProcessResponse(handle GenericHandle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		response := handle(r, p)
 
-		if response.Error != nil {
-			w.WriteHeader(response.Error.Status)
-		}
-
 		format := p.ByName("format")
 
 		switch format {
 		case "json":
 		default:
 			w.Header().Set("Content-Type", "application/json")
+		case "xml":
+			w.Header().Set("Content-Type", "application/xml")
+		}
 
+		if response.Error != nil {
+			w.WriteHeader(response.Error.Status)
+		}
+
+		switch format {
+		case "json":
+		default:
 			encoder := json.NewEncoder(w)
 			encoder.SetIndent("", "    ")
 			encoder.Encode(response)
-			break
 		case "xml":
-			w.Header().Set("Content-Type", "application/xml")
-
 			encoder := xml.NewEncoder(w)
 			encoder.Indent("", "    ")
 			encoder.Encode(response)
-			break
 		}
 	}
 }
