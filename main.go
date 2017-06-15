@@ -4,7 +4,7 @@
 // @License MIT
 // @LicenseUrl https://opensource.org/licenses/MIT
 
-package main
+package blooper
 
 import (
 	"fmt"
@@ -15,6 +15,7 @@ import (
 
 	"encoding/xml"
 
+	"github.com/FactorioDB/API/blueprint"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -31,8 +32,6 @@ type GenericResponse struct {
 }
 
 type GenericHandle func(*http.Request, httprouter.Params) GenericResponse
-
-type DataHandle func(*http.Request, httprouter.Params) (interface{}, *ErrorResponse)
 
 func ProcessResponse(handle GenericHandle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -73,6 +72,8 @@ func ProcessResponse(handle GenericHandle) httprouter.Handle {
 	}
 }
 
+type DataHandle func(*http.Request, httprouter.Params) (interface{}, *ErrorResponse)
+
 func DataHandler(handle DataHandle) GenericHandle {
 	return func(r *http.Request, p httprouter.Params) GenericResponse {
 		data, err := handle(r, p)
@@ -85,6 +86,14 @@ func DataHandler(handle DataHandle) GenericHandle {
 	}
 }
 
+type RegisterRoute func(method string, path string, handle DataHandle)
+
+func RouteHandler(router *httprouter.Router) RegisterRoute {
+	return func(method string, path string, handle DataHandle) {
+		router.Handle(method, path, ProcessResponse(DataHandler(handle)))
+	}
+}
+
 func main() {
 	router := httprouter.New()
 
@@ -92,7 +101,7 @@ func main() {
 		fmt.Fprint(w, "Hello")
 	})
 
-	router.GET("/blueprint/search", ProcessResponse(DataHandler(Search)))
+	blueprint.RegisterBlueprintRoutes(RouteHandler(router))
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
