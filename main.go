@@ -27,7 +27,7 @@ type ErrorResponse struct {
 type GenericResponse struct {
 	Success bool           `json:"success"`
 	Error   *ErrorResponse `json:"error,omitempty"`
-	Data    *interface{}   `json:"data,omitempty"`
+	Data    interface{}    `json:"data,omitempty"`
 }
 
 type GenericHandle func(*http.Request, httprouter.Params) GenericResponse
