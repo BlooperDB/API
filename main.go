@@ -53,7 +53,6 @@ func ProcessResponse(handle GenericHandle) httprouter.Handle {
 		}
 
 		switch format {
-		case "json":
 		default:
 			encoder := json.NewEncoder(w)
 			encoder.SetIndent("", "    ")
