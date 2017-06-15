@@ -38,7 +38,7 @@ func ProcessResponse(handle GenericHandle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		response := handle(r, p)
 
-		format := p.ByName("format")
+		format := r.URL.Query().Get("format")
 
 		switch format {
 		default:
