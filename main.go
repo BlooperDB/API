@@ -41,7 +41,6 @@ func ProcessResponse(handle GenericHandle) httprouter.Handle {
 		format := p.ByName("format")
 
 		switch format {
-		case "json":
 		default:
 			w.Header().Set("Content-Type", "application/json")
 		case "xml":
