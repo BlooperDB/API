@@ -1,21 +1,10 @@
-// @APIVersion 1.0.0
-// @APITitle Blooper
-// @APIDescription Factorio blueprint database
-// @License MIT
-// @LicenseUrl https://opensource.org/licenses/MIT
-
-package blooper
+package api
 
 import (
-	"fmt"
-	"log"
+	"encoding/json"
+	"encoding/xml"
 	"net/http"
 
-	"encoding/json"
-
-	"encoding/xml"
-
-	"github.com/FactorioDB/API/blueprint"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -92,16 +81,4 @@ func RouteHandler(router *httprouter.Router) RegisterRoute {
 	return func(method string, path string, handle DataHandle) {
 		router.Handle(method, path, ProcessResponse(DataHandler(handle)))
 	}
-}
-
-func main() {
-	router := httprouter.New()
-
-	router.GET("/", func(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
-		fmt.Fprint(w, "Hello")
-	})
-
-	blueprint.RegisterBlueprintRoutes(RouteHandler(router))
-
-	log.Fatal(http.ListenAndServe(":8080", router))
 }
