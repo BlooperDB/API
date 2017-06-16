@@ -6,13 +6,13 @@ import (
 
 	"github.com/FactorioDB/API/api"
 	"github.com/FactorioDB/API/blueprint"
-	"github.com/julienschmidt/httprouter"
+	"github.com/gorilla/mux"
 )
 
 func Initialize() {
-	router := httprouter.New()
+	router := mux.NewRouter()
 
-	blueprint.RegisterBlueprintRoutes(api.RouteHandler(router))
+	blueprint.RegisterBlueprintRoutes(api.RouteHandler(router, "/v1/blueprint"))
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }

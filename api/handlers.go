@@ -3,9 +3,10 @@ package api
 import (
 	"encoding/json"
 	"encoding/xml"
+
 	"net/http"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/gorilla/mux"
 )
 
 type ErrorResponse struct {
@@ -20,14 +21,14 @@ type GenericResponse struct {
 	Data    interface{}    `json:"data,omitempty"`
 }
 
-type GenericHandle func(*http.Request, httprouter.Params) GenericResponse
+type GenericHandle func(http.ResponseWriter, *http.Request) GenericResponse
 
-func ProcessResponse(handle GenericHandle) httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		response := handle(r, p)
+func ProcessResponse(handle GenericHandle) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		response := handle(w, r)
 
 		format := r.URL.Query().Get("format")
-		pretty := r.URL.Query().Get("pretty") != ""
+		pretty := len(r.URL.Query()["pretty"]) > 0
 
 		switch format {
 		default:
@@ -61,24 +62,28 @@ func ProcessResponse(handle GenericHandle) httprouter.Handle {
 	}
 }
 
-type DataHandle func(*http.Request, httprouter.Params) (interface{}, *ErrorResponse)
+type DataHandle func(*http.Request) (interface{}, *ErrorResponse)
 
 func DataHandler(handle DataHandle) GenericHandle {
-	return func(r *http.Request, p httprouter.Params) GenericResponse {
-		data, err := handle(r, p)
+	return func(w http.ResponseWriter, r *http.Request) GenericResponse {
+		data, err := handle(r)
 
 		return GenericResponse{
 			Success: err == nil,
 			Error:   err,
-			Data:    &data,
+			Data:    data,
 		}
 	}
 }
 
 type RegisterRoute func(method string, path string, handle DataHandle)
 
-func RouteHandler(router *httprouter.Router) RegisterRoute {
+func RouteHandler(router *mux.Router, prefix string) RegisterRoute {
 	return func(method string, path string, handle DataHandle) {
-		router.Handle(method, path, ProcessResponse(DataHandler(handle)))
+		route := router.NewRoute()
+		route.PathPrefix(prefix)
+		route.Path(path)
+		route.Methods(method)
+		route.HandlerFunc(ProcessResponse(DataHandler(handle)))
 	}
 }
