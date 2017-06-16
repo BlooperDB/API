@@ -1,6 +1,6 @@
 package main
 
-import "github.com/FactorioDB/API"
+import "github.com/BlooperDB/API"
 
 func main() {
 	blooper.Initialize()

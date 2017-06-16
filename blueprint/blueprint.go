@@ -3,7 +3,7 @@ package blueprint
 import (
 	"net/http"
 
-	"github.com/FactorioDB/API/api"
+	"github.com/BlooperDB/API/api"
 )
 
 //noinspection GoNameStartsWithPackageName

@@ -1,0 +1,13 @@
+version: '2'
+services:
+  api:
+    build: .
+    ports:
+     - 8080:8080
+    links:
+     - scylladb
+
+  scylladb:
+    image: scylladb/scylla
+    ports:
+     - 9042:9042
