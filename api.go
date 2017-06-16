@@ -12,7 +12,7 @@ import (
 func Initialize() {
 	router := mux.NewRouter()
 
-	blueprint.RegisterBlueprintRoutes(api.RouteHandler(router, "/v1/blueprint"))
+	blueprint.RegisterBlueprintRoutes(api.RouteHandler(router, "/v1"))
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
