@@ -11,3 +11,5 @@ services:
     image: scylladb/scylla
     ports:
      - 9042:9042
+     volumes:
+     - ./scylladb:/var/lib/scylla
