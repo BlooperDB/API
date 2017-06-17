@@ -11,3 +11,5 @@ install:
  - glide install
  - go vet
  - go build
+
+script: echo 1
