@@ -1,33 +1,20 @@
-hash: 8d006a7ae4b7b73a0c8dfb66df8c6743dd030afdb690a50f7e497c2ba0f5ce96
-updated: 2017-06-16T12:45:59.0803194+03:00
+hash: 3132412927bcf3f1cf5ff81253a7544ace6ee960b555bcbd14a9fbdad073b528
+updated: 2017-06-17T13:48:11.6227452+03:00
 imports:
-- name: github.com/gin-gonic/gin
-  version: d5b353c5d5a560322e6d96121c814115562501f7
+- name: github.com/gocql/gocql
+  version: ca7d33956650d92d29e6db7fe901e23d0f0e3359
   subpackages:
-  - binding
-  - render
-- name: github.com/golang/protobuf
-  version: 2402d76f3d41f928c7902a765dfc872356dd3aad
-  subpackages:
-  - proto
+  - internal/lru
+  - internal/murmur
+  - internal/streams
+- name: github.com/golang/snappy
+  version: 553a641470496b2327abcac10b36396bd98e45c9
+- name: github.com/gorilla/context
+  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
   version: bcd8bc72b08df0f70df986b97f95590779502d31
-- name: github.com/manucorporat/sse
-  version: ee05b128a739a0fb76c7ebd3ae4810c1de808d6d
-- name: github.com/mattn/go-isatty
-  version: fc9e8d8ef48496124e79ae0df75490096eccf6fe
-- name: golang.org/x/net
-  version: f315505cf3349909cdf013ea56690da34e96a451
-  subpackages:
-  - context
-- name: golang.org/x/sys
-  version: fb4cac33e3196ff7f507ab9b2d2a44b0142f5b5a
-  subpackages:
-  - unix
-- name: gopkg.in/gin-gonic/gin.v1
-  version: e2212d40c62a98b388a5eb48ecbdcf88534688ba
-- name: gopkg.in/go-playground/validator.v8
-  version: c193cecd124b5cc722d7ee5538e945bdb3348435
-- name: gopkg.in/yaml.v2
-  version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
+- name: github.com/hailocab/go-hostpool
+  version: e80d13ce29ede4452c43dea11e79b9bc8a15b478
+- name: gopkg.in/inf.v0
+  version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 testImports: []

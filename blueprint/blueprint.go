@@ -4,9 +4,14 @@ import (
 	"net/http"
 
 	"github.com/BlooperDB/API/api"
+	"github.com/BlooperDB/API/db"
+	"github.com/gorilla/mux"
 )
 
-//noinspection GoNameStartsWithPackageName
+var (
+	error_blueprint_not_found = api.ErrorResponse{100, "Blueprint not found", 404}
+)
+
 type BlueprintResponse struct {
 	Id          string    `json:"id"`
 	UserId      string    `json:"user"`
@@ -24,6 +29,7 @@ type Version struct {
 	Blueprint  string    `json:"blueprint"`
 	ThumbsUp   int       `json:"thumbs_up"`
 	ThumbsDown int       `json:"thumbs_down"`
+	UserVote   int       `json:"user-vote"`
 	Comments   []Comment `json:"comments"`
 }
 
@@ -74,8 +80,78 @@ func getBlueprints(_ *http.Request) (interface{}, *api.ErrorResponse) {
 /*
 Get a specific blueprint
 */
-func getBlueprint(_ *http.Request) (interface{}, *api.ErrorResponse) {
-	return nil, nil
+func getBlueprint(r *http.Request) (interface{}, *api.ErrorResponse) {
+	id := mux.Vars(r)["blueprint"]
+	blueprint := db.GetBlueprintById(id)
+
+	if blueprint == nil {
+		return nil, &error_blueprint_not_found
+	}
+
+	versions := blueprint.GetVersions()
+	reVersion := make([]Version, len(versions))
+
+	for i := 0; i < len(versions); i++ {
+		version := versions[i]
+
+		ratings := version.GetRatings()
+		thumbsUp, thumbsDown, userVote := 0, 0, 0
+
+		for j := 0; j < len(ratings); j++ {
+			rating := ratings[j]
+
+			if rating.ThumbsUp {
+				thumbsUp++
+			} else {
+				thumbsDown++
+			}
+
+			// TODO Check for user id
+		}
+
+		comments := version.GetComments()
+		reComment := make([]Comment, len(comments))
+
+		for j := 0; j < len(ratings); j++ {
+			comment := comments[j]
+			reComment[j] = Comment{
+				Id:      comment.Id,
+				UserId:  comment.UserId,
+				Date:    comment.Date,
+				Message: comment.Message,
+				Updated: comment.Updated,
+			}
+		}
+
+		reVersion[i] = Version{
+			Id:         version.Id,
+			Version:    version.Version,
+			Changes:    version.Changes,
+			Date:       version.Date,
+			Blueprint:  version.Blueprint,
+			ThumbsUp:   thumbsUp,
+			ThumbsDown: thumbsDown,
+			UserVote:   userVote,
+			Comments:   reComment,
+		}
+	}
+
+	tags := blueprint.GetTags()
+	reTags := make([]string, len(tags))
+
+	for i := 0; i < len(tags); i++ {
+		tag := tags[i]
+		reTags[i] = tag.Name
+	}
+
+	return BlueprintResponse{
+		Id:          blueprint.Id,
+		UserId:      blueprint.UserId,
+		Name:        blueprint.Name,
+		Description: blueprint.Description,
+		Versions:    reVersion,
+		Tags:        reTags,
+	}, nil
 }
 
 /*
