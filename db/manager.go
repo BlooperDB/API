@@ -23,4 +23,5 @@ func createTables() {
 	session.Query(RatingTable[1]).Exec()
 	session.Query(CommentTable[1]).Exec()
 	session.Query(BlueprintTagTable[1]).Exec()
+	session.Query(UserTable[1]).Exec()
 }

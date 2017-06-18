@@ -3,14 +3,11 @@ package nodes
 import (
 	"net/http"
 
+	"encoding/json"
+
 	"github.com/BlooperDB/API/api"
 	"github.com/BlooperDB/API/db"
-	"github.com/gorilla/mux"
 	"github.com/wuman/firebase-server-sdk-go"
-)
-
-var (
-	error_user_token_invalid = api.ErrorResponse{100, "User token invalid", 400}
 )
 
 type PublicUserResponse struct {
@@ -34,11 +31,21 @@ type UserSignInResponse struct {
 	FirstLogin   bool   `json:"first-login"`
 }
 
+type UserSignInRequest struct {
+	FirebaseToken string `json:"firebase-token"`
+}
+
 func signIn(r *http.Request) (interface{}, *api.ErrorResponse) {
-	firebase_token := mux.Vars(r)["firebase_token"]
+	decoder := json.NewDecoder(r.Body)
+	var request UserSignInRequest
+	err := decoder.Decode(&request)
+
+	if err != nil || request.FirebaseToken == "" {
+		return nil, &error_invalid_request_data
+	}
 
 	auth, _ := firebase.GetAuth()
-	decodedToken, err := auth.VerifyIDToken(firebase_token)
+	decodedToken, err := auth.VerifyIDToken(request.FirebaseToken)
 
 	if err != nil {
 		return nil, &error_user_token_invalid

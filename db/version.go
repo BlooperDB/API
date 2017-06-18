@@ -9,7 +9,7 @@ var VersionTable = [2]string{
 		"blueprint_id varchar," +
 		"version varchar," +
 		"changes varchar," +
-		"date int," +
+		"date bigint," +
 		"blueprint varchar" +
 		");",
 }

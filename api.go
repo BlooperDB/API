@@ -20,7 +20,7 @@ import (
 
 func Initialize() {
 	firebase.InitializeApp(&firebase.Options{
-		ServiceAccountPath: "blooper-firebase-adminsdk.json",
+		ServiceAccountPath: "src/github.com/BlooperDB/API/blooper-firebase-adminsdk.json",
 	})
 
 	router := mux.NewRouter()
@@ -69,5 +69,6 @@ func Initialize() {
 
 	db.Initialize(session)
 
+	fmt.Println("Listening on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }

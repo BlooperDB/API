@@ -8,10 +8,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var (
-	error_blueprint_not_found = api.ErrorResponse{200, "Blueprint not found", 404}
-)
-
 type BlueprintResponse struct {
 	Id          string    `json:"id"`
 	UserId      string    `json:"user"`

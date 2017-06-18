@@ -10,9 +10,9 @@ var CommentTable = [2]string{
 		"id varchar PRIMARY KEY," +
 		"version_id varchar," +
 		"user_id varchar," +
-		"date int," +
+		"date bigint," +
 		"message varchar," +
-		"updated int" +
+		"updated bigint" +
 		");",
 }
 

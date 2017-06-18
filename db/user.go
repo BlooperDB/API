@@ -3,6 +3,8 @@ package db
 import (
 	"time"
 
+	"fmt"
+
 	"github.com/BlooperDB/API/utils"
 	"github.com/gocql/gocql"
 	"github.com/wuman/firebase-server-sdk-go"
@@ -11,11 +13,13 @@ import (
 var UserTable = [2]string{
 	"user",
 	"CREATE TABLE IF NOT EXISTS user (" +
-		"id varchar PRIMARY KEY," +
+		"id varchar," +
 		"email varchar," +
 		"username varchar," +
+		"avatar varchar," +
 		"blooper_token varchar," +
-		"register_date int" +
+		"register_date bigint," +
+		"PRIMARY KEY (id, email, username, blooper_token)" +
 		");",
 }
 
@@ -29,22 +33,21 @@ type User struct {
 }
 
 func (m User) Save() {
-	GetSession().Query("UPDATE "+UserTable[0]+" SET "+
-		" id=?,"+
-		" email=?,"+
-		" username=?,"+
+	i := GetSession().Query("UPDATE "+UserTable[0]+" SET "+
 		" avatar=?,"+
-		" register_date=?,"+
-		" WHERE id=?;", m.Id, m.Email, m.Username, m.BlooperToken, m.RegisterDate, m.Id)
+		" register_date=?"+
+		" WHERE id=? AND email=? AND username=? AND blooper_token=?;", m.Avatar, m.RegisterDate, m.Id, m.Email, m.Username, m.BlooperToken).Exec()
+	fmt.Println(i)
 }
 
 func SignIn(token *firebase.Token) (*User, bool) {
+	email, _ := token.Email()
+
 	data := make(map[string]interface{})
-	GetSession().Query("SELECT * FROM "+UserTable[0]+" WHERE email = ?;", token.Email).Consistency(gocql.One).MapScan(data)
+	GetSession().Query("SELECT * FROM "+UserTable[0]+" WHERE email = ? ALLOW FILTERING;", email).Consistency(gocql.One).MapScan(data)
 
 	if len(data) == 0 {
 		name, _ := token.Name()
-		email, _ := token.Email()
 		avatar, _ := token.Picture()
 
 		user := User{
