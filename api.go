@@ -15,9 +15,14 @@ import (
 	"github.com/BlooperDB/API/utils"
 	"github.com/gocql/gocql"
 	"github.com/gorilla/mux"
+	"github.com/wuman/firebase-server-sdk-go"
 )
 
 func Initialize() {
+	firebase.InitializeApp(&firebase.Options{
+		ServiceAccountPath: "blooper-firebase-adminsdk.json",
+	})
+
 	router := mux.NewRouter()
 
 	router.NotFoundHandler = http.HandlerFunc(api.LoggerHandler(func(w http.ResponseWriter, r *http.Request) {
