@@ -1,5 +1,5 @@
-hash: 3132412927bcf3f1cf5ff81253a7544ace6ee960b555bcbd14a9fbdad073b528
-updated: 2017-06-17T13:48:11.6227452+03:00
+hash: 0387ead5d90421d50f865227c09b71dce97dbd736c50f3f7df94ab566ec877eb
+updated: 2017-06-18T18:19:08.460462+03:00
 imports:
 - name: github.com/gocql/gocql
   version: ca7d33956650d92d29e6db7fe901e23d0f0e3359
@@ -15,6 +15,14 @@ imports:
   version: bcd8bc72b08df0f70df986b97f95590779502d31
 - name: github.com/hailocab/go-hostpool
   version: e80d13ce29ede4452c43dea11e79b9bc8a15b478
+- name: github.com/SermoDigital/jose
+  version: 2bd9b81ac51d6d6134fcd4fd846bd2e7347a15f9
+  subpackages:
+  - crypto
+  - jws
+  - jwt
+- name: github.com/wuman/firebase-server-sdk-go
+  version: e95694472a4d7070a4ae36a8cd990daadeee81a6
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 testImports: []

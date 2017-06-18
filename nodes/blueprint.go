@@ -1,4 +1,4 @@
-package blueprint
+package nodes
 
 import (
 	"net/http"
@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	error_blueprint_not_found = api.ErrorResponse{100, "Blueprint not found", 404}
+	error_blueprint_not_found = api.ErrorResponse{200, "Blueprint not found", 404}
 )
 
 type BlueprintResponse struct {

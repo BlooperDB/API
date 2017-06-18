@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/BlooperDB/API/api"
-	"github.com/BlooperDB/API/blueprint"
 	"github.com/BlooperDB/API/db"
+	"github.com/BlooperDB/API/nodes"
 	"github.com/BlooperDB/API/utils"
 	"github.com/gocql/gocql"
 	"github.com/gorilla/mux"
@@ -25,7 +25,9 @@ func Initialize() {
 		fmt.Fprint(w, "404 page not found")
 	}))
 
-	blueprint.RegisterBlueprintRoutes(api.RouteHandler(router, "/v1"))
+	v1 := api.RouteHandler(router, "/v1")
+	nodes.RegisterUserRoutes(v1)
+	nodes.RegisterBlueprintRoutes(v1)
 
 	cluster := gocql.NewCluster("scylladb")
 
