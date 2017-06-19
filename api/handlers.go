@@ -26,8 +26,9 @@ type GenericResponse struct {
 
 type GenericHandle func(http.ResponseWriter, *http.Request) GenericResponse
 
-func ProcessResponse(handle GenericHandle) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
+func ProcessResponse(handle GenericHandle) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
 		response := handle(w, r)
 
 		format := r.URL.Query().Get("format")
@@ -62,7 +63,7 @@ func ProcessResponse(handle GenericHandle) func(http.ResponseWriter, *http.Reque
 
 			encoder.Encode(response)
 		}
-	}
+	})
 }
 
 type DataHandle func(*http.Request) (interface{}, *ErrorResponse)
@@ -87,16 +88,16 @@ func RouteHandler(router *mux.Router, prefix string) RegisterRoute {
 		route.PathPrefix(prefix)
 		route.Path(path)
 		route.Methods(method)
-		route.HandlerFunc(LoggerHandler(ProcessResponse(DataHandler(handle))))
+		route.Handler(ProcessResponse(DataHandler(handle)))
 	}
 }
 
-func LoggerHandler(f func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
+func LoggerHandler(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger := makeLogger(w)
 		start := time.Now()
 
-		f(logger, r)
+		h.ServeHTTP(logger, r)
 
 		end := time.Now()
 		latency := end.Sub(start)
@@ -119,7 +120,7 @@ func LoggerHandler(f func(http.ResponseWriter, *http.Request)) func(http.Respons
 			methodColor, method, reset,
 			path,
 		)
-	}
+	})
 }
 
 var (
@@ -165,4 +166,11 @@ func colorForMethod(method string) string {
 	default:
 		return reset
 	}
+}
+
+func NotFoundHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(404)
+		fmt.Fprint(w, "404 page not found")
+	})
 }

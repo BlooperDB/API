@@ -1,5 +1,5 @@
-hash: 0387ead5d90421d50f865227c09b71dce97dbd736c50f3f7df94ab566ec877eb
-updated: 2017-06-18T18:19:08.460462+03:00
+hash: b27e993f98dfc24bb7d9ead6ad8c402d4e9fecc1b60028815b03d587fd3c7536
+updated: 2017-06-19T12:47:47.8009911+03:00
 imports:
 - name: github.com/gocql/gocql
   version: ca7d33956650d92d29e6db7fe901e23d0f0e3359
@@ -11,6 +11,8 @@ imports:
   version: 553a641470496b2327abcac10b36396bd98e45c9
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
+- name: github.com/gorilla/handlers
+  version: a4043c62cc2329bacda331d33fc908ab11ef0ec3
 - name: github.com/gorilla/mux
   version: bcd8bc72b08df0f70df986b97f95590779502d31
 - name: github.com/hailocab/go-hostpool

@@ -14,6 +14,7 @@ import (
 	"github.com/BlooperDB/API/nodes"
 	"github.com/BlooperDB/API/utils"
 	"github.com/gocql/gocql"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/wuman/firebase-server-sdk-go"
 )
@@ -25,10 +26,7 @@ func Initialize() {
 
 	router := mux.NewRouter()
 
-	router.NotFoundHandler = http.HandlerFunc(api.LoggerHandler(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(404)
-		fmt.Fprint(w, "404 page not found")
-	}))
+	router.NotFoundHandler = api.LoggerHandler(api.NotFoundHandler())
 
 	v1 := api.RouteHandler(router, "/v1")
 	nodes.RegisterUserRoutes(v1)
@@ -69,6 +67,14 @@ func Initialize() {
 
 	db.Initialize(session)
 
+	CORSHandler := handlers.CORS(handlers.AllowedOrigins([]string{"*"}))
+
+	var finalRouter http.Handler = router
+	finalRouter = CORSHandler(finalRouter)
+	finalRouter = api.LoggerHandler(finalRouter)
+	finalRouter = handlers.CompressHandler(finalRouter)
+	finalRouter = handlers.ProxyHeaders(finalRouter)
+
 	fmt.Println("Listening on port 8080")
-	log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(http.ListenAndServe(":8080", finalRouter))
 }
