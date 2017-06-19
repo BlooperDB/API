@@ -112,7 +112,7 @@ func LoggerHandler(h http.Handler) http.Handler {
 
 		path := r.URL.Path
 
-		fmt.Printf("[API] %v |%s %3d %s| %12v | %15s |%s %-7s %s %s\n",
+		fmt.Printf("[API] %v |%s %3d %s| %12v | %21s |%s %-7s %s %s\n",
 			end.Format("2006/01/02 - 15:04:05"),
 			statusColor, statusCode, reset,
 			latency,
