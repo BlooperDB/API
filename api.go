@@ -67,7 +67,11 @@ func Initialize() {
 
 	db.Initialize(session)
 
-	CORSHandler := handlers.CORS(handlers.AllowedOrigins([]string{"*"}))
+	CORSHandler := handlers.CORS(
+		handlers.AllowedOrigins([]string{"*"}),
+		handlers.AllowedHeaders([]string{"content-type"}),
+		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"}),
+	)
 
 	var finalRouter http.Handler = router
 	finalRouter = CORSHandler(finalRouter)
