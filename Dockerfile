@@ -15,4 +15,6 @@ RUN glide install
 
 COPY . /go/src/github.com/BlooperDB/API/
 
-CMD ["go", "run", "cmd/blooperapi/main.go"]
+WORKDIR /go
+
+CMD ["go", "run", "src/github.com/BlooperDB/API/cmd/blooperapi/main.go"]
