@@ -5,6 +5,7 @@ import (
 
 	"github.com/BlooperDB/API/api"
 	"github.com/BlooperDB/API/db"
+	"github.com/BlooperDB/API/utils"
 	"github.com/gorilla/mux"
 )
 
@@ -81,7 +82,7 @@ func getBlueprint(r *http.Request) (interface{}, *api.ErrorResponse) {
 	blueprint := db.GetBlueprintById(id)
 
 	if blueprint == nil {
-		return nil, &error_blueprint_not_found
+		return nil, &utils.Error_blueprint_not_found
 	}
 
 	versions := blueprint.GetVersions()

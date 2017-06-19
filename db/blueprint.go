@@ -39,6 +39,25 @@ func GetBlueprintById(id string) *Blueprint {
 	}
 }
 
+func GetBlueprintsByUserId(userId string) []*Blueprint {
+	r := GetSession().Query("SELECT * FROM "+BlueprintTable+" WHERE user_id = ?;", userId).Consistency(gocql.All).Iter()
+
+	result := make([]*Blueprint, r.NumRows())
+
+	for i := 0; i < r.NumRows(); i++ {
+		data := make(map[string]interface{})
+		r.MapScan(data)
+		result[i] = &Blueprint{
+			Id:          data["id"].(string),
+			UserId:      data["user_id"].(string),
+			Name:        data["name"].(string),
+			Description: data["description"].(string),
+		}
+	}
+
+	return result
+}
+
 func (m Blueprint) GetVersions() []*Version {
 	return FindVersionsByBlueprint(m)
 }

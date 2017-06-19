@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/BlooperDB/API/db"
+	"github.com/BlooperDB/API/utils"
 	"github.com/gorilla/mux"
 )
 
@@ -173,4 +175,18 @@ func NotFoundHandler() http.Handler {
 		w.WriteHeader(404)
 		fmt.Fprint(w, "404 page not found")
 	})
+}
+
+type AuthDataHandle func(*db.User, *http.Request) (interface{}, *ErrorResponse)
+
+func AuthHandler(handle AuthDataHandle) func(*http.Request) (interface{}, *ErrorResponse) {
+	return func(r *http.Request) (interface{}, *ErrorResponse) {
+		authUser := db.GetAuthUser(r)
+
+		if authUser == nil {
+			return nil, &utils.Error_blooper_token_invalid
+		}
+
+		return handle(authUser, r)
+	}
 }

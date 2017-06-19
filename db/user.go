@@ -3,6 +3,8 @@ package db
 import (
 	"time"
 
+	"net/http"
+
 	"github.com/BlooperDB/API/utils"
 	"github.com/gocql/gocql"
 	"github.com/wuman/firebase-server-sdk-go"
@@ -13,7 +15,7 @@ var UserTable = "user"
 type User struct {
 	Id           string
 	Email        string
-	Username     *string
+	Username     string
 	Avatar       string
 	BlooperToken string
 	RegisterDate int64
@@ -41,7 +43,7 @@ func SignIn(token *firebase.Token) (*User, bool) {
 		user := User{
 			Id:           utils.GenerateRandomString(8),
 			Email:        email,
-			Username:     &name,
+			Username:     name,
 			Avatar:       avatar,
 			BlooperToken: GenerateBlooperToken(),
 			RegisterDate: time.Now().Unix(),
@@ -53,12 +55,10 @@ func SignIn(token *firebase.Token) (*User, bool) {
 		return &user, true
 	}
 
-	username := data["username"].(string)
-
 	return &User{
 		Id:           data["id"].(string),
 		Email:        data["email"].(string),
-		Username:     &username,
+		Username:     data["username"].(string),
 		Avatar:       data["avatar"].(string),
 		BlooperToken: data["blooper_token"].(string),
 		RegisterDate: data["register_date"].(int64),
@@ -68,4 +68,50 @@ func SignIn(token *firebase.Token) (*User, bool) {
 
 func GenerateBlooperToken() string {
 	return utils.GenerateRandomString(32)
+}
+
+func GetUserByBlooperToken(token string) *User {
+	data := make(map[string]interface{})
+	GetSession().Query("SELECT * FROM "+UserTable+" WHERE blooper_token = ? ALLOW FILTERING;", token).Consistency(gocql.One).MapScan(data)
+
+	if len(data) == 0 {
+		return nil
+	}
+
+	return &User{
+		Id:           data["id"].(string),
+		Email:        data["email"].(string),
+		Username:     data["username"].(string),
+		Avatar:       data["avatar"].(string),
+		BlooperToken: data["blooper_token"].(string),
+		RegisterDate: data["register_date"].(int64),
+		LastAction:   data["last_action"].(int64),
+	}
+}
+
+func GetUserById(userId string) *User {
+	data := make(map[string]interface{})
+	GetSession().Query("SELECT * FROM "+UserTable+" WHERE id = ? ALLOW FILTERING;", userId).Consistency(gocql.One).MapScan(data)
+
+	if len(data) == 0 {
+		return nil
+	}
+
+	return &User{
+		Id:           data["id"].(string),
+		Email:        data["email"].(string),
+		Username:     data["username"].(string),
+		Avatar:       data["avatar"].(string),
+		BlooperToken: data["blooper_token"].(string),
+		RegisterDate: data["register_date"].(int64),
+		LastAction:   data["last_action"].(int64),
+	}
+}
+
+func (m User) GetUserBlueprints() []*Blueprint {
+	return GetBlueprintsByUserId(m.Id)
+}
+
+func GetAuthUser(r *http.Request) *User {
+	return GetUserByBlooperToken(r.Header.Get("BLOOPER-TOKEN"))
 }
