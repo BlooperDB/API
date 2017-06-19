@@ -48,7 +48,11 @@ func signIn(r *http.Request) (interface{}, *api.ErrorResponse) {
 	decodedToken, err := auth.VerifyIDToken(request.FirebaseToken)
 
 	if err != nil {
-		return nil, &error_user_token_invalid
+		return nil, &api.ErrorResponse{
+			Code:    error_user_token_invalid.Code,
+			Message: error_user_token_invalid.Message + ": " + err.Error(),
+			Status:  error_user_token_invalid.Status,
+		}
 	}
 
 	_, found := decodedToken.UID()
