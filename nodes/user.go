@@ -105,13 +105,13 @@ func getUser(r *http.Request) (interface{}, *api.ErrorResponse) {
 	}, nil
 }
 
-type PostUserRequest struct {
+type PutUserRequest struct {
 	Username string `json:"username"`
 }
 
 func putUser(u *db.User, r *http.Request) (interface{}, *api.ErrorResponse) {
 	decoder := json.NewDecoder(r.Body)
-	var request PostUserRequest
+	var request PutUserRequest
 	err := decoder.Decode(&request)
 
 	if err != nil {
