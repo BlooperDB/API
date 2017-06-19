@@ -1,0 +1,1 @@
+ALTER TABLE user DROP last_action;

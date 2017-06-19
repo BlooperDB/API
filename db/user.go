@@ -3,8 +3,6 @@ package db
 import (
 	"time"
 
-	"fmt"
-
 	"github.com/BlooperDB/API/utils"
 	"github.com/gocql/gocql"
 	"github.com/wuman/firebase-server-sdk-go"
@@ -19,14 +17,15 @@ type User struct {
 	Avatar       string
 	BlooperToken string
 	RegisterDate int64
+	LastAction   int64
 }
 
 func (m User) Save() {
-	i := GetSession().Query("UPDATE "+UserTable+" SET "+
+	GetSession().Query("UPDATE "+UserTable+" SET "+
 		" avatar=?,"+
-		" register_date=?"+
-		" WHERE id=? AND email=? AND username=? AND blooper_token=?;", m.Avatar, m.RegisterDate, m.Id, m.Email, m.Username, m.BlooperToken).Exec()
-	fmt.Println(i)
+		" register_date=?,"+
+		" last_action=?"+
+		" WHERE id=? AND email=? AND username=? AND blooper_token=?;", m.Avatar, m.RegisterDate, m.LastAction, m.Id, m.Email, m.Username, m.BlooperToken).Exec()
 }
 
 func SignIn(token *firebase.Token) (*User, bool) {
@@ -46,6 +45,7 @@ func SignIn(token *firebase.Token) (*User, bool) {
 			Avatar:       avatar,
 			BlooperToken: GenerateBlooperToken(),
 			RegisterDate: time.Now().Unix(),
+			LastAction:   time.Now().Unix(),
 		}
 
 		user.Save()
@@ -62,6 +62,7 @@ func SignIn(token *firebase.Token) (*User, bool) {
 		Avatar:       data["avatar"].(string),
 		BlooperToken: data["blooper_token"].(string),
 		RegisterDate: data["register_date"].(int64),
+		LastAction:   data["last_action"].(int64),
 	}, false
 }
 
