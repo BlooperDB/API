@@ -10,18 +10,7 @@ import (
 	"github.com/wuman/firebase-server-sdk-go"
 )
 
-var UserTable = [2]string{
-	"user",
-	"CREATE TABLE IF NOT EXISTS user (" +
-		"id varchar," +
-		"email varchar," +
-		"username varchar," +
-		"avatar varchar," +
-		"blooper_token varchar," +
-		"register_date bigint," +
-		"PRIMARY KEY (id, email, username, blooper_token)" +
-		");",
-}
+var UserTable = "user"
 
 type User struct {
 	Id           string
@@ -33,7 +22,7 @@ type User struct {
 }
 
 func (m User) Save() {
-	i := GetSession().Query("UPDATE "+UserTable[0]+" SET "+
+	i := GetSession().Query("UPDATE "+UserTable+" SET "+
 		" avatar=?,"+
 		" register_date=?"+
 		" WHERE id=? AND email=? AND username=? AND blooper_token=?;", m.Avatar, m.RegisterDate, m.Id, m.Email, m.Username, m.BlooperToken).Exec()
@@ -44,7 +33,7 @@ func SignIn(token *firebase.Token) (*User, bool) {
 	email, _ := token.Email()
 
 	data := make(map[string]interface{})
-	GetSession().Query("SELECT * FROM "+UserTable[0]+" WHERE email = ? ALLOW FILTERING;", email).Consistency(gocql.One).MapScan(data)
+	GetSession().Query("SELECT * FROM "+UserTable+" WHERE email = ? ALLOW FILTERING;", email).Consistency(gocql.One).MapScan(data)
 
 	if len(data) == 0 {
 		name, _ := token.Name()

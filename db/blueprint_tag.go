@@ -4,14 +4,7 @@ import (
 	"github.com/gocql/gocql"
 )
 
-var BlueprintTagTable = [2]string{
-	"blueprint_tag",
-	"CREATE TABLE IF NOT EXISTS blueprint_tag (" +
-		"blueprint_id varchar," +
-		"tag_id varchar," +
-		"PRIMARY KEY (blueprint_id, tag_id)" +
-		");",
-}
+var BlueprintTagTable = "blueprint_tag"
 
 type BlueprintToTag struct {
 	BlueprintId string
@@ -19,7 +12,7 @@ type BlueprintToTag struct {
 }
 
 func (m BlueprintToTag) Save() {
-	GetSession().Query("UPDATE "+BlueprintTagTable[0]+" SET "+
+	GetSession().Query("UPDATE "+BlueprintTagTable+" SET "+
 		" blueprint_id=?,"+
 		" tag_id=?"+
 		" WHERE blueprint_id=? AND tag_id=? ;",
@@ -27,7 +20,7 @@ func (m BlueprintToTag) Save() {
 }
 
 func FindTagsByBlueprint(b Blueprint) []*BlueprintToTag {
-	r := GetSession().Query("SELECT * FROM "+BlueprintTagTable[0]+" WHERE blueprint_id = ?;", b.Id).Consistency(gocql.All).Iter()
+	r := GetSession().Query("SELECT * FROM "+BlueprintTagTable+" WHERE blueprint_id = ?;", b.Id).Consistency(gocql.All).Iter()
 
 	result := make([]*BlueprintToTag, r.NumRows())
 

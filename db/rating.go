@@ -2,15 +2,7 @@ package db
 
 import "github.com/gocql/gocql"
 
-var RatingTable = [2]string{
-	"rating",
-	"CREATE TABLE IF NOT EXISTS rating (" +
-		"id varchar PRIMARY KEY," +
-		"version_id varchar," +
-		"user_id varchar," +
-		"thumbs_up boolean" +
-		");",
-}
+var RatingTable = "rating"
 
 type Rating struct {
 	Id        string
@@ -20,7 +12,7 @@ type Rating struct {
 }
 
 func (m Rating) Save() {
-	GetSession().Query("UPDATE "+RatingTable[0]+" SET "+
+	GetSession().Query("UPDATE "+RatingTable+" SET "+
 		" version_id=?,"+
 		" user_id=?,"+
 		" thumbs_up=?"+
@@ -29,7 +21,7 @@ func (m Rating) Save() {
 }
 
 func FindRatingsByVersion(m Version) []*Rating {
-	r := GetSession().Query("SELECT * FROM "+RatingTable[0]+" WHERE version_id = ?;", m.Id).Consistency(gocql.All).Iter()
+	r := GetSession().Query("SELECT * FROM "+RatingTable+" WHERE version_id = ?;", m.Id).Consistency(gocql.All).Iter()
 
 	result := make([]*Rating, r.NumRows())
 

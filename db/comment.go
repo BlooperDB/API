@@ -4,17 +4,7 @@ import (
 	"github.com/gocql/gocql"
 )
 
-var CommentTable = [2]string{
-	"comment",
-	"CREATE TABLE IF NOT EXISTS comment (" +
-		"id varchar PRIMARY KEY," +
-		"version_id varchar," +
-		"user_id varchar," +
-		"date bigint," +
-		"message varchar," +
-		"updated bigint" +
-		");",
-}
+var CommentTable = "comment"
 
 type Comment struct {
 	Id        string
@@ -26,7 +16,7 @@ type Comment struct {
 }
 
 func (m Comment) Save() {
-	GetSession().Query("UPDATE "+CommentTable[0]+" SET "+
+	GetSession().Query("UPDATE "+CommentTable+" SET "+
 		" version_id=?,"+
 		" user_id=?,"+
 		" date=?,"+
@@ -37,7 +27,7 @@ func (m Comment) Save() {
 }
 
 func FindCommentsByVersion(m Version) []*Comment {
-	r := GetSession().Query("SELECT * FROM "+CommentTable[0]+" WHERE version_id = ?;", m.Id).Consistency(gocql.All).Iter()
+	r := GetSession().Query("SELECT * FROM "+CommentTable+" WHERE version_id = ?;", m.Id).Consistency(gocql.All).Iter()
 
 	result := make([]*Comment, r.NumRows())
 

@@ -1,6 +1,8 @@
-hash: b27e993f98dfc24bb7d9ead6ad8c402d4e9fecc1b60028815b03d587fd3c7536
-updated: 2017-06-19T12:47:47.8009911+03:00
+hash: 2731e5042cec14b16211f4ecf9dc341bb1190a4671ea277df9cb19056f517404
+updated: 2017-06-19T18:39:04.9764706+03:00
 imports:
+- name: github.com/gemnasium/migrate
+  version: 603c58f2c1d0882d7d5b24791e6e5af5ab392e44
 - name: github.com/gocql/gocql
   version: ca7d33956650d92d29e6db7fe901e23d0f0e3359
   subpackages:

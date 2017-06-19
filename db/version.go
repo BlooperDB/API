@@ -2,17 +2,7 @@ package db
 
 import "github.com/gocql/gocql"
 
-var VersionTable = [2]string{
-	"version",
-	"CREATE TABLE IF NOT EXISTS version (" +
-		"id varchar PRIMARY KEY," +
-		"blueprint_id varchar," +
-		"version varchar," +
-		"changes varchar," +
-		"date bigint," +
-		"blueprint varchar" +
-		");",
-}
+var VersionTable = "version"
 
 type Version struct {
 	Id          string
@@ -24,7 +14,7 @@ type Version struct {
 }
 
 func (m Version) Save() {
-	GetSession().Query("UPDATE "+VersionTable[0]+" SET "+
+	GetSession().Query("UPDATE "+VersionTable+" SET "+
 		" blueprint_id=?,"+
 		" version=?,"+
 		" changes=?,"+
@@ -35,7 +25,7 @@ func (m Version) Save() {
 }
 
 func FindVersionsByBlueprint(b Blueprint) []*Version {
-	r := GetSession().Query("SELECT * FROM "+VersionTable[0]+" WHERE blueprint_id = ?;", b.Id).Consistency(gocql.All).Iter()
+	r := GetSession().Query("SELECT * FROM "+VersionTable+" WHERE blueprint_id = ?;", b.Id).Consistency(gocql.All).Iter()
 
 	result := make([]*Version, r.NumRows())
 

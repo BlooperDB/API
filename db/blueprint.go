@@ -4,15 +4,7 @@ import (
 	"github.com/gocql/gocql"
 )
 
-var BlueprintTable = [2]string{
-	"blueprint",
-	"CREATE TABLE IF NOT EXISTS blueprint (" +
-		"id varchar PRIMARY KEY," +
-		"user_id varchar," +
-		"name varchar," +
-		"description varchar" +
-		");",
-}
+var BlueprintTable = "blueprint"
 
 type Blueprint struct {
 	Id          string
@@ -22,7 +14,7 @@ type Blueprint struct {
 }
 
 func (m Blueprint) Save() {
-	GetSession().Query("UPDATE "+BlueprintTable[0]+" SET "+
+	GetSession().Query("UPDATE "+BlueprintTable+" SET "+
 		" user_id=?,"+
 		" name=?,"+
 		" description=?"+
@@ -33,7 +25,7 @@ func (m Blueprint) Save() {
 func GetBlueprintById(id string) *Blueprint {
 	var data map[string]interface{} = make(map[string]interface{})
 
-	GetSession().Query("SELECT * FROM "+BlueprintTable[0]+" WHERE id = ?;", id).Consistency(gocql.One).MapScan(data)
+	GetSession().Query("SELECT * FROM "+BlueprintTable+" WHERE id = ?;", id).Consistency(gocql.One).MapScan(data)
 
 	if len(data) == 0 {
 		return nil
