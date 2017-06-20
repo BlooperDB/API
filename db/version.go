@@ -24,6 +24,12 @@ func (m Version) Save() {
 		m.BlueprintId, m.Version, m.Changes, m.Date, m.Blueprint, m.Id).Exec()
 }
 
+func (m Version) Delete() {
+	GetSession().Query("DELETE FROM  "+VersionTable+" "+
+		" WHERE id=?;",
+		m.Id).Exec()
+}
+
 func FindVersionsByBlueprint(b Blueprint) []*Version {
 	r := GetSession().Query("SELECT * FROM "+VersionTable+" WHERE blueprint_id = ?;", b.Id).Consistency(gocql.All).Iter()
 
@@ -51,4 +57,23 @@ func (m Version) GetComments() []*Comment {
 
 func (m Version) GetRatings() []*Rating {
 	return FindRatingsByVersion(m)
+}
+
+func GetVersionById(id string) *Version {
+	var data map[string]interface{} = make(map[string]interface{})
+
+	GetSession().Query("SELECT * FROM "+VersionTable+" WHERE id = ?;", id).Consistency(gocql.One).MapScan(data)
+
+	if len(data) == 0 {
+		return nil
+	}
+
+	return &Version{
+		Id:          data["id"].(string),
+		BlueprintId: data["blueprint_id"].(string),
+		Version:     data["version"].(string),
+		Changes:     data["changes"].(string),
+		Date:        data["date"].(int64),
+		Blueprint:   data["blueprint"].(string),
+	}
 }

@@ -71,11 +71,36 @@ func searchBlueprints(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 	return nil, nil
 }
 
+type GetBlueprintsResponse struct {
+	Blueprints []SmallBlueprintResponse `json:"blueprints"`
+}
+
+type SmallBlueprintResponse struct {
+	Id          string `json:"id"`
+	UserId      string `json:"user-id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
 /*
 Get all blueprints (paged)
 */
 func getBlueprints(_ *http.Request) (interface{}, *utils.ErrorResponse) {
-	return nil, nil
+	blueprints := db.GetAllBlueprints()
+	reBlueprint := make([]SmallBlueprintResponse, len(blueprints))
+
+	for i := 0; i < len(blueprints); i++ {
+		reBlueprint[i] = SmallBlueprintResponse{
+			Id:          blueprints[i].Id,
+			UserId:      blueprints[i].UserId,
+			Name:        blueprints[i].Name,
+			Description: blueprints[i].Description,
+		}
+	}
+
+	return GetBlueprintsResponse{
+		Blueprints: reBlueprint,
+	}, nil
 }
 
 /*
@@ -123,7 +148,7 @@ func getBlueprint(r *http.Request) (interface{}, *utils.ErrorResponse) {
 		comments := version.GetComments()
 		reComment := make([]Comment, len(comments))
 
-		for j := 0; j < len(ratings); j++ {
+		for j := 0; j < len(comments); j++ {
 			comment := comments[j]
 			reComment[j] = Comment{
 				Id:      comment.Id,
@@ -314,27 +339,170 @@ func getVersions(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 /*
 Get specific version
 */
-func getVersion(_ *http.Request) (interface{}, *utils.ErrorResponse) {
-	return nil, nil
+func getVersion(r *http.Request) (interface{}, *utils.ErrorResponse) {
+	decoder := json.NewDecoder(r.Body)
+	var request PutVersionRequest
+	err := decoder.Decode(&request)
+
+	if err != nil {
+		return nil, &utils.Error_invalid_request_data
+	}
+
+	blueprintId := mux.Vars(r)["blueprint"]
+
+	blueprint := db.GetBlueprintById(blueprintId)
+
+	versionId := mux.Vars(r)["version"]
+
+	version := blueprint.GetVersion(versionId)
+
+	ratings := version.GetRatings()
+	thumbsUp, thumbsDown, userVote := 0, 0, 0
+
+	authUser := db.GetAuthUser(r)
+
+	for j := 0; j < len(ratings); j++ {
+		rating := ratings[j]
+
+		if rating.ThumbsUp {
+			thumbsUp++
+		} else {
+			thumbsDown++
+		}
+
+		if authUser != nil {
+			if rating.UserId == authUser.Id {
+				if rating.ThumbsUp {
+					userVote = 1
+				} else {
+					userVote = 2
+				}
+			}
+		}
+	}
+
+	comments := version.GetComments()
+	reComment := make([]Comment, len(comments))
+
+	for j := 0; j < len(comments); j++ {
+		comment := comments[j]
+		reComment[j] = Comment{
+			Id:      comment.Id,
+			UserId:  comment.UserId,
+			Date:    comment.Date,
+			Message: comment.Message,
+			Updated: comment.Updated,
+		}
+	}
+
+	return Version{
+		Id:         version.Id,
+		Version:    version.Version,
+		Changes:    version.Changes,
+		Date:       version.Date,
+		Blueprint:  version.Blueprint,
+		ThumbsUp:   thumbsUp,
+		ThumbsDown: thumbsDown,
+		UserVote:   userVote,
+		Comments:   reComment,
+	}, nil
+}
+
+type PostVersionRequest struct {
+	BlueprintId string `json:"blueprint_id"`
+	Version     string `json:"version"`
+	Changes     string `json:"changes"`
+	Blueprint   string `json:"blueprint"`
 }
 
 /*
 Post a version
 */
-func postVersion(u *db.User, _ *http.Request) (interface{}, *utils.ErrorResponse) {
+func postVersion(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
+	decoder := json.NewDecoder(r.Body)
+	var request PostVersionRequest
+	err := decoder.Decode(&request)
+
+	if err != nil {
+		return nil, &utils.Error_invalid_request_data
+	}
+
+	blueprintId := mux.Vars(r)["blueprint"]
+
+	blueprint := db.GetBlueprintById(blueprintId)
+
+	if blueprint.UserId != u.Id {
+		return nil, &utils.Error_no_access
+	}
+
+	version := db.Version{
+		Id:          utils.GenerateRandomId(),
+		BlueprintId: request.BlueprintId,
+		Version:     request.Version,
+		Changes:     request.Changes,
+		Date:        time.Now().Unix(),
+		Blueprint:   request.Blueprint,
+	}
+
+	version.Save()
+
 	return nil, nil
+}
+
+type PutVersionRequest struct {
+	Version   string `json:"version"`
+	Changes   string `json:"changes"`
+	Blueprint string `json:"blueprint"`
 }
 
 /*
 Update a version
 */
-func updateVersion(u *db.User, _ *http.Request) (interface{}, *utils.ErrorResponse) {
+func updateVersion(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
+	decoder := json.NewDecoder(r.Body)
+	var request PutVersionRequest
+	err := decoder.Decode(&request)
+
+	if err != nil {
+		return nil, &utils.Error_invalid_request_data
+	}
+
+	blueprintId := mux.Vars(r)["blueprint"]
+
+	blueprint := db.GetBlueprintById(blueprintId)
+
+	if blueprint.UserId != u.Id {
+		return nil, &utils.Error_no_access
+	}
+
+	versionId := mux.Vars(r)["version"]
+
+	version := blueprint.GetVersion(versionId)
+
+	version.Version = request.Version
+	version.Changes = request.Changes
+	version.Blueprint = request.Blueprint
+
 	return nil, nil
 }
 
 /*
 Delete a version
 */
-func deleteVersion(u *db.User, _ *http.Request) (interface{}, *utils.ErrorResponse) {
+func deleteVersion(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
+	blueprintId := mux.Vars(r)["blueprint"]
+
+	blueprint := db.GetBlueprintById(blueprintId)
+
+	if blueprint.UserId != u.Id {
+		return nil, &utils.Error_no_access
+	}
+
+	versionId := mux.Vars(r)["version"]
+
+	version := blueprint.GetVersion(versionId)
+
+	version.Delete()
+
 	return nil, nil
 }
