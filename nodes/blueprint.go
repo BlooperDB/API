@@ -63,21 +63,21 @@ func RegisterBlueprintRoutes(router api.RegisterRoute) {
 /*
 Search for blueprints
 */
-func searchBlueprints(_ *http.Request) (interface{}, *api.ErrorResponse) {
+func searchBlueprints(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 	return nil, nil
 }
 
 /*
 Get all blueprints (paged)
 */
-func getBlueprints(_ *http.Request) (interface{}, *api.ErrorResponse) {
+func getBlueprints(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 	return nil, nil
 }
 
 /*
 Get a specific blueprint
 */
-func getBlueprint(r *http.Request) (interface{}, *api.ErrorResponse) {
+func getBlueprint(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	id := mux.Vars(r)["blueprint"]
 	blueprint := db.GetBlueprintById(id)
 
@@ -154,90 +154,90 @@ func getBlueprint(r *http.Request) (interface{}, *api.ErrorResponse) {
 /*
 Post a new blueprint
 */
-func postBlueprint(_ *http.Request) (interface{}, *api.ErrorResponse) {
+func postBlueprint(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 	return nil, nil
 }
 
 /*
 Update a blueprint
 */
-func updateBlueprint(_ *http.Request) (interface{}, *api.ErrorResponse) {
+func updateBlueprint(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 	return nil, nil
 }
 
 /*
 Delete a blueprint
 */
-func deleteBlueprint(_ *http.Request) (interface{}, *api.ErrorResponse) {
+func deleteBlueprint(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 	return nil, nil
 }
 
 /*
 Get all comments
 */
-func getComments(_ *http.Request) (interface{}, *api.ErrorResponse) {
+func getComments(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 	return nil, nil
 }
 
 /*
 Get specific comment
 */
-func getComment(_ *http.Request) (interface{}, *api.ErrorResponse) {
+func getComment(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 	return nil, nil
 }
 
 /*
 Post a comment
 */
-func postComment(_ *http.Request) (interface{}, *api.ErrorResponse) {
+func postComment(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 	return nil, nil
 }
 
 /*
 Update a comment
 */
-func updateComment(_ *http.Request) (interface{}, *api.ErrorResponse) {
+func updateComment(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 	return nil, nil
 }
 
 /*
 Delete a comment
 */
-func deleteComment(_ *http.Request) (interface{}, *api.ErrorResponse) {
+func deleteComment(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 	return nil, nil
 }
 
 /*
 Get all versions
 */
-func getVersions(_ *http.Request) (interface{}, *api.ErrorResponse) {
+func getVersions(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 	return nil, nil
 }
 
 /*
 Get specific version
 */
-func getVersion(_ *http.Request) (interface{}, *api.ErrorResponse) {
+func getVersion(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 	return nil, nil
 }
 
 /*
 Post a version
 */
-func postVersion(_ *http.Request) (interface{}, *api.ErrorResponse) {
+func postVersion(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 	return nil, nil
 }
 
 /*
 Update a version
 */
-func updateVersion(_ *http.Request) (interface{}, *api.ErrorResponse) {
+func updateVersion(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 	return nil, nil
 }
 
 /*
 Delete a version
 */
-func deleteVersion(_ *http.Request) (interface{}, *api.ErrorResponse) {
+func deleteVersion(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 	return nil, nil
 }

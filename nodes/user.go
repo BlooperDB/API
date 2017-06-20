@@ -40,7 +40,7 @@ type UserSignInRequest struct {
 	FirebaseToken string `json:"firebase-token"`
 }
 
-func signIn(r *http.Request) (interface{}, *api.ErrorResponse) {
+func signIn(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	decoder := json.NewDecoder(r.Body)
 	var request UserSignInRequest
 	err := decoder.Decode(&request)
@@ -53,7 +53,7 @@ func signIn(r *http.Request) (interface{}, *api.ErrorResponse) {
 	decodedToken, err := auth.VerifyIDToken(request.FirebaseToken)
 
 	if err != nil {
-		return nil, &api.ErrorResponse{
+		return nil, &utils.ErrorResponse{
 			Code:    utils.Error_user_token_invalid.Code,
 			Message: utils.Error_user_token_invalid.Message + ": " + err.Error(),
 			Status:  utils.Error_user_token_invalid.Status,
@@ -74,7 +74,7 @@ func signIn(r *http.Request) (interface{}, *api.ErrorResponse) {
 	}, nil
 }
 
-func getUser(r *http.Request) (interface{}, *api.ErrorResponse) {
+func getUser(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	userId := mux.Vars(r)["user"]
 
 	user := db.GetUserById(userId)
@@ -109,7 +109,7 @@ type PutUserRequest struct {
 	Username string `json:"username"`
 }
 
-func putUser(u *db.User, r *http.Request) (interface{}, *api.ErrorResponse) {
+func putUser(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
 	decoder := json.NewDecoder(r.Body)
 	var request PutUserRequest
 	err := decoder.Decode(&request)

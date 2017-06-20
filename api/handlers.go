@@ -14,19 +14,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type ErrorResponse struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
-	Status  int    `json:"-"`
-}
-
-type GenericResponse struct {
-	Success bool           `json:"success"`
-	Error   *ErrorResponse `json:"error,omitempty"`
-	Data    interface{}    `json:"data,omitempty"`
-}
-
-type GenericHandle func(http.ResponseWriter, *http.Request) GenericResponse
+type GenericHandle func(http.ResponseWriter, *http.Request) utils.GenericResponse
 
 func ProcessResponse(handle GenericHandle) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -68,13 +56,13 @@ func ProcessResponse(handle GenericHandle) http.Handler {
 	})
 }
 
-type DataHandle func(*http.Request) (interface{}, *ErrorResponse)
+type DataHandle func(*http.Request) (interface{}, *utils.ErrorResponse)
 
 func DataHandler(handle DataHandle) GenericHandle {
-	return func(w http.ResponseWriter, r *http.Request) GenericResponse {
+	return func(w http.ResponseWriter, r *http.Request) utils.GenericResponse {
 		data, err := handle(r)
 
-		return GenericResponse{
+		return utils.GenericResponse{
 			Success: err == nil,
 			Error:   err,
 			Data:    data,
@@ -177,10 +165,10 @@ func NotFoundHandler() http.Handler {
 	})
 }
 
-type AuthDataHandle func(*db.User, *http.Request) (interface{}, *ErrorResponse)
+type AuthDataHandle func(*db.User, *http.Request) (interface{}, *utils.ErrorResponse)
 
-func AuthHandler(handle AuthDataHandle) func(*http.Request) (interface{}, *ErrorResponse) {
-	return func(r *http.Request) (interface{}, *ErrorResponse) {
+func AuthHandler(handle AuthDataHandle) func(*http.Request) (interface{}, *utils.ErrorResponse) {
+	return func(r *http.Request) (interface{}, *utils.ErrorResponse) {
 		authUser := db.GetAuthUser(r)
 
 		if authUser == nil {
