@@ -12,7 +12,18 @@ import (
 	"github.com/wuman/firebase-server-sdk-go"
 )
 
+type PrivateUserResponse struct {
+	Id           string           `json:"id"`
+	Email        string           `json:"email"`
+	Username     string           `json:"username"`
+	Avatar       string           `json:"avatar"`
+	RegisterDate int64            `json:"register-date"`
+	LastAction   int64            `json:"last-action"`
+	Blueprints   []SmallBlueprint `json:"blueprints"`
+}
+
 type PublicUserResponse struct {
+	Id         string           `json:"id"`
 	Username   string           `json:"username"`
 	Avatar     string           `json:"avatar"`
 	Blueprints []SmallBlueprint `json:"blueprints"`
@@ -26,8 +37,9 @@ type SmallBlueprint struct {
 
 func RegisterUserRoutes(router api.RegisterRoute) {
 	router("POST", "/user/signin", signIn)
+	router("GET", "/user/self", api.AuthHandler(getUserSelf))
 
-	router("Get", "/user/{user}", getUser)
+	router("GET", "/user/{user}", getUser)
 	router("PUT", "/user/{user}", api.AuthHandler(putUser))
 }
 
@@ -98,10 +110,58 @@ func getUser(r *http.Request) (interface{}, *utils.ErrorResponse) {
 		}
 	}
 
+	authUser := db.GetAuthUser(r)
+
+	if authUser != nil {
+		if authUser.Id == userId {
+			return PrivateUserResponse{
+				Id:           userId,
+				Email:        user.Email,
+				Username:     user.Username,
+				Avatar:       user.Avatar,
+				RegisterDate: user.RegisterDate,
+				LastAction:   user.LastAction,
+				Blueprints:   reBlueprint,
+			}, nil
+		}
+	}
+
 	return PublicUserResponse{
+		Id:         userId,
 		Username:   user.Username,
 		Avatar:     user.Avatar,
 		Blueprints: reBlueprint,
+	}, nil
+}
+
+func getUserSelf(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
+	blueprints := u.GetUserBlueprints()
+	reBlueprint := make([]SmallBlueprint, len(blueprints))
+
+	for i := 0; i < len(blueprints); i++ {
+		tags := blueprints[i].GetTags()
+		reTags := make([]string, len(tags))
+
+		for i := 0; i < len(tags); i++ {
+			tag := tags[i]
+			reTags[i] = tag.Name
+		}
+
+		reBlueprint[i] = SmallBlueprint{
+			Name:        blueprints[i].Name,
+			Description: blueprints[i].Description,
+			Tags:        reTags,
+		}
+	}
+
+	return PrivateUserResponse{
+		Id:           u.Id,
+		Email:        u.Email,
+		Username:     u.Username,
+		Avatar:       u.Avatar,
+		RegisterDate: u.RegisterDate,
+		LastAction:   u.LastAction,
+		Blueprints:   reBlueprint,
 	}, nil
 }
 
