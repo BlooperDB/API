@@ -88,6 +88,8 @@ func getBlueprint(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	versions := blueprint.GetVersions()
 	reVersion := make([]Version, len(versions))
 
+	authUser := db.GetAuthUser(r)
+
 	for i := 0; i < len(versions); i++ {
 		version := versions[i]
 
@@ -103,7 +105,15 @@ func getBlueprint(r *http.Request) (interface{}, *utils.ErrorResponse) {
 				thumbsDown++
 			}
 
-			// TODO Check for user id
+			if authUser != nil {
+				if rating.UserId == authUser.Id {
+					if rating.ThumbsUp {
+						userVote = 1
+					} else {
+						userVote = 2
+					}
+				}
+			}
 		}
 
 		comments := version.GetComments()
