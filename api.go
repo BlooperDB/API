@@ -69,7 +69,7 @@ func Initialize() {
 
 	CORSHandler := handlers.CORS(
 		handlers.AllowedOrigins([]string{"*"}),
-		handlers.AllowedHeaders([]string{"content-type"}),
+		handlers.AllowedHeaders([]string{"content-type", "blooper-token"}),
 		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"}),
 	)
 
