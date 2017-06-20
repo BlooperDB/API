@@ -32,7 +32,7 @@ func Initialize() {
 	nodes.RegisterUserRoutes(v1)
 	nodes.RegisterBlueprintRoutes(v1)
 
-	cluster := gocql.NewCluster("scylladb")
+	cluster := gocql.NewCluster("cassandra")
 
 	for i := 0; i < 60; i++ {
 		stop := true
