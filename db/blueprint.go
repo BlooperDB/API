@@ -22,6 +22,12 @@ func (m Blueprint) Save() {
 		m.UserId, m.Name, m.Description, m.Id).Exec()
 }
 
+func (m Blueprint) Delete() {
+	GetSession().Query("DELETE FROM  "+BlueprintTable+" "+
+		" WHERE id=?;",
+		m.Id).Exec()
+}
+
 func GetBlueprintById(id string) *Blueprint {
 	var data map[string]interface{} = make(map[string]interface{})
 

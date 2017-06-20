@@ -9,7 +9,7 @@ type Version struct {
 	BlueprintId string
 	Version     string
 	Changes     string
-	Date        int
+	Date        int64
 	Blueprint   string
 }
 
@@ -37,7 +37,7 @@ func FindVersionsByBlueprint(b Blueprint) []*Version {
 			BlueprintId: data["blueprint_id"].(string),
 			Version:     data["version"].(string),
 			Changes:     data["changes"].(string),
-			Date:        data["date"].(int),
+			Date:        data["date"].(int64),
 			Blueprint:   data["blueprint"].(string),
 		}
 	}

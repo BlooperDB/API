@@ -45,3 +45,7 @@ func GenerateRandomString(n int) string {
 
 	return string(bytes)
 }
+
+func GenerateRandomId() string {
+	return GenerateRandomString(8)
+}

@@ -3,6 +3,10 @@ package nodes
 import (
 	"net/http"
 
+	"encoding/json"
+
+	"time"
+
 	"github.com/BlooperDB/API/api"
 	"github.com/BlooperDB/API/db"
 	"github.com/BlooperDB/API/utils"
@@ -43,21 +47,21 @@ func RegisterBlueprintRoutes(router api.RegisterRoute) {
 	router("GET", "/blueprints/search/{query}", searchBlueprints)
 
 	router("GET", "/blueprint/{blueprint}", getBlueprint)
-	router("POST", "/blueprint/{blueprint}", postBlueprint)
-	router("PUT", "/blueprint/{blueprint}", updateBlueprint)
-	router("DELETE", "/blueprint/{blueprint}", deleteBlueprint)
+	router("POST", "/blueprint/{blueprint}", api.AuthHandler(postBlueprint))
+	router("PUT", "/blueprint/{blueprint}", api.AuthHandler(updateBlueprint))
+	router("DELETE", "/blueprint/{blueprint}", api.AuthHandler(deleteBlueprint))
 
 	router("GET", "/blueprint/{blueprint}/comments", getComments)
 	router("GET", "/blueprint/{blueprint}/comment/{comment}", getComment)
-	router("POST", "/blueprint/{blueprint}/comment/{comment}", postComment)
-	router("PUT", "/blueprint/{blueprint}/comment/{comment}", updateComment)
-	router("DELETE", "/blueprint/{blueprint}/comment/{comment}", deleteComment)
+	router("POST", "/blueprint/{blueprint}/comment/{comment}", api.AuthHandler(postComment))
+	router("PUT", "/blueprint/{blueprint}/comment/{comment}", api.AuthHandler(updateComment))
+	router("DELETE", "/blueprint/{blueprint}/comment/{comment}", api.AuthHandler(deleteComment))
 
 	router("GET", "/blueprint/{blueprint}/versions", getVersions)
 	router("GET", "/blueprint/{blueprint}/version/{version}", getVersion)
-	router("POST", "/blueprint/{blueprint}/version/{version}", postVersion)
-	router("PUT", "/blueprint/{blueprint}/version/{version}", updateVersion)
-	router("DELETE", "/blueprint/{blueprint}/version/{version}", deleteVersion)
+	router("POST", "/blueprint/{blueprint}/version/{version}", api.AuthHandler(postVersion))
+	router("PUT", "/blueprint/{blueprint}/version/{version}", api.AuthHandler(updateVersion))
+	router("DELETE", "/blueprint/{blueprint}/version/{version}", api.AuthHandler(deleteVersion))
 }
 
 /*
@@ -161,24 +165,115 @@ func getBlueprint(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	}, nil
 }
 
+type PostBlueprintRequest struct {
+	Name        string                      `json:"name"`
+	Description string                      `json:"description"`
+	Version     PostBlueprintRequestVersion `json:"version"`
+}
+
+type PostBlueprintRequestVersion struct {
+	Version   string `json:"version"`
+	Blueprint string `json:"blueprint"`
+}
+
+type PostBlueprintResponse struct {
+	BlueprintId string `json:"blueprint-id"`
+	VersionId   string `json:"version-id"`
+}
+
 /*
 Post a new blueprint
 */
-func postBlueprint(_ *http.Request) (interface{}, *utils.ErrorResponse) {
-	return nil, nil
+func postBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
+	decoder := json.NewDecoder(r.Body)
+	var request PostBlueprintRequest
+	err := decoder.Decode(&request)
+
+	if err != nil {
+		return nil, &utils.Error_invalid_request_data
+	}
+
+	blueprint := db.Blueprint{
+		Id:          utils.GenerateRandomId(),
+		UserId:      u.Id,
+		Name:        request.Name,
+		Description: request.Description,
+	}
+
+	blueprint.Save()
+
+	version := db.Version{
+		Id:          utils.GenerateRandomId(),
+		BlueprintId: blueprint.Id,
+		Version:     request.Version.Version,
+		Changes:     "",
+		Date:        time.Now().Unix(),
+		Blueprint:   request.Version.Blueprint,
+	}
+
+	version.Save()
+
+	return PostBlueprintResponse{
+		BlueprintId: blueprint.Id,
+		VersionId:   version.Id,
+	}, nil
+}
+
+type PutBlueprintRequest struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 /*
 Update a blueprint
 */
-func updateBlueprint(_ *http.Request) (interface{}, *utils.ErrorResponse) {
+func updateBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
+	decoder := json.NewDecoder(r.Body)
+	var request PutBlueprintRequest
+	err := decoder.Decode(&request)
+
+	if err != nil {
+		return nil, &utils.Error_invalid_request_data
+	}
+
+	blueprintId := mux.Vars(r)["blueprint"]
+
+	blueprint := db.GetBlueprintById(blueprintId)
+
+	if blueprint.UserId != u.Id {
+		return nil, &utils.Error_no_access
+	}
+
+	blueprint.Name = request.Name
+	blueprint.Description = request.Description
+
+	blueprint.Save()
+
 	return nil, nil
 }
 
 /*
 Delete a blueprint
 */
-func deleteBlueprint(_ *http.Request) (interface{}, *utils.ErrorResponse) {
+func deleteBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
+	decoder := json.NewDecoder(r.Body)
+	var request PutBlueprintRequest
+	err := decoder.Decode(&request)
+
+	if err != nil {
+		return nil, &utils.Error_invalid_request_data
+	}
+
+	blueprintId := mux.Vars(r)["blueprint"]
+
+	blueprint := db.GetBlueprintById(blueprintId)
+
+	if blueprint.UserId != u.Id {
+		return nil, &utils.Error_no_access
+	}
+
+	blueprint.Delete()
+
 	return nil, nil
 }
 
@@ -199,21 +294,21 @@ func getComment(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 /*
 Post a comment
 */
-func postComment(_ *http.Request) (interface{}, *utils.ErrorResponse) {
+func postComment(u *db.User, _ *http.Request) (interface{}, *utils.ErrorResponse) {
 	return nil, nil
 }
 
 /*
 Update a comment
 */
-func updateComment(_ *http.Request) (interface{}, *utils.ErrorResponse) {
+func updateComment(u *db.User, _ *http.Request) (interface{}, *utils.ErrorResponse) {
 	return nil, nil
 }
 
 /*
 Delete a comment
 */
-func deleteComment(_ *http.Request) (interface{}, *utils.ErrorResponse) {
+func deleteComment(u *db.User, _ *http.Request) (interface{}, *utils.ErrorResponse) {
 	return nil, nil
 }
 
@@ -234,20 +329,20 @@ func getVersion(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 /*
 Post a version
 */
-func postVersion(_ *http.Request) (interface{}, *utils.ErrorResponse) {
+func postVersion(u *db.User, _ *http.Request) (interface{}, *utils.ErrorResponse) {
 	return nil, nil
 }
 
 /*
 Update a version
 */
-func updateVersion(_ *http.Request) (interface{}, *utils.ErrorResponse) {
+func updateVersion(u *db.User, _ *http.Request) (interface{}, *utils.ErrorResponse) {
 	return nil, nil
 }
 
 /*
 Delete a version
 */
-func deleteVersion(_ *http.Request) (interface{}, *utils.ErrorResponse) {
+func deleteVersion(u *db.User, _ *http.Request) (interface{}, *utils.ErrorResponse) {
 	return nil, nil
 }
