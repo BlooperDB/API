@@ -37,13 +37,13 @@ func GetBlueprintById(id string) *Blueprint {
 
 func (m Blueprint) GetVersions() []Version {
 	var versions []Version
-	db.Model(m).Related(versions)
+	db.Model(m).Related(&versions)
 	return versions
 }
 
 func (m Blueprint) GetTags() []Tag {
 	var tags []Tag
-	db.Model(m).Related(tags)
+	db.Model(m).Related(&tags)
 	return tags
 }
 

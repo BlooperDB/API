@@ -37,12 +37,12 @@ func GetCommentById(id uint) *Comment {
 
 func (m Comment) GetUser() User {
 	var user User
-	db.Model(m).Related(user)
+	db.Model(m).Related(&user)
 	return user
 }
 
 func (m Comment) GetVersion() Version {
 	var version Version
-	db.Model(m).Related(version)
+	db.Model(m).Related(&version)
 	return version
 }

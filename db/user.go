@@ -80,7 +80,7 @@ func GetUserById(userId uint) *User {
 
 func (m User) GetUserBlueprints() []Blueprint {
 	var blueprints []Blueprint
-	db.Model(m).Related(blueprints)
+	db.Model(m).Related(&blueprints)
 	return blueprints
 }
 
@@ -90,6 +90,6 @@ func GetAuthUser(r *http.Request) *User {
 
 func (m User) GetComments() []Comment {
 	var comments []Comment
-	db.Model(m).Related(comments)
+	db.Model(m).Related(&comments)
 	return comments
 }

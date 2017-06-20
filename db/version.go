@@ -26,25 +26,25 @@ func (m Version) Delete() {
 
 func (m Version) GetComments() []Comment {
 	var comments []Comment
-	db.Model(m).Related(comments)
+	db.Model(m).Related(&comments)
 	return comments
 }
 
 func (m Version) GetRatings() []Rating {
 	var ratings []Rating
-	db.Model(m).Related(ratings)
+	db.Model(m).Related(&ratings)
 	return ratings
 }
 
 func (m Version) GetBlueprint() Blueprint {
 	var blueprint Blueprint
-	db.Model(m).Related(blueprint)
+	db.Model(m).Related(&blueprint)
 	return blueprint
 }
 
 func (m Version) GetVersion() Version {
 	var version Version
-	db.Model(m).Related(version)
+	db.Model(m).Related(&version)
 	return version
 }
 

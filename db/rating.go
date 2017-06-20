@@ -26,12 +26,12 @@ func (m Rating) Delete() {
 
 func (m Rating) GetUser() User {
 	var user User
-	db.Model(m).Related(user)
+	db.Model(m).Related(&user)
 	return user
 }
 
 func (m Rating) GetVersion() Version {
 	var version Version
-	db.Model(m).Related(version)
+	db.Model(m).Related(&version)
 	return version
 }
