@@ -31,6 +31,8 @@ func Initialize() {
 	v1 := api.RouteHandler(router, "/v1")
 	nodes.RegisterUserRoutes(v1)
 	nodes.RegisterBlueprintRoutes(v1)
+	nodes.RegisterCommentRoutes(v1)
+	nodes.RegisterVersionRoutes(v1)
 
 	cluster := gocql.NewCluster("cassandra")
 
