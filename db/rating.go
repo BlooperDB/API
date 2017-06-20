@@ -17,11 +17,11 @@ type Rating struct {
 }
 
 func (m Rating) Save() {
-	db.Save(m)
+	db.Save(&m)
 }
 
 func (m Rating) Delete() {
-	db.Delete(m)
+	db.Delete(&m)
 }
 
 func (m Rating) GetUser() User {

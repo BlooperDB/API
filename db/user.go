@@ -20,11 +20,11 @@ type User struct {
 }
 
 func (m User) Save() {
-	db.Save(m)
+	db.Save(&m)
 }
 
 func (m User) Delete() {
-	db.Delete(m)
+	db.Delete(&m)
 }
 
 func SignIn(token *firebase.Token) (User, bool) {

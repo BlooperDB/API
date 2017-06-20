@@ -17,11 +17,11 @@ type Blueprint struct {
 }
 
 func (m Blueprint) Save() {
-	db.Save(m)
+	db.Save(&m)
 }
 
 func (m Blueprint) Delete() {
-	db.Delete(m)
+	db.Delete(&m)
 }
 
 func GetBlueprintById(id string) *Blueprint {

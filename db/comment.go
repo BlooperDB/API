@@ -17,11 +17,11 @@ type Comment struct {
 }
 
 func (m Comment) Save() {
-	db.Save(m)
+	db.Save(&m)
 }
 
 func (m Comment) Delete() {
-	db.Delete(m)
+	db.Delete(&m)
 }
 
 func GetCommentById(id uint) *Comment {

@@ -17,11 +17,11 @@ type Version struct {
 }
 
 func (m Version) Save() {
-	db.Save(m)
+	db.Save(&m)
 }
 
 func (m Version) Delete() {
-	db.Delete(m)
+	db.Delete(&m)
 }
 
 func (m Version) GetComments() []Comment {

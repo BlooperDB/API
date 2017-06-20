@@ -6,11 +6,11 @@ type Tag struct {
 }
 
 func (m Tag) Save() {
-	db.Save(m)
+	db.Save(&m)
 }
 
 func (m Tag) Delete() {
-	db.Delete(m)
+	db.Delete(&m)
 }
 
 func GetTagById(id string) *Tag {
