@@ -12,6 +12,7 @@ import (
 	"github.com/BlooperDB/API/nodes"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
 	"github.com/wuman/firebase-server-sdk-go"
 )
 
@@ -30,7 +31,15 @@ func Initialize() {
 	nodes.RegisterCommentRoutes(v1)
 	nodes.RegisterVersionRoutes(v1)
 
-	db.Initialize()
+	connection, err := gorm.Open("postgres", "host=postgres user=blooper dbname=blooper sslmode=disable password=ZThnie2mffo2cEAA5E2bytnKW3IgA9vZ")
+
+	if err != nil {
+		panic("failed to connect database")
+	}
+
+	defer connection.Close()
+
+	db.Initialize(connection)
 
 	CORSHandler := handlers.CORS(
 		handlers.AllowedOrigins([]string{"*"}),

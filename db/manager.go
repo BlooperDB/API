@@ -7,15 +7,7 @@ import (
 
 var db *gorm.DB
 
-func Initialize() {
-	connection, err := gorm.Open("postgres", "host=postgres user=blooper dbname=blooper sslmode=disable password=ZThnie2mffo2cEAA5E2bytnKW3IgA9vZ")
-
-	if err != nil {
-		panic("failed to connect database")
-	}
-
-	defer connection.Close()
-
+func Initialize(connection *gorm.DB) {
 	db = connection
 
 	migrations()

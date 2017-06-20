@@ -51,5 +51,10 @@ func (m Version) GetVersion() Version {
 func GetVersionById(id string) *Version {
 	var version Version
 	db.First(&version, id)
+
+	if version.ID == 0 {
+		return nil
+	}
+
 	return &version
 }

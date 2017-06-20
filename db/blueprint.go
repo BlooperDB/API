@@ -27,6 +27,11 @@ func (m Blueprint) Delete() {
 func GetBlueprintById(id string) *Blueprint {
 	var blueprint Blueprint
 	db.First(&blueprint, id)
+
+	if blueprint.ID == 0 {
+		return nil
+	}
+
 	return &blueprint
 }
 

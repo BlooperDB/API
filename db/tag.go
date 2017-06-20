@@ -16,5 +16,10 @@ func (m Tag) Delete() {
 func GetTagById(id string) *Tag {
 	var tag Tag
 	db.First(&tag, id)
+
+	if tag.Name == "" {
+		return nil
+	}
+
 	return &tag
 }

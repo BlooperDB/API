@@ -31,9 +31,9 @@ func SignIn(token *firebase.Token) (User, bool) {
 	email, _ := token.Email()
 
 	var user User
-	errors := db.First(&user, "email = ?", email).GetErrors()
+	db.First(&user, "email = ?", email)
 
-	if len(errors) > 0 {
+	if user.ID == 0 {
 		name, _ := token.Name()
 		avatar, _ := token.Picture()
 
@@ -59,12 +59,22 @@ func GenerateBlooperToken() string {
 func GetUserByBlooperToken(token string) *User {
 	var user User
 	db.First(&user, "blooper_token = ?", token)
+
+	if user.ID == 0 {
+		return nil
+	}
+
 	return &user
 }
 
 func GetUserById(userId uint) *User {
 	var user User
 	db.First(&user, userId)
+
+	if user.ID == 0 {
+		return nil
+	}
+
 	return &user
 }
 

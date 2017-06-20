@@ -1,6 +1,8 @@
 package db
 
-import "github.com/jinzhu/gorm"
+import (
+	"github.com/jinzhu/gorm"
+)
 
 type Comment struct {
 	gorm.Model
@@ -25,6 +27,11 @@ func (m Comment) Delete() {
 func GetCommentById(id uint) *Comment {
 	var comment Comment
 	db.First(&comment, id)
+
+	if comment.ID == 0 {
+		return nil
+	}
+
 	return &comment
 }
 
