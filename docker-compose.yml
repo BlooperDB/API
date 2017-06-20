@@ -6,14 +6,14 @@ services:
      - 8080:8080
     links:
      - postgres
+    env_file:
+     - docker.env
 
   postgres:
     image: postgres:alpine
     ports:
      - 5432:5432
-    environment:
-     - POSTGRES_USER=blooper
-     - POSTGRES_DB=blooper
-     - POSTGRES_PASSWORD=ZThnie2mffo2cEAA5E2bytnKW3IgA9vZ
+    env_file:
+     - docker.env
     volumes:
      - ./postgresql:/var/lib/postgresql/data

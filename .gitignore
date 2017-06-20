@@ -135,3 +135,4 @@ $RECYCLE.BIN/
 /vendor/
 /postgresql/
 blooper-firebase-adminsdk.json
+/docker.env

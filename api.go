@@ -7,6 +7,8 @@ import (
 
 	"log"
 
+	"os"
+
 	"github.com/BlooperDB/API/api"
 	"github.com/BlooperDB/API/db"
 	"github.com/BlooperDB/API/nodes"
@@ -31,7 +33,13 @@ func Initialize() {
 	nodes.RegisterCommentRoutes(v1)
 	nodes.RegisterVersionRoutes(v1)
 
-	connection, err := gorm.Open("postgres", "host=postgres user=blooper dbname=blooper sslmode=disable password=ZThnie2mffo2cEAA5E2bytnKW3IgA9vZ")
+	var (
+		db_user = os.Getenv("POSTGRES_USER")
+		db_name = os.Getenv("POSTGRES_DB")
+		db_pass = os.Getenv("POSTGRES_PASSWORD")
+	)
+
+	connection, err := gorm.Open("postgres", "host=postgres user="+db_user+" dbname="+db_name+" sslmode=disable password="+db_pass+"")
 
 	if err != nil {
 		panic("failed to connect database")
