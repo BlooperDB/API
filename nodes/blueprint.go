@@ -256,14 +256,6 @@ func updateBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorResp
 Delete a blueprint
 */
 func deleteBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
-	decoder := json.NewDecoder(r.Body)
-	var request PutBlueprintRequest
-	err := decoder.Decode(&request)
-
-	if err != nil {
-		return nil, &utils.Error_invalid_request_data
-	}
-
 	blueprintId := mux.Vars(r)["blueprint"]
 
 	blueprint := db.GetBlueprintById(blueprintId)
