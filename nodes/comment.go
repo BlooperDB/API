@@ -17,8 +17,8 @@ type Comment struct {
 }
 
 func RegisterCommentRoutes(router api.RegisterRoute) {
+	router("POST", "/comment", api.AuthHandler(postComment))
 	router("GET", "/comment/{comment}", getComment)
-	router("POST", "/comment/{comment}", api.AuthHandler(postComment))
 	router("PUT", "/comment/{comment}", api.AuthHandler(updateComment))
 	router("DELETE", "/comment/{comment}", api.AuthHandler(deleteComment))
 }

@@ -26,8 +26,8 @@ func RegisterBlueprintRoutes(router api.RegisterRoute) {
 	router("GET", "/blueprints", getBlueprints)
 	router("GET", "/blueprints/search/{query}", searchBlueprints)
 
+	router("POST", "/blueprint", api.AuthHandler(postBlueprint))
 	router("GET", "/blueprint/{blueprint}", getBlueprint)
-	router("POST", "/blueprint/{blueprint}", api.AuthHandler(postBlueprint))
 	router("PUT", "/blueprint/{blueprint}", api.AuthHandler(updateBlueprint))
 	router("DELETE", "/blueprint/{blueprint}", api.AuthHandler(deleteBlueprint))
 

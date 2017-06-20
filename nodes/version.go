@@ -24,8 +24,8 @@ type Version struct {
 }
 
 func RegisterVersionRoutes(router api.RegisterRoute) {
+	router("POST", "/version", api.AuthHandler(postVersion))
 	router("GET", "/version/{version}", getVersion)
-	router("POST", "/version/{version}", api.AuthHandler(postVersion))
 	router("PUT", "/version/{version}", api.AuthHandler(updateVersion))
 	router("DELETE", "/version/{version}", api.AuthHandler(deleteVersion))
 	router("GET", "/version/{version}/comments", getVersionComments)
