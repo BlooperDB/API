@@ -10,9 +10,9 @@ type Comment struct {
 	Id        string
 	VersionId string
 	UserId    string
-	Date      int
+	Date      int64
 	Message   string
-	Updated   int
+	Updated   int64
 }
 
 func (m Comment) Save() {

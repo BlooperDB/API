@@ -26,7 +26,7 @@ type Version struct {
 	Id         string    `json:"id"`
 	Version    string    `json:"version"`
 	Changes    string    `json:"changes"`
-	Date       int       `json:"date"`
+	Date       int64     `json:"date"`
 	Blueprint  string    `json:"blueprint"`
 	ThumbsUp   int       `json:"thumbs_up"`
 	ThumbsDown int       `json:"thumbs_down"`
@@ -37,9 +37,9 @@ type Version struct {
 type Comment struct {
 	Id      string `json:"id"`
 	UserId  string `json:"user"`
-	Date    int    `json:"date"`
+	Date    int64  `json:"date"`
 	Message string `json:"message"`
-	Updated int    `json:"updated"`
+	Updated int64  `json:"updated"`
 }
 
 func RegisterBlueprintRoutes(router api.RegisterRoute) {
