@@ -11,11 +11,24 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type Version struct {
+	Id         string    `json:"id"`
+	Version    string    `json:"version"`
+	Changes    string    `json:"changes"`
+	Date       int64     `json:"date"`
+	Blueprint  string    `json:"blueprint"`
+	ThumbsUp   int       `json:"thumbs-up"`
+	ThumbsDown int       `json:"thumbs-down"`
+	UserVote   int       `json:"user-vote"`
+	Comments   []Comment `json:"comments"`
+}
+
 func RegisterVersionRoutes(router api.RegisterRoute) {
 	router("GET", "/version/{version}", getVersion)
 	router("POST", "/version/{version}", api.AuthHandler(postVersion))
 	router("PUT", "/version/{version}", api.AuthHandler(updateVersion))
 	router("DELETE", "/version/{version}", api.AuthHandler(deleteVersion))
+	router("GET", "/version/{version}/comments", getVersionComments)
 }
 
 /*
@@ -25,6 +38,10 @@ func getVersion(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	versionId := mux.Vars(r)["version"]
 
 	version := db.GetVersionById(versionId)
+
+	if version == nil {
+		return nil, &utils.Error_version_not_found
+	}
 
 	ratings := version.GetRatings()
 	thumbsUp, thumbsDown, userVote := 0, 0, 0
@@ -105,6 +122,10 @@ func postVersion(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse
 
 	blueprint := db.GetBlueprintById(blueprintId)
 
+	if blueprint == nil {
+		return nil, &utils.Error_blueprint_not_found
+	}
+
 	if blueprint.UserId != u.Id {
 		return nil, &utils.Error_no_access
 	}
@@ -155,6 +176,10 @@ func updateVersion(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespon
 
 	version := blueprint.GetVersion(versionId)
 
+	if version == nil {
+		return nil, &utils.Error_version_not_found
+	}
+
 	version.Version = request.Version
 	version.Changes = request.Changes
 	version.Blueprint = request.Blueprint
@@ -178,7 +203,46 @@ func deleteVersion(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespon
 
 	version := blueprint.GetVersion(versionId)
 
+	if version == nil {
+		return nil, &utils.Error_version_not_found
+	}
+
 	version.Delete()
 
 	return nil, nil
+}
+
+type GetVersionCommentsResponse struct {
+	Comments []Comment `json:"comments"`
+}
+
+/*
+Get all comments
+*/
+func getVersionComments(r *http.Request) (interface{}, *utils.ErrorResponse) {
+	versionId := mux.Vars(r)["version"]
+
+	version := db.GetVersionById(versionId)
+
+	if version == nil {
+		return nil, &utils.Error_version_not_found
+	}
+
+	comments := version.GetComments()
+	reComment := make([]Comment, len(comments))
+
+	for j := 0; j < len(comments); j++ {
+		comment := comments[j]
+		reComment[j] = Comment{
+			Id:      comment.Id,
+			UserId:  comment.UserId,
+			Date:    comment.Date,
+			Message: comment.Message,
+			Updated: comment.Updated,
+		}
+	}
+
+	return GetVersionCommentsResponse{
+		Comments: reComment,
+	}, nil
 }

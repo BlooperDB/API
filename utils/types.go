@@ -25,3 +25,11 @@ var (
 var (
 	Error_blueprint_not_found = ErrorResponse{200, "Blueprint not found", 404}
 )
+
+var (
+	Error_version_not_found = ErrorResponse{300, "Blueprint not found", 404}
+)
+
+var (
+	Error_comment_not_found = ErrorResponse{400, "Blueprint not found", 404}
+)

@@ -22,26 +22,6 @@ type BlueprintResponse struct {
 	Tags        []string  `json:"tags"`
 }
 
-type Version struct {
-	Id         string    `json:"id"`
-	Version    string    `json:"version"`
-	Changes    string    `json:"changes"`
-	Date       int64     `json:"date"`
-	Blueprint  string    `json:"blueprint"`
-	ThumbsUp   int       `json:"thumbs-up"`
-	ThumbsDown int       `json:"thumbs-down"`
-	UserVote   int       `json:"user-vote"`
-	Comments   []Comment `json:"comments"`
-}
-
-type Comment struct {
-	Id      string `json:"id"`
-	UserId  string `json:"user"`
-	Date    int64  `json:"date"`
-	Message string `json:"message"`
-	Updated int64  `json:"updated"`
-}
-
 func RegisterBlueprintRoutes(router api.RegisterRoute) {
 	router("GET", "/blueprints", getBlueprints)
 	router("GET", "/blueprints/search/{query}", searchBlueprints)
@@ -50,8 +30,6 @@ func RegisterBlueprintRoutes(router api.RegisterRoute) {
 	router("POST", "/blueprint/{blueprint}", api.AuthHandler(postBlueprint))
 	router("PUT", "/blueprint/{blueprint}", api.AuthHandler(updateBlueprint))
 	router("DELETE", "/blueprint/{blueprint}", api.AuthHandler(deleteBlueprint))
-
-	router("GET", "/blueprint/{blueprint}/comments", getComments)
 
 	router("GET", "/blueprint/{blueprint}/versions", getVersions)
 }
@@ -257,6 +235,10 @@ func updateBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorResp
 
 	blueprint := db.GetBlueprintById(blueprintId)
 
+	if blueprint == nil {
+		return nil, &utils.Error_blueprint_not_found
+	}
+
 	if blueprint.UserId != u.Id {
 		return nil, &utils.Error_no_access
 	}
@@ -277,6 +259,10 @@ func deleteBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorResp
 
 	blueprint := db.GetBlueprintById(blueprintId)
 
+	if blueprint == nil {
+		return nil, &utils.Error_blueprint_not_found
+	}
+
 	if blueprint.UserId != u.Id {
 		return nil, &utils.Error_no_access
 	}
@@ -286,16 +272,81 @@ func deleteBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorResp
 	return nil, nil
 }
 
-/*
-Get all comments
-*/
-func getComments(_ *http.Request) (interface{}, *utils.ErrorResponse) {
-	return nil, nil
+type GetVersionsResponse struct {
+	Versions []Version `json:"versions"`
 }
 
 /*
 Get all versions
 */
-func getVersions(_ *http.Request) (interface{}, *utils.ErrorResponse) {
-	return nil, nil
+func getVersions(r *http.Request) (interface{}, *utils.ErrorResponse) {
+	blueprintId := mux.Vars(r)["blueprint"]
+
+	blueprint := db.GetBlueprintById(blueprintId)
+
+	if blueprint == nil {
+		return nil, &utils.Error_blueprint_not_found
+	}
+
+	versions := blueprint.GetVersions()
+	reVersion := make([]Version, len(versions))
+
+	authUser := db.GetAuthUser(r)
+
+	for i := 0; i < len(versions); i++ {
+		version := versions[i]
+
+		ratings := version.GetRatings()
+		thumbsUp, thumbsDown, userVote := 0, 0, 0
+
+		for j := 0; j < len(ratings); j++ {
+			rating := ratings[j]
+
+			if rating.ThumbsUp {
+				thumbsUp++
+			} else {
+				thumbsDown++
+			}
+
+			if authUser != nil {
+				if rating.UserId == authUser.Id {
+					if rating.ThumbsUp {
+						userVote = 1
+					} else {
+						userVote = 2
+					}
+				}
+			}
+		}
+
+		comments := version.GetComments()
+		reComment := make([]Comment, len(comments))
+
+		for j := 0; j < len(comments); j++ {
+			comment := comments[j]
+			reComment[j] = Comment{
+				Id:      comment.Id,
+				UserId:  comment.UserId,
+				Date:    comment.Date,
+				Message: comment.Message,
+				Updated: comment.Updated,
+			}
+		}
+
+		reVersion[i] = Version{
+			Id:         version.Id,
+			Version:    version.Version,
+			Changes:    version.Changes,
+			Date:       version.Date,
+			Blueprint:  version.Blueprint,
+			ThumbsUp:   thumbsUp,
+			ThumbsDown: thumbsDown,
+			UserVote:   userVote,
+			Comments:   reComment,
+		}
+	}
+
+	return GetVersionsResponse{
+		Versions: reVersion,
+	}, nil
 }

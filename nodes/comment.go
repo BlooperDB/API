@@ -8,6 +8,14 @@ import (
 	"github.com/BlooperDB/API/utils"
 )
 
+type Comment struct {
+	Id      string `json:"id"`
+	UserId  string `json:"user"`
+	Date    int64  `json:"date"`
+	Message string `json:"message"`
+	Updated int64  `json:"updated"`
+}
+
 func RegisterCommentRoutes(router api.RegisterRoute) {
 	router("GET", "/comment/{comment}", getComment)
 	router("POST", "/comment/{comment}", api.AuthHandler(postComment))
