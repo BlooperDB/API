@@ -14,6 +14,7 @@ import (
 	"github.com/BlooperDB/API/utils"
 	"github.com/gorilla/mux"
 	"github.com/wuman/firebase-server-sdk-go"
+	"gopkg.in/validator.v2"
 )
 
 type PrivateUserResponse struct {
@@ -53,7 +54,7 @@ type UserSignInResponse struct {
 }
 
 type UserSignInRequest struct {
-	FirebaseToken string `json:"firebase-token"`
+	FirebaseToken string `json:"firebase-token";validate:"nonzero"`
 }
 
 func signIn(r *http.Request) (interface{}, *utils.ErrorResponse) {
@@ -63,6 +64,14 @@ func signIn(r *http.Request) (interface{}, *utils.ErrorResponse) {
 
 	if err != nil || request.FirebaseToken == "" {
 		return nil, &utils.Error_invalid_request_data
+	}
+
+	if err = validator.Validate(request); err != nil {
+		return nil, &utils.ErrorResponse{
+			Code:    utils.Error_invalid_request_data.Code,
+			Message: utils.Error_invalid_request_data.Message + ": " + err.Error(),
+			Status:  utils.Error_invalid_request_data.Status,
+		}
 	}
 
 	auth, _ := firebase.GetAuth()
@@ -170,7 +179,7 @@ func getUserSelf(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse
 }
 
 type PutUserRequest struct {
-	Username string `json:"username"`
+	Username string `json:"username";validate:"nonzero"`
 }
 
 func putUser(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
@@ -180,6 +189,14 @@ func putUser(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
 
 	if err != nil {
 		return nil, &utils.Error_invalid_request_data
+	}
+
+	if err = validator.Validate(request); err != nil {
+		return nil, &utils.ErrorResponse{
+			Code:    utils.Error_invalid_request_data.Code,
+			Message: utils.Error_invalid_request_data.Message + ": " + err.Error(),
+			Status:  utils.Error_invalid_request_data.Status,
+		}
 	}
 
 	userId, _ := strconv.ParseUint(mux.Vars(r)["user"], 10, 32)

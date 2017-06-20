@@ -9,6 +9,7 @@ import (
 	"github.com/BlooperDB/API/db"
 	"github.com/BlooperDB/API/utils"
 	"github.com/gorilla/mux"
+	"gopkg.in/validator.v2"
 )
 
 type Version struct {
@@ -98,10 +99,10 @@ func getVersion(r *http.Request) (interface{}, *utils.ErrorResponse) {
 }
 
 type PostVersionRequest struct {
-	BlueprintId uint   `json:"blueprint-id"`
-	Version     string `json:"version"`
-	Changes     string `json:"changes"`
-	Blueprint   string `json:"blueprint"`
+	BlueprintId uint   `json:"blueprint-id";validate:"nonzero"`
+	Version     string `json:"version";validate:"nonzero"`
+	Changes     string `json:"changes";validate:"nonzero"`
+	Blueprint   string `json:"blueprint";validate:"nonzero"`
 }
 
 type PostVersionResponse struct {
@@ -118,6 +119,14 @@ func postVersion(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse
 
 	if err != nil {
 		return nil, &utils.Error_invalid_request_data
+	}
+
+	if err = validator.Validate(request); err != nil {
+		return nil, &utils.ErrorResponse{
+			Code:    utils.Error_invalid_request_data.Code,
+			Message: utils.Error_invalid_request_data.Message + ": " + err.Error(),
+			Status:  utils.Error_invalid_request_data.Status,
+		}
 	}
 
 	blueprintId := mux.Vars(r)["blueprint"]
@@ -147,9 +156,9 @@ func postVersion(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse
 }
 
 type PutVersionRequest struct {
-	Version   string `json:"version"`
-	Changes   string `json:"changes"`
-	Blueprint string `json:"blueprint"`
+	Version   string `json:"version";validate:"nonzero"`
+	Changes   string `json:"changes";validate:"nonzero"`
+	Blueprint string `json:"blueprint";validate:"nonzero"`
 }
 
 /*
@@ -162,6 +171,14 @@ func updateVersion(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespon
 
 	if err != nil {
 		return nil, &utils.Error_invalid_request_data
+	}
+
+	if err = validator.Validate(request); err != nil {
+		return nil, &utils.ErrorResponse{
+			Code:    utils.Error_invalid_request_data.Code,
+			Message: utils.Error_invalid_request_data.Message + ": " + err.Error(),
+			Status:  utils.Error_invalid_request_data.Status,
+		}
 	}
 
 	blueprintId := mux.Vars(r)["blueprint"]

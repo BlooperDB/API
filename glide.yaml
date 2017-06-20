@@ -6,3 +6,4 @@ import:
 - package: github.com/wuman/firebase-server-sdk-go
 - package: github.com/gorilla/handlers
   version: ^1.2.1
+- package: gopkg.in/validator.v2

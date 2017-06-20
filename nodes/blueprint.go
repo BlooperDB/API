@@ -11,6 +11,7 @@ import (
 	"github.com/BlooperDB/API/db"
 	"github.com/BlooperDB/API/utils"
 	"github.com/gorilla/mux"
+	"gopkg.in/validator.v2"
 )
 
 type BlueprintResponse struct {
@@ -166,14 +167,14 @@ func getBlueprint(r *http.Request) (interface{}, *utils.ErrorResponse) {
 }
 
 type PostBlueprintRequest struct {
-	Name        string                      `json:"name"`
-	Description string                      `json:"description"`
-	Version     PostBlueprintRequestVersion `json:"version"`
+	Name        string                      `json:"name";validate:"nonzero"`
+	Description string                      `json:"description";validate:"nonzero"`
+	Version     PostBlueprintRequestVersion `json:"version";validate:"nonzero"`
 }
 
 type PostBlueprintRequestVersion struct {
-	Version   string `json:"version"`
-	Blueprint string `json:"blueprint"`
+	Version   string `json:"version";validate:"nonzero"`
+	Blueprint string `json:"blueprint";validate:"nonzero"`
 }
 
 type PostBlueprintResponse struct {
@@ -191,6 +192,14 @@ func postBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespon
 
 	if err != nil {
 		return nil, &utils.Error_invalid_request_data
+	}
+
+	if err = validator.Validate(request); err != nil {
+		return nil, &utils.ErrorResponse{
+			Code:    utils.Error_invalid_request_data.Code,
+			Message: utils.Error_invalid_request_data.Message + ": " + err.Error(),
+			Status:  utils.Error_invalid_request_data.Status,
+		}
 	}
 
 	blueprint := db.Blueprint{
@@ -217,8 +226,8 @@ func postBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespon
 }
 
 type PutBlueprintRequest struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	Name        string `json:"name";validate:"nonzero"`
+	Description string `json:"description";validate:"nonzero"`
 }
 
 /*
@@ -231,6 +240,14 @@ func updateBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorResp
 
 	if err != nil {
 		return nil, &utils.Error_invalid_request_data
+	}
+
+	if err = validator.Validate(request); err != nil {
+		return nil, &utils.ErrorResponse{
+			Code:    utils.Error_invalid_request_data.Code,
+			Message: utils.Error_invalid_request_data.Message + ": " + err.Error(),
+			Status:  utils.Error_invalid_request_data.Status,
+		}
 	}
 
 	blueprintId := mux.Vars(r)["blueprint"]

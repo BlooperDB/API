@@ -1,5 +1,5 @@
-hash: a78263d49216a19a2aab26e38a12ff8f0c6a3fcd0e9bfb3b9be233f550d12d4c
-updated: 2017-06-20T19:58:51.829135+03:00
+hash: 29a820f55d46f50beb1a11397cf5dfc1e6b062df866ca8d0a425a7de2758c1ae
+updated: 2017-06-21T01:36:10.7827143+03:00
 imports:
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
@@ -26,4 +26,6 @@ imports:
   - jwt
 - name: github.com/wuman/firebase-server-sdk-go
   version: e95694472a4d7070a4ae36a8cd990daadeee81a6
+- name: gopkg.in/validator.v2
+  version: 07ffaad256c8e957050ad83d6472eb97d785013d
 testImports: []
