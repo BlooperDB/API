@@ -38,9 +38,9 @@ func FindCommentsByVersion(m Version) []*Comment {
 			Id:        data["id"].(string),
 			VersionId: data["version_id"].(string),
 			UserId:    data["user_id"].(string),
-			Date:      data["date"].(int),
+			Date:      data["date"].(int64),
 			Message:   data["message"].(string),
-			Updated:   data["updated"].(int),
+			Updated:   data["updated"].(int64),
 		}
 	}
 
