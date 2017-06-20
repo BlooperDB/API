@@ -5,11 +5,11 @@ services:
     ports:
      - 8080:8080
     links:
-     - scylladb
+     - cassandra
 
-  scylladb:
-    image: scylladb/scylla
+  cassandra:
+    image: cassandra
     ports:
      - 9042:9042
     volumes:
-     - ./scylladb:/var/lib/scylla
+     - ./cassandra:/var/lib/cassandra

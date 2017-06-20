@@ -24,7 +24,7 @@ func GetSession() *gocql.Session {
 
 func migrations() {
 	allErrors, ok := migrate.UpSync(
-		"cassandra://scylladb:9042/blooper?protocol=4&consistency=all&disable_init_host_lookup",
+		"cassandra://cassandra:9042/blooper?protocol=4&consistency=all&disable_init_host_lookup",
 		"./src/github.com/BlooperDB/API/migrations",
 	)
 
