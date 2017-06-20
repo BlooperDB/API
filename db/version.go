@@ -1,79 +1,55 @@
 package db
 
-import "github.com/gocql/gocql"
-
-var VersionTable = "version"
+import (
+	"github.com/jinzhu/gorm"
+)
 
 type Version struct {
-	Id          string
-	BlueprintId string
-	Version     string
-	Changes     string
-	Date        int64
-	Blueprint   string
+	gorm.Model
+
+	Blueprint   Blueprint `gorm:"ForeignKey:BlueprintID;AssociationForeignKey:ID"`
+	BlueprintID uint      `gorm:"index not null"`
+
+	Version         string `gorm:"not null"`
+	Changes         string
+	BlueprintString string `gorm:"not null"`
+	Comments        []Comment
 }
 
 func (m Version) Save() {
-	GetSession().Query("UPDATE "+VersionTable+" SET "+
-		" blueprint_id=?,"+
-		" version=?,"+
-		" changes=?,"+
-		" date=?,"+
-		" blueprint=?"+
-		" WHERE id=?;",
-		m.BlueprintId, m.Version, m.Changes, m.Date, m.Blueprint, m.Id).Exec()
+	db.Save(m)
 }
 
 func (m Version) Delete() {
-	GetSession().Query("DELETE FROM  "+VersionTable+" "+
-		" WHERE id=?;",
-		m.Id).Exec()
+	db.Delete(m)
 }
 
-func FindVersionsByBlueprint(b Blueprint) []*Version {
-	r := GetSession().Query("SELECT * FROM "+VersionTable+" WHERE blueprint_id = ?;", b.Id).Consistency(gocql.All).Iter()
-
-	result := make([]*Version, r.NumRows())
-
-	for i := 0; i < r.NumRows(); i++ {
-		data := make(map[string]interface{})
-		r.MapScan(data)
-		result[i] = &Version{
-			Id:          data["id"].(string),
-			BlueprintId: data["blueprint_id"].(string),
-			Version:     data["version"].(string),
-			Changes:     data["changes"].(string),
-			Date:        data["date"].(int64),
-			Blueprint:   data["blueprint"].(string),
-		}
-	}
-
-	return result
+func (m Version) GetComments() []Comment {
+	var comments []Comment
+	db.Model(m).Related(comments)
+	return comments
 }
 
-func (m Version) GetComments() []*Comment {
-	return FindCommentsByVersion(m)
+func (m Version) GetRatings() []Rating {
+	var ratings []Rating
+	db.Model(m).Related(ratings)
+	return ratings
 }
 
-func (m Version) GetRatings() []*Rating {
-	return FindRatingsByVersion(m)
+func (m Version) GetBlueprint() Blueprint {
+	var blueprint Blueprint
+	db.Model(m).Related(blueprint)
+	return blueprint
+}
+
+func (m Version) GetVersion() Version {
+	var version Version
+	db.Model(m).Related(version)
+	return version
 }
 
 func GetVersionById(id string) *Version {
-	var data map[string]interface{} = make(map[string]interface{})
-
-	GetSession().Query("SELECT * FROM "+VersionTable+" WHERE id = ?;", id).Consistency(gocql.One).MapScan(data)
-
-	if len(data) == 0 {
-		return nil
-	}
-
-	return &Version{
-		Id:          data["id"].(string),
-		BlueprintId: data["blueprint_id"].(string),
-		Version:     data["version"].(string),
-		Changes:     data["changes"].(string),
-		Date:        data["date"].(int64),
-		Blueprint:   data["blueprint"].(string),
-	}
+	var version Version
+	db.First(&version, id)
+	return &version
 }

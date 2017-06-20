@@ -5,11 +5,15 @@ services:
     ports:
      - 8080:8080
     links:
-     - cassandra
+     - postgres
 
-  cassandra:
-    image: cassandra
+  postgres:
+    image: postgres:alpine
     ports:
-     - 9042:9042
+     - 5432:5432
+    environment:
+     - POSTGRES_USER=blooper
+     - POSTGRES_DB=blooper
+     - POSTGRES_PASSWORD=ZThnie2mffo2cEAA5E2bytnKW3IgA9vZ
     volumes:
-     - ./cassandra:/var/lib/cassandra
+     - ./postgresql:/var/lib/postgresql/data

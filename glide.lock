@@ -1,24 +1,23 @@
-hash: 2731e5042cec14b16211f4ecf9dc341bb1190a4671ea277df9cb19056f517404
-updated: 2017-06-19T18:39:04.9764706+03:00
+hash: a78263d49216a19a2aab26e38a12ff8f0c6a3fcd0e9bfb3b9be233f550d12d4c
+updated: 2017-06-20T19:58:51.829135+03:00
 imports:
-- name: github.com/gemnasium/migrate
-  version: 603c58f2c1d0882d7d5b24791e6e5af5ab392e44
-- name: github.com/gocql/gocql
-  version: ca7d33956650d92d29e6db7fe901e23d0f0e3359
-  subpackages:
-  - internal/lru
-  - internal/murmur
-  - internal/streams
-- name: github.com/golang/snappy
-  version: 553a641470496b2327abcac10b36396bd98e45c9
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/handlers
   version: a4043c62cc2329bacda331d33fc908ab11ef0ec3
 - name: github.com/gorilla/mux
   version: bcd8bc72b08df0f70df986b97f95590779502d31
-- name: github.com/hailocab/go-hostpool
-  version: e80d13ce29ede4452c43dea11e79b9bc8a15b478
+- name: github.com/jinzhu/gorm
+  version: eae7f6be603af3190e032fe3c4d465ddaf6ea3d4
+  subpackages:
+  - dialects/postgres
+- name: github.com/jinzhu/inflection
+  version: 1c35d901db3da928c72a72d8458480cc9ade058f
+- name: github.com/lib/pq
+  version: 8837942c3e09574accbc5f150e2c5e057189cace
+  subpackages:
+  - hstore
+  - oid
 - name: github.com/SermoDigital/jose
   version: 2bd9b81ac51d6d6134fcd4fd846bd2e7347a15f9
   subpackages:
@@ -27,6 +26,4 @@ imports:
   - jwt
 - name: github.com/wuman/firebase-server-sdk-go
   version: e95694472a4d7070a4ae36a8cd990daadeee81a6
-- name: gopkg.in/inf.v0
-  version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 testImports: []

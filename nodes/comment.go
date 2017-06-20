@@ -3,17 +3,19 @@ package nodes
 import (
 	"net/http"
 
+	"time"
+
 	"github.com/BlooperDB/API/api"
 	"github.com/BlooperDB/API/db"
 	"github.com/BlooperDB/API/utils"
 )
 
 type Comment struct {
-	Id      string `json:"id"`
-	UserId  string `json:"user"`
-	Date    int64  `json:"date"`
-	Message string `json:"message"`
-	Updated int64  `json:"updated"`
+	Id        uint      `json:"id"`
+	UserId    uint      `json:"user"`
+	CreatedAt time.Time `json:"created-at"`
+	UpdatedAt time.Time `json:"updated-at"`
+	Message   string    `json:"message"`
 }
 
 func RegisterCommentRoutes(router api.RegisterRoute) {

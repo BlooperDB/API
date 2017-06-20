@@ -12,10 +12,11 @@ import (
 )
 
 type Version struct {
-	Id         string    `json:"id"`
+	Id         uint      `json:"id"`
 	Version    string    `json:"version"`
 	Changes    string    `json:"changes"`
-	Date       int64     `json:"date"`
+	CreatedAt  time.Time `json:"created-at"`
+	UpdatedAt  time.Time `json:"updated-at"`
 	Blueprint  string    `json:"blueprint"`
 	ThumbsUp   int       `json:"thumbs-up"`
 	ThumbsDown int       `json:"thumbs-down"`
@@ -58,7 +59,7 @@ func getVersion(r *http.Request) (interface{}, *utils.ErrorResponse) {
 		}
 
 		if authUser != nil {
-			if rating.UserId == authUser.Id {
+			if rating.UserID == authUser.ID {
 				if rating.ThumbsUp {
 					userVote = 1
 				} else {
@@ -74,20 +75,21 @@ func getVersion(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	for j := 0; j < len(comments); j++ {
 		comment := comments[j]
 		reComment[j] = Comment{
-			Id:      comment.Id,
-			UserId:  comment.UserId,
-			Date:    comment.Date,
-			Message: comment.Message,
-			Updated: comment.Updated,
+			Id:        comment.ID,
+			UserId:    comment.UserID,
+			CreatedAt: comment.CreatedAt,
+			UpdatedAt: comment.UpdatedAt,
+			Message:   comment.Message,
 		}
 	}
 
 	return Version{
-		Id:         version.Id,
+		Id:         version.ID,
 		Version:    version.Version,
 		Changes:    version.Changes,
-		Date:       version.Date,
-		Blueprint:  version.Blueprint,
+		CreatedAt:  version.CreatedAt,
+		UpdatedAt:  version.UpdatedAt,
+		Blueprint:  version.BlueprintString,
 		ThumbsUp:   thumbsUp,
 		ThumbsDown: thumbsDown,
 		UserVote:   userVote,
@@ -96,14 +98,14 @@ func getVersion(r *http.Request) (interface{}, *utils.ErrorResponse) {
 }
 
 type PostVersionRequest struct {
-	BlueprintId string `json:"blueprint-id"`
+	BlueprintId uint   `json:"blueprint-id"`
 	Version     string `json:"version"`
 	Changes     string `json:"changes"`
 	Blueprint   string `json:"blueprint"`
 }
 
 type PostVersionResponse struct {
-	Id string `json:"id"`
+	Id uint `json:"id"`
 }
 
 /*
@@ -126,23 +128,21 @@ func postVersion(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse
 		return nil, &utils.Error_blueprint_not_found
 	}
 
-	if blueprint.UserId != u.Id {
+	if blueprint.UserID != u.ID {
 		return nil, &utils.Error_no_access
 	}
 
 	version := db.Version{
-		Id:          utils.GenerateRandomId(),
-		BlueprintId: request.BlueprintId,
-		Version:     request.Version,
-		Changes:     request.Changes,
-		Date:        time.Now().Unix(),
-		Blueprint:   request.Blueprint,
+		BlueprintID:     request.BlueprintId,
+		Version:         request.Version,
+		Changes:         request.Changes,
+		BlueprintString: request.Blueprint,
 	}
 
 	version.Save()
 
 	return PostVersionResponse{
-		Id: version.Id,
+		Id: version.ID,
 	}, nil
 }
 
@@ -168,13 +168,13 @@ func updateVersion(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespon
 
 	blueprint := db.GetBlueprintById(blueprintId)
 
-	if blueprint.UserId != u.Id {
+	if blueprint.UserID != u.ID {
 		return nil, &utils.Error_no_access
 	}
 
 	versionId := mux.Vars(r)["version"]
 
-	version := blueprint.GetVersion(versionId)
+	version := db.GetVersionById(versionId)
 
 	if version == nil {
 		return nil, &utils.Error_version_not_found
@@ -182,7 +182,7 @@ func updateVersion(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespon
 
 	version.Version = request.Version
 	version.Changes = request.Changes
-	version.Blueprint = request.Blueprint
+	version.BlueprintString = request.Blueprint
 
 	return nil, nil
 }
@@ -195,13 +195,13 @@ func deleteVersion(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespon
 
 	blueprint := db.GetBlueprintById(blueprintId)
 
-	if blueprint.UserId != u.Id {
+	if blueprint.UserID != u.ID {
 		return nil, &utils.Error_no_access
 	}
 
 	versionId := mux.Vars(r)["version"]
 
-	version := blueprint.GetVersion(versionId)
+	version := db.GetVersionById(versionId)
 
 	if version == nil {
 		return nil, &utils.Error_version_not_found
@@ -234,11 +234,11 @@ func getVersionComments(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	for j := 0; j < len(comments); j++ {
 		comment := comments[j]
 		reComment[j] = Comment{
-			Id:      comment.Id,
-			UserId:  comment.UserId,
-			Date:    comment.Date,
-			Message: comment.Message,
-			Updated: comment.Updated,
+			Id:        comment.ID,
+			UserId:    comment.UserID,
+			CreatedAt: comment.CreatedAt,
+			UpdatedAt: comment.UpdatedAt,
+			Message:   comment.Message,
 		}
 	}
 

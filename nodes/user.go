@@ -5,6 +5,10 @@ import (
 
 	"encoding/json"
 
+	"strconv"
+
+	"time"
+
 	"github.com/BlooperDB/API/api"
 	"github.com/BlooperDB/API/db"
 	"github.com/BlooperDB/API/utils"
@@ -13,17 +17,17 @@ import (
 )
 
 type PrivateUserResponse struct {
-	Id           string           `json:"id"`
-	Email        string           `json:"email"`
-	Username     string           `json:"username"`
-	Avatar       string           `json:"avatar"`
-	RegisterDate int64            `json:"register-date"`
-	LastAction   int64            `json:"last-action"`
-	Blueprints   []SmallBlueprint `json:"blueprints"`
+	Id         uint             `json:"id"`
+	Email      string           `json:"email"`
+	Username   string           `json:"username"`
+	Avatar     string           `json:"avatar"`
+	CreatedAt  time.Time        `json:"register-date"`
+	UpdatedAt  time.Time        `json:"register-date"`
+	Blueprints []SmallBlueprint `json:"blueprints"`
 }
 
 type PublicUserResponse struct {
-	Id         string           `json:"id"`
+	Id         uint             `json:"id"`
 	Username   string           `json:"username"`
 	Avatar     string           `json:"avatar"`
 	Blueprints []SmallBlueprint `json:"blueprints"`
@@ -87,9 +91,9 @@ func signIn(r *http.Request) (interface{}, *utils.ErrorResponse) {
 }
 
 func getUser(r *http.Request) (interface{}, *utils.ErrorResponse) {
-	userId := mux.Vars(r)["user"]
+	userId, _ := strconv.ParseUint(mux.Vars(r)["user"], 10, 32)
 
-	user := db.GetUserById(userId)
+	user := db.GetUserById(uint(userId))
 
 	blueprints := user.GetUserBlueprints()
 	reBlueprint := make([]SmallBlueprint, len(blueprints))
@@ -113,21 +117,21 @@ func getUser(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	authUser := db.GetAuthUser(r)
 
 	if authUser != nil {
-		if authUser.Id == userId {
+		if authUser.ID == uint(userId) {
 			return PrivateUserResponse{
-				Id:           userId,
-				Email:        user.Email,
-				Username:     user.Username,
-				Avatar:       user.Avatar,
-				RegisterDate: user.RegisterDate,
-				LastAction:   user.LastAction,
-				Blueprints:   reBlueprint,
+				Id:         uint(userId),
+				Email:      user.Email,
+				Username:   user.Username,
+				Avatar:     user.Avatar,
+				CreatedAt:  user.CreatedAt,
+				UpdatedAt:  user.UpdatedAt,
+				Blueprints: reBlueprint,
 			}, nil
 		}
 	}
 
 	return PublicUserResponse{
-		Id:         userId,
+		Id:         uint(userId),
 		Username:   user.Username,
 		Avatar:     user.Avatar,
 		Blueprints: reBlueprint,
@@ -155,13 +159,13 @@ func getUserSelf(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse
 	}
 
 	return PrivateUserResponse{
-		Id:           u.Id,
-		Email:        u.Email,
-		Username:     u.Username,
-		Avatar:       u.Avatar,
-		RegisterDate: u.RegisterDate,
-		LastAction:   u.LastAction,
-		Blueprints:   reBlueprint,
+		Id:         u.ID,
+		Email:      u.Email,
+		Username:   u.Username,
+		Avatar:     u.Avatar,
+		CreatedAt:  u.CreatedAt,
+		UpdatedAt:  u.UpdatedAt,
+		Blueprints: reBlueprint,
 	}, nil
 }
 
@@ -178,9 +182,9 @@ func putUser(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
 		return nil, &utils.Error_invalid_request_data
 	}
 
-	userId := mux.Vars(r)["user"]
+	userId, _ := strconv.ParseUint(mux.Vars(r)["user"], 10, 32)
 
-	if u.Id != userId {
+	if u.ID != uint(userId) {
 		return nil, &utils.Error_no_access
 	}
 

@@ -1,35 +1,31 @@
 package db
 
 import (
-	"fmt"
-
-	"os"
-
-	_ "github.com/gemnasium/migrate/driver/cassandra"
-	"github.com/gemnasium/migrate/migrate"
-	"github.com/gocql/gocql"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
-var session *gocql.Session
+var db *gorm.DB
 
-func Initialize(s *gocql.Session) {
-	session = s
+func Initialize() {
+	connection, err := gorm.Open("postgres", "host=postgres user=blooper dbname=blooper sslmode=disable password=ZThnie2mffo2cEAA5E2bytnKW3IgA9vZ")
+
+	if err != nil {
+		panic("failed to connect database")
+	}
+
+	defer connection.Close()
+
+	db = connection
 
 	migrations()
 }
 
-func GetSession() *gocql.Session {
-	return session
-}
-
 func migrations() {
-	allErrors, ok := migrate.UpSync(
-		"cassandra://cassandra:9042/blooper?protocol=4&consistency=all&disable_init_host_lookup",
-		"./src/github.com/BlooperDB/API/migrations",
-	)
-
-	if !ok || len(allErrors) > 0 {
-		fmt.Println(allErrors)
-		os.Exit(1)
-	}
+	db.AutoMigrate(&Blueprint{})
+	db.AutoMigrate(&Comment{})
+	db.AutoMigrate(&Rating{})
+	db.AutoMigrate(&Tag{})
+	db.AutoMigrate(&User{})
+	db.AutoMigrate(&Version{})
 }

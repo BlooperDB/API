@@ -14,12 +14,14 @@ import (
 )
 
 type BlueprintResponse struct {
-	Id          string    `json:"id"`
-	UserId      string    `json:"user"`
+	Id          uint      `json:"id"`
+	UserId      uint      `json:"user"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
 	Versions    []Version `json:"versions"`
 	Tags        []string  `json:"tags"`
+	CreatedAt   time.Time `json:"created-at"`
+	UpdatedAt   time.Time `json:"updated-at"`
 }
 
 func RegisterBlueprintRoutes(router api.RegisterRoute) {
@@ -46,8 +48,8 @@ type GetBlueprintsResponse struct {
 }
 
 type SmallBlueprintResponse struct {
-	Id          string `json:"id"`
-	UserId      string `json:"user-id"`
+	Id          uint   `json:"id"`
+	UserId      uint   `json:"user-id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
 }
@@ -61,8 +63,8 @@ func getBlueprints(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 
 	for i := 0; i < len(blueprints); i++ {
 		reBlueprint[i] = SmallBlueprintResponse{
-			Id:          blueprints[i].Id,
-			UserId:      blueprints[i].UserId,
+			Id:          blueprints[i].ID,
+			UserId:      blueprints[i].UserID,
 			Name:        blueprints[i].Name,
 			Description: blueprints[i].Description,
 		}
@@ -105,7 +107,7 @@ func getBlueprint(r *http.Request) (interface{}, *utils.ErrorResponse) {
 			}
 
 			if authUser != nil {
-				if rating.UserId == authUser.Id {
+				if rating.UserID == authUser.ID {
 					if rating.ThumbsUp {
 						userVote = 1
 					} else {
@@ -121,20 +123,21 @@ func getBlueprint(r *http.Request) (interface{}, *utils.ErrorResponse) {
 		for j := 0; j < len(comments); j++ {
 			comment := comments[j]
 			reComment[j] = Comment{
-				Id:      comment.Id,
-				UserId:  comment.UserId,
-				Date:    comment.Date,
-				Message: comment.Message,
-				Updated: comment.Updated,
+				Id:        comment.ID,
+				UserId:    comment.UserID,
+				CreatedAt: comment.CreatedAt,
+				UpdatedAt: comment.UpdatedAt,
+				Message:   comment.Message,
 			}
 		}
 
 		reVersion[i] = Version{
-			Id:         version.Id,
+			Id:         version.ID,
 			Version:    version.Version,
 			Changes:    version.Changes,
-			Date:       version.Date,
-			Blueprint:  version.Blueprint,
+			CreatedAt:  version.CreatedAt,
+			UpdatedAt:  version.UpdatedAt,
+			Blueprint:  version.BlueprintString,
 			ThumbsUp:   thumbsUp,
 			ThumbsDown: thumbsDown,
 			UserVote:   userVote,
@@ -151,10 +154,12 @@ func getBlueprint(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	}
 
 	return BlueprintResponse{
-		Id:          blueprint.Id,
-		UserId:      blueprint.UserId,
+		Id:          blueprint.ID,
+		UserId:      blueprint.UserID,
 		Name:        blueprint.Name,
 		Description: blueprint.Description,
+		CreatedAt:   blueprint.CreatedAt,
+		UpdatedAt:   blueprint.UpdatedAt,
 		Versions:    reVersion,
 		Tags:        reTags,
 	}, nil
@@ -172,8 +177,8 @@ type PostBlueprintRequestVersion struct {
 }
 
 type PostBlueprintResponse struct {
-	BlueprintId string `json:"blueprint-id"`
-	VersionId   string `json:"version-id"`
+	BlueprintId uint `json:"blueprint-id"`
+	VersionId   uint `json:"version-id"`
 }
 
 /*
@@ -189,8 +194,7 @@ func postBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespon
 	}
 
 	blueprint := db.Blueprint{
-		Id:          utils.GenerateRandomId(),
-		UserId:      u.Id,
+		UserID:      u.ID,
 		Name:        request.Name,
 		Description: request.Description,
 	}
@@ -198,19 +202,17 @@ func postBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespon
 	blueprint.Save()
 
 	version := db.Version{
-		Id:          utils.GenerateRandomId(),
-		BlueprintId: blueprint.Id,
-		Version:     request.Version.Version,
-		Changes:     "",
-		Date:        time.Now().Unix(),
-		Blueprint:   request.Version.Blueprint,
+		BlueprintID:     blueprint.ID,
+		Version:         request.Version.Version,
+		Changes:         "",
+		BlueprintString: request.Version.Blueprint,
 	}
 
 	version.Save()
 
 	return PostBlueprintResponse{
-		BlueprintId: blueprint.Id,
-		VersionId:   version.Id,
+		BlueprintId: blueprint.ID,
+		VersionId:   version.ID,
 	}, nil
 }
 
@@ -239,7 +241,7 @@ func updateBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorResp
 		return nil, &utils.Error_blueprint_not_found
 	}
 
-	if blueprint.UserId != u.Id {
+	if blueprint.UserID != u.ID {
 		return nil, &utils.Error_no_access
 	}
 
@@ -263,7 +265,7 @@ func deleteBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorResp
 		return nil, &utils.Error_blueprint_not_found
 	}
 
-	if blueprint.UserId != u.Id {
+	if blueprint.UserID != u.ID {
 		return nil, &utils.Error_no_access
 	}
 
@@ -309,7 +311,7 @@ func getVersions(r *http.Request) (interface{}, *utils.ErrorResponse) {
 			}
 
 			if authUser != nil {
-				if rating.UserId == authUser.Id {
+				if rating.UserID == authUser.ID {
 					if rating.ThumbsUp {
 						userVote = 1
 					} else {
@@ -325,20 +327,21 @@ func getVersions(r *http.Request) (interface{}, *utils.ErrorResponse) {
 		for j := 0; j < len(comments); j++ {
 			comment := comments[j]
 			reComment[j] = Comment{
-				Id:      comment.Id,
-				UserId:  comment.UserId,
-				Date:    comment.Date,
-				Message: comment.Message,
-				Updated: comment.Updated,
+				Id:        comment.ID,
+				UserId:    comment.UserID,
+				CreatedAt: comment.CreatedAt,
+				UpdatedAt: comment.UpdatedAt,
+				Message:   comment.Message,
 			}
 		}
 
 		reVersion[i] = Version{
-			Id:         version.Id,
+			Id:         version.ID,
 			Version:    version.Version,
 			Changes:    version.Changes,
-			Date:       version.Date,
-			Blueprint:  version.Blueprint,
+			CreatedAt:  version.CreatedAt,
+			UpdatedAt:  version.UpdatedAt,
+			Blueprint:  version.BlueprintString,
 			ThumbsUp:   thumbsUp,
 			ThumbsDown: thumbsDown,
 			UserVote:   userVote,

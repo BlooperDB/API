@@ -1,48 +1,41 @@
 package db
 
-import (
-	"github.com/gocql/gocql"
-)
-
-var CommentTable = "comment"
+import "github.com/jinzhu/gorm"
 
 type Comment struct {
-	Id        string
-	VersionId string
-	UserId    string
-	Date      int64
-	Message   string
-	Updated   int64
+	gorm.Model
+
+	Version   Version `gorm:"ForeignKey:VersionID;AssociationForeignKey:ID"`
+	VersionID uint    `gorm:"index; not null"`
+
+	User   User `gorm:"ForeignKey:UserID;AssociationForeignKey:ID"`
+	UserID uint `gorm:"index; not null"`
+
+	Message string `gorm:"not null"`
 }
 
 func (m Comment) Save() {
-	GetSession().Query("UPDATE "+CommentTable+" SET "+
-		" version_id=?,"+
-		" user_id=?,"+
-		" date=?,"+
-		" message=?,"+
-		" updated=?"+
-		" WHERE id=?;",
-		m.VersionId, m.UserId, m.Date, m.Message, m.Updated, m.Id).Exec()
+	db.Save(m)
 }
 
-func FindCommentsByVersion(m Version) []*Comment {
-	r := GetSession().Query("SELECT * FROM "+CommentTable+" WHERE version_id = ?;", m.Id).Consistency(gocql.All).Iter()
+func (m Comment) Delete() {
+	db.Delete(m)
+}
 
-	result := make([]*Comment, r.NumRows())
+func GetCommentById(id uint) *Comment {
+	var comment Comment
+	db.First(&comment, id)
+	return &comment
+}
 
-	for i := 0; i < r.NumRows(); i++ {
-		data := make(map[string]interface{})
-		r.MapScan(data)
-		result[i] = &Comment{
-			Id:        data["id"].(string),
-			VersionId: data["version_id"].(string),
-			UserId:    data["user_id"].(string),
-			Date:      data["date"].(int64),
-			Message:   data["message"].(string),
-			Updated:   data["updated"].(int64),
-		}
-	}
+func (m Comment) GetUser() User {
+	var user User
+	db.Model(m).Related(user)
+	return user
+}
 
-	return result
+func (m Comment) GetVersion() Version {
+	var version Version
+	db.Model(m).Related(version)
+	return version
 }

@@ -2,9 +2,7 @@ package: github.com/BlooperDB/API
 import:
 - package: github.com/gorilla/mux
   version: ^1.4.0
-- package: github.com/gocql/gocql
+- package: github.com/jinzhu/gorm
 - package: github.com/wuman/firebase-server-sdk-go
 - package: github.com/gorilla/handlers
   version: ^1.2.1
-- package: github.com/gemnasium/migrate
-  version: ^1.4.1

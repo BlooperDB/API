@@ -1,104 +1,49 @@
 package db
 
 import (
-	"github.com/gocql/gocql"
+	"github.com/jinzhu/gorm"
 )
 
-var BlueprintTable = "blueprint"
-
 type Blueprint struct {
-	Id          string
-	UserId      string
-	Name        string
-	Description string
+	gorm.Model
+
+	User   User `gorm:"ForeignKey:UserID;AssociationForeignKey:ID"`
+	UserID uint `gorm:"index;not null"`
+
+	Name        string `gorm:"not null"`
+	Description string `gorm:"not null"`
+	Versions    []Version
+	Tags        []Tag `gorm:"many2many:blueprint_tags;"`
 }
 
 func (m Blueprint) Save() {
-	GetSession().Query("UPDATE "+BlueprintTable+" SET "+
-		" user_id=?,"+
-		" name=?,"+
-		" description=?"+
-		" WHERE id=?;",
-		m.UserId, m.Name, m.Description, m.Id).Exec()
+	db.Save(m)
 }
 
 func (m Blueprint) Delete() {
-	GetSession().Query("DELETE FROM  "+BlueprintTable+" "+
-		" WHERE id=?;",
-		m.Id).Exec()
+	db.Delete(m)
 }
 
 func GetBlueprintById(id string) *Blueprint {
-	var data map[string]interface{} = make(map[string]interface{})
-
-	GetSession().Query("SELECT * FROM "+BlueprintTable+" WHERE id = ?;", id).Consistency(gocql.One).MapScan(data)
-
-	if len(data) == 0 {
-		return nil
-	}
-
-	return &Blueprint{
-		Id:          data["id"].(string),
-		UserId:      data["user_id"].(string),
-		Name:        data["name"].(string),
-		Description: data["description"].(string),
-	}
+	var blueprint Blueprint
+	db.First(&blueprint, id)
+	return &blueprint
 }
 
-func GetBlueprintsByUserId(userId string) []*Blueprint {
-	r := GetSession().Query("SELECT * FROM "+BlueprintTable+" WHERE user_id = ?;", userId).Consistency(gocql.All).Iter()
-
-	result := make([]*Blueprint, r.NumRows())
-
-	for i := 0; i < r.NumRows(); i++ {
-		data := make(map[string]interface{})
-		r.MapScan(data)
-		result[i] = &Blueprint{
-			Id:          data["id"].(string),
-			UserId:      data["user_id"].(string),
-			Name:        data["name"].(string),
-			Description: data["description"].(string),
-		}
-	}
-
-	return result
+func (m Blueprint) GetVersions() []Version {
+	var versions []Version
+	db.Model(m).Related(versions)
+	return versions
 }
 
-func (m Blueprint) GetVersions() []*Version {
-	return FindVersionsByBlueprint(m)
+func (m Blueprint) GetTags() []Tag {
+	var tags []Tag
+	db.Model(m).Related(tags)
+	return tags
 }
 
-func (m Blueprint) GetTags() []*Tag {
-	tags := FindTagsByBlueprint(m)
-
-	result := make([]*Tag, len(tags))
-
-	for i := 0; i < len(tags); i++ {
-		result[i] = tags[i].GetTag()
-	}
-
-	return result
-}
-
-func GetAllBlueprints() []*Blueprint {
-	r := GetSession().Query("SELECT * FROM " + BlueprintTable).Consistency(gocql.All).Iter()
-
-	result := make([]*Blueprint, r.NumRows())
-
-	for i := 0; i < r.NumRows(); i++ {
-		data := make(map[string]interface{})
-		r.MapScan(data)
-		result[i] = &Blueprint{
-			Id:          data["id"].(string),
-			UserId:      data["user_id"].(string),
-			Name:        data["name"].(string),
-			Description: data["description"].(string),
-		}
-	}
-
-	return result
-}
-
-func (m Blueprint) GetVersion(versionId string) *Version {
-	return GetVersionById(versionId)
+func GetAllBlueprints() []Blueprint {
+	var blueprint []Blueprint
+	db.Find(&blueprint)
+	return blueprint
 }

@@ -7,13 +7,9 @@ import (
 
 	"log"
 
-	"time"
-
 	"github.com/BlooperDB/API/api"
 	"github.com/BlooperDB/API/db"
 	"github.com/BlooperDB/API/nodes"
-	"github.com/BlooperDB/API/utils"
-	"github.com/gocql/gocql"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/wuman/firebase-server-sdk-go"
@@ -34,40 +30,7 @@ func Initialize() {
 	nodes.RegisterCommentRoutes(v1)
 	nodes.RegisterVersionRoutes(v1)
 
-	cluster := gocql.NewCluster("cassandra")
-
-	for i := 0; i < 60; i++ {
-		stop := true
-
-		utils.Block{
-			Try: func() {
-				session, _ := cluster.CreateSession()
-				_, err := session.KeyspaceMetadata("blooper")
-				if err != nil {
-					session.Query("CREATE KEYSPACE blooper WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};").Exec()
-				}
-				session.Close()
-			},
-			Catch: func(e utils.Exception) {
-				stop = false
-				time.Sleep(1 * time.Second)
-			},
-			Finally: func() {
-			},
-		}.Do()
-
-		if stop {
-			break
-		}
-	}
-
-	cluster = gocql.NewCluster("cassandra")
-	cluster.Keyspace = "blooper"
-	cluster.Consistency = gocql.Quorum
-	session, _ := cluster.CreateSession()
-	defer session.Close()
-
-	db.Initialize(session)
+	db.Initialize()
 
 	CORSHandler := handlers.CORS(
 		handlers.AllowedOrigins([]string{"*"}),
