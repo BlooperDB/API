@@ -59,7 +59,7 @@ func Initialize() {
 		}
 	}
 
-	cluster = gocql.NewCluster("scylladb")
+	cluster = gocql.NewCluster("cassandra")
 	cluster.Keyspace = "blooper"
 	cluster.Consistency = gocql.Quorum
 	session, _ := cluster.CreateSession()
