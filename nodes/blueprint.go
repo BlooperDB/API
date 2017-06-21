@@ -17,14 +17,14 @@ import (
 )
 
 type BlueprintResponse struct {
-	Id          uint       `json:"id"`
-	UserId      uint       `json:"user"`
-	Name        string     `json:"name"`
-	Description string     `json:"description"`
-	Revisions   []Revision `json:"revisions"`
-	Tags        []string   `json:"tags"`
-	CreatedAt   time.Time  `json:"created-at"`
-	UpdatedAt   time.Time  `json:"updated-at"`
+	Id          uint        `json:"id"`
+	UserId      uint        `json:"user"`
+	Name        string      `json:"name"`
+	Description string      `json:"description"`
+	Revisions   []*Revision `json:"revisions"`
+	Tags        []string    `json:"tags"`
+	CreatedAt   time.Time   `json:"created-at"`
+	UpdatedAt   time.Time   `json:"updated-at"`
 }
 
 func RegisterBlueprintRoutes(router api.RegisterRoute) {
@@ -37,6 +37,7 @@ func RegisterBlueprintRoutes(router api.RegisterRoute) {
 	router("DELETE", "/blueprint/{blueprint}", api.AuthHandler(deleteBlueprint))
 
 	router("GET", "/blueprint/{blueprint}/revisions", getRevisions)
+	router("GET", "/blueprint/{blueprint}/revision/latest", getRevisionLatest)
 	router("GET", "/blueprint/{blueprint}/revision/{revision}", getRevisionIncremental)
 }
 
@@ -48,7 +49,7 @@ func searchBlueprints(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 }
 
 type GetBlueprintsResponse struct {
-	Blueprints []SmallBlueprintResponse `json:"blueprints"`
+	Blueprints []*SmallBlueprintResponse `json:"blueprints"`
 }
 
 type SmallBlueprintResponse struct {
@@ -63,15 +64,15 @@ Get all blueprints (paged)
 */
 func getBlueprints(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 	blueprints := db.GetAllBlueprints()
-	reBlueprint := make([]SmallBlueprintResponse, len(blueprints))
+	reBlueprint := make([]*SmallBlueprintResponse, 0)
 
-	for i := 0; i < len(blueprints); i++ {
-		reBlueprint[i] = SmallBlueprintResponse{
-			Id:          blueprints[i].ID,
-			UserId:      blueprints[i].UserID,
-			Name:        blueprints[i].Name,
-			Description: blueprints[i].Description,
-		}
+	for _, blueprint := range blueprints {
+		reBlueprint = append(reBlueprint, &SmallBlueprintResponse{
+			Id:          blueprint.ID,
+			UserId:      blueprint.UserID,
+			Name:        blueprint.Name,
+			Description: blueprint.Description,
+		})
 	}
 
 	return GetBlueprintsResponse{
@@ -83,7 +84,10 @@ func getBlueprints(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 Get a specific blueprint
 */
 func getBlueprint(r *http.Request) (interface{}, *utils.ErrorResponse) {
-	blueprintId, _ := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
+	blueprintId, err := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
+	if err != nil {
+		return nil, &utils.Error_blueprint_not_found
+	}
 
 	blueprint := db.GetBlueprintById(uint(blueprintId))
 
@@ -92,70 +96,26 @@ func getBlueprint(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	}
 
 	revisions := blueprint.GetRevisions()
-	reRevision := make([]Revision, len(revisions))
+	reRevision := make([]*Revision, 0)
 
 	authUser := db.GetAuthUser(r)
 
-	for i := 0; i < len(revisions); i++ {
-		revision := revisions[i]
-
-		ratings := revision.GetRatings()
-		thumbsUp, thumbsDown, userVote := 0, 0, 0
-
-		for j := 0; j < len(ratings); j++ {
-			rating := ratings[j]
-
-			if rating.ThumbsUp {
-				thumbsUp++
-			} else {
-				thumbsDown++
-			}
-
-			if authUser != nil {
-				if rating.UserID == authUser.ID {
-					if rating.ThumbsUp {
-						userVote = 1
-					} else {
-						userVote = 2
-					}
-				}
-			}
+	for _, revision := range revisions {
+		if revision.DeletedAt != nil {
+			continue
 		}
-
-		comments := revision.GetComments()
-		reComment := make([]Comment, len(comments))
-
-		for j := 0; j < len(comments); j++ {
-			comment := comments[j]
-			reComment[j] = Comment{
-				Id:        comment.ID,
-				UserId:    comment.UserID,
-				CreatedAt: comment.CreatedAt,
-				UpdatedAt: comment.UpdatedAt,
-				Message:   comment.Message,
-			}
+		rev, err := revisionToJSON(authUser, &revision)
+		if err != nil {
+			return nil, err
 		}
-
-		reRevision[i] = Revision{
-			Id:         revision.ID,
-			Revision:   revision.Revision,
-			Changes:    revision.Changes,
-			CreatedAt:  revision.CreatedAt,
-			UpdatedAt:  revision.UpdatedAt,
-			Blueprint:  revision.BlueprintString,
-			ThumbsUp:   thumbsUp,
-			ThumbsDown: thumbsDown,
-			UserVote:   userVote,
-			Comments:   reComment,
-		}
+		reRevision = append(reRevision, rev)
 	}
 
 	tags := blueprint.GetTags()
-	reTags := make([]string, len(tags))
+	reTags := make([]string, 0)
 
-	for i := 0; i < len(tags); i++ {
-		tag := tags[i]
-		reTags[i] = tag.Name
+	for _, tag := range tags {
+		reTags = append(reTags, tag.Name)
 	}
 
 	return BlueprintResponse{
@@ -256,7 +216,10 @@ func updateBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorResp
 		}
 	}
 
-	blueprintId, _ := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
+	blueprintId, err := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
+	if err != nil {
+		return nil, &utils.Error_blueprint_not_found
+	}
 
 	blueprint := db.GetBlueprintById(uint(blueprintId))
 
@@ -280,14 +243,15 @@ func updateBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorResp
 Delete a blueprint
 */
 func deleteBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
-	blueprintId, _ := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
-
-	blueprint := db.GetBlueprintById(uint(blueprintId))
-
-	if blueprint == nil {
+	blueprintId, err := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
+	if err != nil {
 		return nil, &utils.Error_blueprint_not_found
 	}
 
+	blueprint := db.GetBlueprintById(uint(blueprintId))
+	if blueprint == nil || blueprint.DeletedAt != nil {
+		return nil, &utils.Error_blueprint_not_found
+	}
 	if blueprint.UserID != u.ID {
 		return nil, &utils.Error_no_access
 	}
@@ -298,78 +262,34 @@ func deleteBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorResp
 }
 
 type GetRevisionsResponse struct {
-	Revisions []Revision `json:"revisions"`
+	Revisions []*Revision `json:"revisions"`
 }
 
 /*
 Get all revisions
 */
 func getRevisions(r *http.Request) (interface{}, *utils.ErrorResponse) {
-	blueprintId, _ := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
+	blueprintId, err := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
+	if err != nil {
+		return nil, &utils.Error_blueprint_not_found
+	}
 
 	blueprint := db.GetBlueprintById(uint(blueprintId))
-
-	if blueprint == nil {
+	if blueprint == nil || blueprint.DeletedAt != nil {
 		return nil, &utils.Error_blueprint_not_found
 	}
 
 	revisions := blueprint.GetRevisions()
-	reRevision := make([]Revision, len(revisions))
+	reRevision := make([]*Revision, 0)
 
 	authUser := db.GetAuthUser(r)
 
-	for i := 0; i < len(revisions); i++ {
-		revision := revisions[i]
-
-		ratings := revision.GetRatings()
-		thumbsUp, thumbsDown, userVote := 0, 0, 0
-
-		for j := 0; j < len(ratings); j++ {
-			rating := ratings[j]
-
-			if rating.ThumbsUp {
-				thumbsUp++
-			} else {
-				thumbsDown++
-			}
-
-			if authUser != nil {
-				if rating.UserID == authUser.ID {
-					if rating.ThumbsUp {
-						userVote = 1
-					} else {
-						userVote = 2
-					}
-				}
-			}
+	for _, revision := range revisions {
+		rev, err := revisionToJSON(authUser, &revision)
+		if err != nil {
+			return nil, err
 		}
-
-		comments := revision.GetComments()
-		reComment := make([]Comment, len(comments))
-
-		for j := 0; j < len(comments); j++ {
-			comment := comments[j]
-			reComment[j] = Comment{
-				Id:        comment.ID,
-				UserId:    comment.UserID,
-				CreatedAt: comment.CreatedAt,
-				UpdatedAt: comment.UpdatedAt,
-				Message:   comment.Message,
-			}
-		}
-
-		reRevision[i] = Revision{
-			Id:         revision.ID,
-			Revision:   revision.Revision,
-			Changes:    revision.Changes,
-			CreatedAt:  revision.CreatedAt,
-			UpdatedAt:  revision.UpdatedAt,
-			Blueprint:  revision.BlueprintString,
-			ThumbsUp:   thumbsUp,
-			ThumbsDown: thumbsDown,
-			UserVote:   userVote,
-			Comments:   reComment,
-		}
+		reRevision = append(reRevision, rev)
 	}
 
 	return GetRevisionsResponse{
@@ -378,26 +298,52 @@ func getRevisions(r *http.Request) (interface{}, *utils.ErrorResponse) {
 }
 
 /*
-Get specific revision from blueprint
+Get latest revision from blueprint
 */
-func getRevisionIncremental(r *http.Request) (interface{}, *utils.ErrorResponse) {
-	blueprintId, _ := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
-
-	blueprint := db.GetBlueprintById(uint(blueprintId))
-
-	if blueprint == nil {
+func getRevisionLatest(r *http.Request) (interface{}, *utils.ErrorResponse) {
+	blueprintId, err := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
+	if err != nil {
 		return nil, &utils.Error_blueprint_not_found
 	}
 
-	revisionI, _ := strconv.ParseUint(mux.Vars(r)["revision"], 10, 32)
+	blueprint := db.GetBlueprintById(uint(blueprintId))
+	if blueprint == nil || blueprint.DeletedAt != nil {
+		return nil, &utils.Error_blueprint_not_found
+	}
 
-	revision := blueprint.GetRevision(uint(revisionI))
+	authUser := db.GetAuthUser(r)
+	revision := blueprint.GetRevision(blueprint.LastRevision)
+	return revisionToJSON(authUser, revision)
+}
 
-	if revision == nil {
+/*
+Get specific revision from blueprint
+*/
+func getRevisionIncremental(r *http.Request) (interface{}, *utils.ErrorResponse) {
+	blueprintId, err := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
+	if err != nil {
+		return nil, &utils.Error_blueprint_not_found
+	}
+
+	blueprint := db.GetBlueprintById(uint(blueprintId))
+	if blueprint == nil || blueprint.DeletedAt != nil {
+		return nil, &utils.Error_blueprint_not_found
+	}
+
+	revisionI, err := strconv.ParseUint(mux.Vars(r)["revision"], 10, 32)
+	if err != nil {
 		return nil, &utils.Error_revision_not_found
 	}
 
 	authUser := db.GetAuthUser(r)
+	revision := blueprint.GetRevision(uint(revisionI))
+	return revisionToJSON(authUser, revision)
+}
+
+func revisionToJSON(authUser *db.User, revision *db.Revision) (*Revision, *utils.ErrorResponse) {
+	if revision == nil || revision.DeletedAt != nil {
+		return nil, &utils.Error_revision_not_found
+	}
 
 	ratings := revision.GetRatings()
 	thumbsUp, thumbsDown, userVote := 0, 0, 0
@@ -411,32 +357,30 @@ func getRevisionIncremental(r *http.Request) (interface{}, *utils.ErrorResponse)
 			thumbsDown++
 		}
 
-		if authUser != nil {
-			if rating.UserID == authUser.ID {
-				if rating.ThumbsUp {
-					userVote = 1
-				} else {
-					userVote = 2
-				}
+		if authUser != nil && authUser.ID == rating.UserID {
+			if rating.ThumbsUp {
+				userVote = 1
+			} else {
+				userVote = 2
 			}
 		}
 	}
 
 	comments := revision.GetComments()
-	reComment := make([]Comment, len(comments))
+	reComment := make([]*Comment, 0)
 
 	for j := 0; j < len(comments); j++ {
 		comment := comments[j]
-		reComment[j] = Comment{
+		reComment = append(reComment, &Comment{
 			Id:        comment.ID,
 			UserId:    comment.UserID,
 			CreatedAt: comment.CreatedAt,
 			UpdatedAt: comment.UpdatedAt,
 			Message:   comment.Message,
-		}
+		})
 	}
 
-	return Revision{
+	return &Revision{
 		Id:         revision.ID,
 		Revision:   revision.Revision,
 		Changes:    revision.Changes,

@@ -15,16 +15,16 @@ import (
 )
 
 type Revision struct {
-	Id         uint      `json:"id"`
-	Revision   uint      `json:"revision"`
-	Changes    string    `json:"changes"`
-	CreatedAt  time.Time `json:"created-at"`
-	UpdatedAt  time.Time `json:"updated-at"`
-	Blueprint  string    `json:"blueprint"`
-	ThumbsUp   int       `json:"thumbs-up"`
-	ThumbsDown int       `json:"thumbs-down"`
-	UserVote   int       `json:"user-vote"`
-	Comments   []Comment `json:"comments"`
+	Id         uint       `json:"id"`
+	Revision   uint       `json:"revision"`
+	Changes    string     `json:"changes"`
+	CreatedAt  time.Time  `json:"created-at"`
+	UpdatedAt  time.Time  `json:"updated-at"`
+	Blueprint  string     `json:"blueprint"`
+	ThumbsUp   int        `json:"thumbs-up"`
+	ThumbsDown int        `json:"thumbs-down"`
+	UserVote   int        `json:"user-vote"`
+	Comments   []*Comment `json:"comments"`
 }
 
 func RegisterRevisionRoutes(router api.RegisterRoute) {
@@ -39,65 +39,18 @@ func RegisterRevisionRoutes(router api.RegisterRoute) {
 Get specific revision
 */
 func getRevision(r *http.Request) (interface{}, *utils.ErrorResponse) {
-	revisionId, _ := strconv.ParseUint(mux.Vars(r)["revision"], 10, 32)
-
-	revision := db.GetRevisionById(uint(revisionId))
-
-	if revision == nil {
+	revisionId, err := strconv.ParseUint(mux.Vars(r)["revision"], 10, 32)
+	if err == nil {
 		return nil, &utils.Error_revision_not_found
 	}
 
-	ratings := revision.GetRatings()
-	thumbsUp, thumbsDown, userVote := 0, 0, 0
+	revision := db.GetRevisionById(uint(revisionId))
+	if revision == nil || revision.DeletedAt != nil {
+		return nil, &utils.Error_revision_not_found
+	}
 
 	authUser := db.GetAuthUser(r)
-
-	for j := 0; j < len(ratings); j++ {
-		rating := ratings[j]
-
-		if rating.ThumbsUp {
-			thumbsUp++
-		} else {
-			thumbsDown++
-		}
-
-		if authUser != nil {
-			if rating.UserID == authUser.ID {
-				if rating.ThumbsUp {
-					userVote = 1
-				} else {
-					userVote = 2
-				}
-			}
-		}
-	}
-
-	comments := revision.GetComments()
-	reComment := make([]Comment, len(comments))
-
-	for j := 0; j < len(comments); j++ {
-		comment := comments[j]
-		reComment[j] = Comment{
-			Id:        comment.ID,
-			UserId:    comment.UserID,
-			CreatedAt: comment.CreatedAt,
-			UpdatedAt: comment.UpdatedAt,
-			Message:   comment.Message,
-		}
-	}
-
-	return Revision{
-		Id:         revision.ID,
-		Revision:   revision.Revision,
-		Changes:    revision.Changes,
-		CreatedAt:  revision.CreatedAt,
-		UpdatedAt:  revision.UpdatedAt,
-		Blueprint:  revision.BlueprintString,
-		ThumbsUp:   thumbsUp,
-		ThumbsDown: thumbsDown,
-		UserVote:   userVote,
-		Comments:   reComment,
-	}, nil
+	return revisionToJSON(authUser, revision)
 }
 
 type PostRevisionRequest struct {
@@ -121,11 +74,9 @@ func postRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespons
 	decoder := json.NewDecoder(r.Body)
 	var request PostRevisionRequest
 	err := decoder.Decode(&request)
-
 	if err != nil {
 		return nil, &utils.Error_invalid_request_data
 	}
-
 	if err = validator.Validate(request); err != nil {
 		return nil, &utils.ErrorResponse{
 			Code:    utils.Error_invalid_request_data.Code,
@@ -134,14 +85,15 @@ func postRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespons
 		}
 	}
 
-	blueprintId, _ := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
-
-	blueprint := db.GetBlueprintById(uint(blueprintId))
-
-	if blueprint == nil {
+	blueprintId, err := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
+	if err == nil {
 		return nil, &utils.Error_blueprint_not_found
 	}
 
+	blueprint := db.GetBlueprintById(uint(blueprintId))
+	if blueprint == nil || blueprint.DeletedAt != nil {
+		return nil, &utils.Error_blueprint_not_found
+	}
 	if blueprint.UserID != u.ID {
 		return nil, &utils.Error_no_access
 	}
@@ -154,7 +106,6 @@ func postRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespons
 		Changes:         request.Changes,
 		BlueprintString: request.Blueprint,
 	}
-
 	revision.Save()
 
 	return PostRevisionResponse{
@@ -175,11 +126,9 @@ func updateRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespo
 	decoder := json.NewDecoder(r.Body)
 	var request PutRevisionRequest
 	err := decoder.Decode(&request)
-
 	if err != nil {
 		return nil, &utils.Error_invalid_request_data
 	}
-
 	if err = validator.Validate(request); err != nil {
 		return nil, &utils.ErrorResponse{
 			Code:    utils.Error_invalid_request_data.Code,
@@ -188,19 +137,26 @@ func updateRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespo
 		}
 	}
 
-	blueprintId, _ := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
+	blueprintId, err := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
+	if err == nil {
+		return nil, &utils.Error_blueprint_not_found
+	}
 
 	blueprint := db.GetBlueprintById(uint(blueprintId))
-
+	if blueprint == nil || blueprint.DeletedAt != nil {
+		return nil, &utils.Error_blueprint_not_found
+	}
 	if blueprint.UserID != u.ID {
 		return nil, &utils.Error_no_access
 	}
 
-	revisionId, _ := strconv.ParseUint(mux.Vars(r)["revision"], 10, 32)
+	revisionId, err := strconv.ParseUint(mux.Vars(r)["revision"], 10, 32)
+	if err == nil {
+		return nil, &utils.Error_revision_not_found
+	}
 
 	revision := db.GetRevisionById(uint(revisionId))
-
-	if revision == nil {
+	if revision == nil || revision.DeletedAt != nil {
 		return nil, &utils.Error_revision_not_found
 	}
 
@@ -214,19 +170,26 @@ func updateRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespo
 Delete a revision
 */
 func deleteRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
-	blueprintId, _ := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
+	blueprintId, err := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
+	if err == nil {
+		return nil, &utils.Error_blueprint_not_found
+	}
 
 	blueprint := db.GetBlueprintById(uint(blueprintId))
-
+	if blueprint == nil || blueprint.DeletedAt != nil {
+		return nil, &utils.Error_blueprint_not_found
+	}
 	if blueprint.UserID != u.ID {
 		return nil, &utils.Error_no_access
 	}
 
-	revisionId, _ := strconv.ParseUint(mux.Vars(r)["revision"], 10, 32)
+	revisionId, err := strconv.ParseUint(mux.Vars(r)["revision"], 10, 32)
+	if err == nil {
+		return nil, &utils.Error_revision_not_found
+	}
 
 	revision := db.GetRevisionById(uint(revisionId))
-
-	if revision == nil {
+	if revision == nil || revision.DeletedAt != nil {
 		return nil, &utils.Error_revision_not_found
 	}
 
@@ -236,33 +199,34 @@ func deleteRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespo
 }
 
 type GetRevisionCommentsResponse struct {
-	Comments []Comment `json:"comments"`
+	Comments []*Comment `json:"comments"`
 }
 
 /*
 Get all comments
 */
 func getRevisionComments(r *http.Request) (interface{}, *utils.ErrorResponse) {
-	revisionId, _ := strconv.ParseUint(mux.Vars(r)["revision"], 10, 32)
+	revisionId, err := strconv.ParseUint(mux.Vars(r)["revision"], 10, 32)
+	if err == nil {
+		return nil, &utils.Error_revision_not_found
+	}
 
 	revision := db.GetRevisionById(uint(revisionId))
-
-	if revision == nil {
+	if revision == nil || revision.DeletedAt != nil {
 		return nil, &utils.Error_revision_not_found
 	}
 
 	comments := revision.GetComments()
-	reComment := make([]Comment, len(comments))
+	reComment := make([]*Comment, 0)
 
-	for j := 0; j < len(comments); j++ {
-		comment := comments[j]
-		reComment[j] = Comment{
+	for _, comment := range comments {
+		reComment = append(reComment, &Comment{
 			Id:        comment.ID,
 			UserId:    comment.UserID,
 			CreatedAt: comment.CreatedAt,
 			UpdatedAt: comment.UpdatedAt,
 			Message:   comment.Message,
-		}
+		})
 	}
 
 	return GetRevisionCommentsResponse{

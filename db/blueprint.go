@@ -66,8 +66,7 @@ func (m Blueprint) GetRevision(id uint) *Revision {
 	var revisions []Revision
 	db.Model(m).Related(&revisions)
 
-	for i := 0; i < len(revisions); i++ {
-		rev := revisions[i]
+	for _, rev := range revisions {
 		if rev.Revision == id {
 			return &rev
 		}

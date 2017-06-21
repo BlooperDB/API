@@ -18,20 +18,20 @@ import (
 )
 
 type PrivateUserResponse struct {
-	Id         uint             `json:"id"`
-	Email      string           `json:"email"`
-	Username   string           `json:"username"`
-	Avatar     string           `json:"avatar"`
-	CreatedAt  time.Time        `json:"register-date"`
-	UpdatedAt  time.Time        `json:"register-date"`
-	Blueprints []SmallBlueprint `json:"blueprints"`
+	Id         uint              `json:"id"`
+	Email      string            `json:"email"`
+	Username   string            `json:"username"`
+	Avatar     string            `json:"avatar"`
+	CreatedAt  time.Time         `json:"register-date"`
+	UpdatedAt  time.Time         `json:"register-date"`
+	Blueprints []*SmallBlueprint `json:"blueprints"`
 }
 
 type PublicUserResponse struct {
-	Id         uint             `json:"id"`
-	Username   string           `json:"username"`
-	Avatar     string           `json:"avatar"`
-	Blueprints []SmallBlueprint `json:"blueprints"`
+	Id         uint              `json:"id"`
+	Username   string            `json:"username"`
+	Avatar     string            `json:"avatar"`
+	Blueprints []*SmallBlueprint `json:"blueprints"`
 }
 
 type SmallBlueprint struct {
@@ -102,43 +102,42 @@ func signIn(r *http.Request) (interface{}, *utils.ErrorResponse) {
 }
 
 func getUser(r *http.Request) (interface{}, *utils.ErrorResponse) {
-	userId, _ := strconv.ParseUint(mux.Vars(r)["user"], 10, 32)
+	userId, err := strconv.ParseUint(mux.Vars(r)["user"], 10, 32)
+	if err != nil {
+		return nil, &utils.Error_user_not_found
+	}
 
 	user := db.GetUserById(uint(userId))
 
 	blueprints := user.GetUserBlueprints()
-	reBlueprint := make([]SmallBlueprint, len(blueprints))
+	reBlueprint := make([]*SmallBlueprint, 0)
 
-	for i := 0; i < len(blueprints); i++ {
-		tags := blueprints[i].GetTags()
-		reTags := make([]string, len(tags))
-
-		for i := 0; i < len(tags); i++ {
-			tag := tags[i]
-			reTags[i] = tag.Name
+	for _, blueprint := range blueprints {
+		tags := blueprint.GetTags()
+		reTags := make([]string, 0)
+		for _, tag := range tags {
+			reTags = append(reTags, tag.Name)
 		}
 
-		reBlueprint[i] = SmallBlueprint{
-			Name:        blueprints[i].Name,
-			Description: blueprints[i].Description,
+		reBlueprint = append(reBlueprint, &SmallBlueprint{
+			Name:        blueprint.Name,
+			Description: blueprint.Description,
 			Tags:        reTags,
-		}
+		})
 	}
 
 	authUser := db.GetAuthUser(r)
 
-	if authUser != nil {
-		if authUser.ID == uint(userId) {
-			return PrivateUserResponse{
-				Id:         uint(userId),
-				Email:      user.Email,
-				Username:   user.Username,
-				Avatar:     user.Avatar,
-				CreatedAt:  user.CreatedAt,
-				UpdatedAt:  user.UpdatedAt,
-				Blueprints: reBlueprint,
-			}, nil
-		}
+	if authUser != nil && authUser.ID == uint(userId) {
+		return PrivateUserResponse{
+			Id:         uint(userId),
+			Email:      user.Email,
+			Username:   user.Username,
+			Avatar:     user.Avatar,
+			CreatedAt:  user.CreatedAt,
+			UpdatedAt:  user.UpdatedAt,
+			Blueprints: reBlueprint,
+		}, nil
 	}
 
 	return PublicUserResponse{
@@ -151,22 +150,20 @@ func getUser(r *http.Request) (interface{}, *utils.ErrorResponse) {
 
 func getUserSelf(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
 	blueprints := u.GetUserBlueprints()
-	reBlueprint := make([]SmallBlueprint, len(blueprints))
+	reBlueprint := make([]*SmallBlueprint, 0)
 
-	for i := 0; i < len(blueprints); i++ {
-		tags := blueprints[i].GetTags()
-		reTags := make([]string, len(tags))
-
-		for i := 0; i < len(tags); i++ {
-			tag := tags[i]
-			reTags[i] = tag.Name
+	for _, blueprint := range blueprints {
+		tags := blueprint.GetTags()
+		reTags := make([]string, 0)
+		for _, tag := range tags {
+			reTags = append(reTags, tag.Name)
 		}
 
-		reBlueprint[i] = SmallBlueprint{
-			Name:        blueprints[i].Name,
-			Description: blueprints[i].Description,
+		reBlueprint = append(reBlueprint, &SmallBlueprint{
+			Name:        blueprint.Name,
+			Description: blueprint.Description,
 			Tags:        reTags,
-		}
+		})
 	}
 
 	return PrivateUserResponse{
@@ -201,21 +198,23 @@ func putUser(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
 		}
 	}
 
-	userId, _ := strconv.ParseUint(mux.Vars(r)["user"], 10, 32)
+	userId, err := strconv.ParseUint(mux.Vars(r)["user"], 10, 32)
+	if err != nil {
+		return nil, &utils.Error_user_not_found
+	}
 
 	if u.ID != uint(userId) {
 		return nil, &utils.Error_no_access
 	}
 
 	u.Username = request.Username
-
 	u.Save()
 
 	return nil, nil
 }
 
 type UserBlueprintResponse struct {
-	Blueprints []UserBlueprintResponseBlueprint `json:"blueprints"`
+	Blueprints []*UserBlueprintResponseBlueprint `json:"blueprints"`
 }
 
 type UserBlueprintResponseBlueprint struct {
@@ -228,32 +227,32 @@ type UserBlueprintResponseBlueprint struct {
 }
 
 func getUserBlueprints(r *http.Request) (interface{}, *utils.ErrorResponse) {
-	userId, _ := strconv.ParseUint(mux.Vars(r)["user"], 10, 32)
+	userId, err := strconv.ParseUint(mux.Vars(r)["user"], 10, 32)
+	if err != nil {
+		return nil, &utils.Error_user_not_found
+	}
 
 	user := db.GetUserById(uint(userId))
 
 	blueprints := user.GetUserBlueprints()
-	reBlueprint := make([]UserBlueprintResponseBlueprint, len(blueprints))
+	reBlueprint := make([]*UserBlueprintResponseBlueprint, 0)
 
-	for i := 0; i < len(blueprints); i++ {
-		blueprint := blueprints[i]
-
+	for _, blueprint := range blueprints {
 		tags := blueprint.GetTags()
-		reTags := make([]string, len(tags))
+		reTags := make([]string, 0)
 
-		for i := 0; i < len(tags); i++ {
-			tag := tags[i]
-			reTags[i] = tag.Name
+		for _, tag := range tags {
+			reTags = append(reTags, tag.Name)
 		}
 
-		reBlueprint[i] = UserBlueprintResponseBlueprint{
+		reBlueprint = append(reBlueprint, &UserBlueprintResponseBlueprint{
 			Id:          blueprint.ID,
 			Name:        blueprint.Name,
 			Description: blueprint.Description,
 			Tags:        reTags,
 			CreatedAt:   blueprint.CreatedAt,
 			UpdatedAt:   blueprint.UpdatedAt,
-		}
+		})
 	}
 
 	return UserBlueprintResponse{
@@ -263,27 +262,24 @@ func getUserBlueprints(r *http.Request) (interface{}, *utils.ErrorResponse) {
 
 func getUserSelfBlueprints(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
 	blueprints := u.GetUserBlueprints()
-	reBlueprint := make([]UserBlueprintResponseBlueprint, len(blueprints))
+	reBlueprint := make([]*UserBlueprintResponseBlueprint, 0)
 
-	for i := 0; i < len(blueprints); i++ {
-		blueprint := blueprints[i]
-
+	for _, blueprint := range blueprints {
 		tags := blueprint.GetTags()
-		reTags := make([]string, len(tags))
+		reTags := make([]string, 0)
 
-		for i := 0; i < len(tags); i++ {
-			tag := tags[i]
-			reTags[i] = tag.Name
+		for _, tag := range tags {
+			reTags = append(reTags, tag.Name)
 		}
 
-		reBlueprint[i] = UserBlueprintResponseBlueprint{
+		reBlueprint = append(reBlueprint, &UserBlueprintResponseBlueprint{
 			Id:          blueprint.ID,
 			Name:        blueprint.Name,
 			Description: blueprint.Description,
 			Tags:        reTags,
 			CreatedAt:   blueprint.CreatedAt,
 			UpdatedAt:   blueprint.UpdatedAt,
-		}
+		})
 	}
 
 	return UserBlueprintResponse{
