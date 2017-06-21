@@ -116,7 +116,6 @@ func postRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespons
 
 type PutRevisionRequest struct {
 	Changes   string `json:"changes";validate:"nonzero"`
-	Blueprint string `json:"blueprint";validate:"nonzero"`
 }
 
 /*
@@ -161,7 +160,7 @@ func updateRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespo
 	}
 
 	revision.Changes = request.Changes
-	revision.BlueprintString = request.Blueprint
+	revision.Save()
 
 	return nil, nil
 }
@@ -217,16 +216,16 @@ func getRevisionComments(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	}
 
 	comments := revision.GetComments()
-	reComment := make([]*Comment, 0)
+	reComment := make([]*Comment, len(comments))
 
-	for _, comment := range comments {
-		reComment = append(reComment, &Comment{
+	for i, comment := range comments {
+		reComment[i] = &Comment{
 			Id:        comment.ID,
 			UserId:    comment.UserID,
 			CreatedAt: comment.CreatedAt,
 			UpdatedAt: comment.UpdatedAt,
 			Message:   comment.Message,
-		})
+		}
 	}
 
 	return GetRevisionCommentsResponse{

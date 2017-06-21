@@ -110,20 +110,20 @@ func getUser(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	user := db.GetUserById(uint(userId))
 
 	blueprints := user.GetUserBlueprints()
-	reBlueprint := make([]*SmallBlueprint, 0)
+	reBlueprint := make([]*SmallBlueprint, len(blueprints))
 
-	for _, blueprint := range blueprints {
+	for i, blueprint := range blueprints {
 		tags := blueprint.GetTags()
-		reTags := make([]string, 0)
-		for _, tag := range tags {
-			reTags = append(reTags, tag.Name)
+		reTags := make([]string, len(tags))
+		for j, tag := range tags {
+			reTags[j] = tag.Name
 		}
 
-		reBlueprint = append(reBlueprint, &SmallBlueprint{
+		reBlueprint[i] = &SmallBlueprint{
 			Name:        blueprint.Name,
 			Description: blueprint.Description,
 			Tags:        reTags,
-		})
+		}
 	}
 
 	authUser := db.GetAuthUser(r)
@@ -150,20 +150,20 @@ func getUser(r *http.Request) (interface{}, *utils.ErrorResponse) {
 
 func getUserSelf(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
 	blueprints := u.GetUserBlueprints()
-	reBlueprint := make([]*SmallBlueprint, 0)
+	reBlueprint := make([]*SmallBlueprint, len(blueprints))
 
-	for _, blueprint := range blueprints {
+	for i, blueprint := range blueprints {
 		tags := blueprint.GetTags()
-		reTags := make([]string, 0)
-		for _, tag := range tags {
-			reTags = append(reTags, tag.Name)
+		reTags := make([]string, len(tags))
+		for j, tag := range tags {
+			reTags[j] = tag.Name
 		}
 
-		reBlueprint = append(reBlueprint, &SmallBlueprint{
+		reBlueprint[i] = &SmallBlueprint{
 			Name:        blueprint.Name,
 			Description: blueprint.Description,
 			Tags:        reTags,
-		})
+		}
 	}
 
 	return PrivateUserResponse{
@@ -235,24 +235,24 @@ func getUserBlueprints(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	user := db.GetUserById(uint(userId))
 
 	blueprints := user.GetUserBlueprints()
-	reBlueprint := make([]*UserBlueprintResponseBlueprint, 0)
+	reBlueprint := make([]*UserBlueprintResponseBlueprint, len(blueprints))
 
-	for _, blueprint := range blueprints {
+	for i, blueprint := range blueprints {
 		tags := blueprint.GetTags()
-		reTags := make([]string, 0)
+		reTags := make([]string, len(tags))
 
-		for _, tag := range tags {
-			reTags = append(reTags, tag.Name)
+		for j, tag := range tags {
+			reTags[j] = tag.Name
 		}
 
-		reBlueprint = append(reBlueprint, &UserBlueprintResponseBlueprint{
+		reBlueprint[i] = &UserBlueprintResponseBlueprint{
 			Id:          blueprint.ID,
 			Name:        blueprint.Name,
 			Description: blueprint.Description,
 			Tags:        reTags,
 			CreatedAt:   blueprint.CreatedAt,
 			UpdatedAt:   blueprint.UpdatedAt,
-		})
+		}
 	}
 
 	return UserBlueprintResponse{
@@ -262,24 +262,24 @@ func getUserBlueprints(r *http.Request) (interface{}, *utils.ErrorResponse) {
 
 func getUserSelfBlueprints(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
 	blueprints := u.GetUserBlueprints()
-	reBlueprint := make([]*UserBlueprintResponseBlueprint, 0)
+	reBlueprint := make([]*UserBlueprintResponseBlueprint, len(blueprints))
 
-	for _, blueprint := range blueprints {
+	for i, blueprint := range blueprints {
 		tags := blueprint.GetTags()
-		reTags := make([]string, 0)
+		reTags := make([]string, len(tags))
 
-		for _, tag := range tags {
-			reTags = append(reTags, tag.Name)
+		for j, tag := range tags {
+			reTags[j] = tag.Name
 		}
 
-		reBlueprint = append(reBlueprint, &UserBlueprintResponseBlueprint{
+		reBlueprint[i] = &UserBlueprintResponseBlueprint{
 			Id:          blueprint.ID,
 			Name:        blueprint.Name,
 			Description: blueprint.Description,
 			Tags:        reTags,
 			CreatedAt:   blueprint.CreatedAt,
 			UpdatedAt:   blueprint.UpdatedAt,
-		})
+		}
 	}
 
 	return UserBlueprintResponse{

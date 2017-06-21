@@ -64,13 +64,18 @@ func (m Blueprint) IncrementAndGetRevision() uint {
 
 func (m Blueprint) GetRevision(id uint) *Revision {
 	var revisions []Revision
-	db.Model(m).Related(&revisions)
-
-	for _, rev := range revisions {
-		if rev.Revision == id {
-			return &rev
-		}
+	db.Model(m).Related(&revisions).Where("revision = ?", id).Limit(1)
+	if len(revisions) > 0 {
+		return &revisions[0]
 	}
+	return nil
+}
 
+func (m *Blueprint) FindLatestRevision() *Revision {
+	var revisions []Revision
+	db.Model(m).Related(&revisions).Order("revision desc").Limit(1)
+	if len(revisions) > 0 {
+		return &revisions[0]
+	}
 	return nil
 }

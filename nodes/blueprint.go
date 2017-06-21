@@ -64,15 +64,15 @@ Get all blueprints (paged)
 */
 func getBlueprints(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 	blueprints := db.GetAllBlueprints()
-	reBlueprint := make([]*SmallBlueprintResponse, 0)
+	reBlueprint := make([]*SmallBlueprintResponse, len(blueprints))
 
-	for _, blueprint := range blueprints {
-		reBlueprint = append(reBlueprint, &SmallBlueprintResponse{
+	for i, blueprint := range blueprints {
+		reBlueprint[i] = &SmallBlueprintResponse{
 			Id:          blueprint.ID,
 			UserId:      blueprint.UserID,
 			Name:        blueprint.Name,
 			Description: blueprint.Description,
-		})
+		}
 	}
 
 	return GetBlueprintsResponse{
@@ -96,11 +96,11 @@ func getBlueprint(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	}
 
 	revisions := blueprint.GetRevisions()
-	reRevision := make([]*Revision, 0)
+	reRevision := make([]*Revision, len(revisions))
 
 	authUser := db.GetAuthUser(r)
 
-	for _, revision := range revisions {
+	for i, revision := range revisions {
 		if revision.DeletedAt != nil {
 			continue
 		}
@@ -108,14 +108,14 @@ func getBlueprint(r *http.Request) (interface{}, *utils.ErrorResponse) {
 		if err != nil {
 			return nil, err
 		}
-		reRevision = append(reRevision, rev)
+		reRevision[i] = rev
 	}
 
 	tags := blueprint.GetTags()
-	reTags := make([]string, 0)
+	reTags := make([]string, len(tags))
 
-	for _, tag := range tags {
-		reTags = append(reTags, tag.Name)
+	for i, tag := range tags {
+		reTags[i] = tag.Name
 	}
 
 	return BlueprintResponse{
@@ -280,16 +280,16 @@ func getRevisions(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	}
 
 	revisions := blueprint.GetRevisions()
-	reRevision := make([]*Revision, 0)
+	reRevision := make([]*Revision, len(revisions))
 
 	authUser := db.GetAuthUser(r)
 
-	for _, revision := range revisions {
+	for i, revision := range revisions {
 		rev, err := revisionToJSON(authUser, &revision)
 		if err != nil {
 			return nil, err
 		}
-		reRevision = append(reRevision, rev)
+		reRevision[i] = rev
 	}
 
 	return GetRevisionsResponse{
@@ -313,6 +313,9 @@ func getRevisionLatest(r *http.Request) (interface{}, *utils.ErrorResponse) {
 
 	authUser := db.GetAuthUser(r)
 	revision := blueprint.GetRevision(blueprint.LastRevision)
+	if revision == nil || revision.DeletedAt != nil {
+		revision = blueprint.FindLatestRevision()
+	}
 	return revisionToJSON(authUser, revision)
 }
 
@@ -348,9 +351,7 @@ func revisionToJSON(authUser *db.User, revision *db.Revision) (*Revision, *utils
 	ratings := revision.GetRatings()
 	thumbsUp, thumbsDown, userVote := 0, 0, 0
 
-	for j := 0; j < len(ratings); j++ {
-		rating := ratings[j]
-
+	for _, rating := range ratings {
 		if rating.ThumbsUp {
 			thumbsUp++
 		} else {
@@ -367,17 +368,16 @@ func revisionToJSON(authUser *db.User, revision *db.Revision) (*Revision, *utils
 	}
 
 	comments := revision.GetComments()
-	reComment := make([]*Comment, 0)
+	reComment := make([]*Comment, len(comments))
 
-	for j := 0; j < len(comments); j++ {
-		comment := comments[j]
-		reComment = append(reComment, &Comment{
+	for i, comment := range comments {
+		reComment[i] = &Comment{
 			Id:        comment.ID,
 			UserId:    comment.UserID,
 			CreatedAt: comment.CreatedAt,
 			UpdatedAt: comment.UpdatedAt,
 			Message:   comment.Message,
-		})
+		}
 	}
 
 	return &Revision{
