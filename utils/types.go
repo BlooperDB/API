@@ -19,7 +19,8 @@ var (
 var (
 	Error_user_token_invalid    = ErrorResponse{100, "User token invalid", 400}
 	Error_blooper_token_invalid = ErrorResponse{101, "Blooper token invalid", 400}
-	Error_no_access             = ErrorResponse{101, "No access", 403}
+	Error_no_access             = ErrorResponse{102, "No access", 403}
+	Error_user_not_found        = ErrorResponse{103, "User not found", 404}
 )
 
 var (
@@ -27,9 +28,9 @@ var (
 )
 
 var (
-	Error_revision_not_found = ErrorResponse{300, "Blueprint not found", 404}
+	Error_revision_not_found = ErrorResponse{300, "Blueprint revision not found", 404}
 )
 
 var (
-	Error_comment_not_found = ErrorResponse{400, "Blueprint not found", 404}
+	Error_comment_not_found = ErrorResponse{400, "Blueprint comment not found", 404}
 )
