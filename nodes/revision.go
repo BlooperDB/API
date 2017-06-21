@@ -148,7 +148,7 @@ func postRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespons
 
 	i := blueprint.IncrementAndGetRevision()
 
-	revision := db.Revision{
+	revision := &db.Revision{
 		BlueprintID:     request.BlueprintId,
 		Revision:        i,
 		Changes:         request.Changes,

@@ -206,7 +206,7 @@ func postBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespon
 		}
 	}
 
-	blueprint := db.Blueprint{
+	blueprint := &db.Blueprint{
 		UserID:       u.ID,
 		Name:         request.Name,
 		Description:  request.Description,
@@ -215,7 +215,7 @@ func postBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespon
 
 	blueprint.Save()
 
-	revision := db.Revision{
+	revision := &db.Revision{
 		BlueprintID:     blueprint.ID,
 		Revision:        blueprint.LastRevision,
 		Changes:         "",
