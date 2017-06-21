@@ -64,7 +64,7 @@ func (m Blueprint) IncrementAndGetRevision() uint {
 
 func (m Blueprint) GetRevision(id uint) *Revision {
 	var revisions []Revision
-	db.Where("revision = ?", id).Limit(1).Find(&revisions)
+	db.Where("blueprint_id = ? AND revision = ?", m.ID, id).Limit(1).Find(&revisions)
 	if len(revisions) > 0 {
 		return &revisions[0]
 	}
