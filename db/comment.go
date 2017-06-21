@@ -16,12 +16,12 @@ type Comment struct {
 	Message string `gorm:"not null"`
 }
 
-func (m Comment) Save() {
-	db.Save(&m)
+func (m *Comment) Save() {
+	db.Save(m)
 }
 
-func (m Comment) Delete() {
-	db.Delete(&m)
+func (m *Comment) Delete() {
+	db.Delete(m)
 }
 
 func GetCommentById(id uint) *Comment {

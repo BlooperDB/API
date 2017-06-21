@@ -18,12 +18,12 @@ type Blueprint struct {
 	Tags      []Tag `gorm:"many2many:blueprint_tags;"`
 }
 
-func (m Blueprint) Save() {
-	db.Save(&m)
+func (m *Blueprint) Save() {
+	db.Save(m)
 }
 
-func (m Blueprint) Delete() {
-	db.Delete(&m)
+func (m *Blueprint) Delete() {
+	db.Delete(m)
 }
 
 func GetBlueprintById(id uint) *Blueprint {

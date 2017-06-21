@@ -19,12 +19,12 @@ type User struct {
 	Comments     []Comment
 }
 
-func (m User) Save() {
-	db.Save(&m)
+func (m *User) Save() {
+	db.Save(m)
 }
 
-func (m User) Delete() {
-	db.Delete(&m)
+func (m *User) Delete() {
+	db.Delete(m)
 }
 
 func SignIn(token *firebase.Token) (User, bool) {

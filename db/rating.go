@@ -16,12 +16,12 @@ type Rating struct {
 	ThumbsUp bool `gorm:"not null"`
 }
 
-func (m Rating) Save() {
-	db.Save(&m)
+func (m *Rating) Save() {
+	db.Save(m)
 }
 
-func (m Rating) Delete() {
-	db.Delete(&m)
+func (m *Rating) Delete() {
+	db.Delete(m)
 }
 
 func (m Rating) GetUser() User {

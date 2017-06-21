@@ -16,12 +16,12 @@ type Revision struct {
 	Comments        []Comment
 }
 
-func (m Revision) Save() {
-	db.Save(&m)
+func (m *Revision) Save() {
+	db.Save(m)
 }
 
-func (m Revision) Delete() {
-	db.Delete(&m)
+func (m *Revision) Delete() {
+	db.Delete(m)
 }
 
 func (m Revision) GetComments() []Comment {
