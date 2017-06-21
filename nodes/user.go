@@ -46,6 +46,7 @@ func RegisterUserRoutes(router api.RegisterRoute) {
 
 	router("GET", "/user/{user}", getUser)
 	router("PUT", "/user/{user}", api.AuthHandler(putUser))
+	router("GET", "/user/{user}/blueprints", getUserBlueprints)
 }
 
 type UserSignInResponse struct {
@@ -210,4 +211,51 @@ func putUser(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
 	u.Save()
 
 	return nil, nil
+}
+
+type UserBlueprintResponse struct {
+	Blueprints []UserBlueprintResponseBlueprint `json:"blueprints"`
+}
+
+type UserBlueprintResponseBlueprint struct {
+	Id          uint      `json:"id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	Tags        []string  `json:"tags"`
+	CreatedAt   time.Time `json:"created-at"`
+	UpdatedAt   time.Time `json:"updated-at"`
+}
+
+func getUserBlueprints(r *http.Request) (interface{}, *utils.ErrorResponse) {
+	userId, _ := strconv.ParseUint(mux.Vars(r)["user"], 10, 32)
+
+	user := db.GetUserById(uint(userId))
+
+	blueprints := user.GetUserBlueprints()
+	reBlueprint := make([]UserBlueprintResponseBlueprint, len(blueprints))
+
+	for i := 0; i < len(blueprints); i++ {
+		blueprint := blueprints[i]
+
+		tags := blueprint.GetTags()
+		reTags := make([]string, len(tags))
+
+		for i := 0; i < len(tags); i++ {
+			tag := tags[i]
+			reTags[i] = tag.Name
+		}
+
+		reBlueprint[i] = UserBlueprintResponseBlueprint{
+			Id:          blueprint.ID,
+			Name:        blueprint.Name,
+			Description: blueprint.Description,
+			Tags:        reTags,
+			CreatedAt:   blueprint.CreatedAt,
+			UpdatedAt:   blueprint.UpdatedAt,
+		}
+	}
+
+	return UserBlueprintResponse{
+		Blueprints: reBlueprint,
+	}, nil
 }
