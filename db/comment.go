@@ -7,8 +7,8 @@ import (
 type Comment struct {
 	gorm.Model
 
-	Version   Version `gorm:"ForeignKey:VersionID;AssociationForeignKey:ID"`
-	VersionID uint    `gorm:"index; not null"`
+	Revision   Revision `gorm:"ForeignKey:RevisionID;AssociationForeignKey:ID"`
+	RevisionID uint     `gorm:"index; not null"`
 
 	User   User `gorm:"ForeignKey:UserID;AssociationForeignKey:ID"`
 	UserID uint `gorm:"index; not null"`
@@ -41,8 +41,8 @@ func (m Comment) GetUser() User {
 	return user
 }
 
-func (m Comment) GetVersion() Version {
-	var version Version
-	db.Model(m).Related(&version)
-	return version
+func (m Comment) GetRevision() Revision {
+	var revision Revision
+	db.Model(m).Related(&revision)
+	return revision
 }

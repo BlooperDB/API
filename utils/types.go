@@ -27,7 +27,7 @@ var (
 )
 
 var (
-	Error_version_not_found = ErrorResponse{300, "Blueprint not found", 404}
+	Error_revision_not_found = ErrorResponse{300, "Blueprint not found", 404}
 )
 
 var (

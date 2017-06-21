@@ -31,7 +31,7 @@ func Initialize() {
 	nodes.RegisterUserRoutes(v1)
 	nodes.RegisterBlueprintRoutes(v1)
 	nodes.RegisterCommentRoutes(v1)
-	nodes.RegisterVersionRoutes(v1)
+	nodes.RegisterRevisionRoutes(v1)
 
 	var (
 		db_user = os.Getenv("POSTGRES_USER")

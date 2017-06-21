@@ -19,5 +19,5 @@ func migrations() {
 	db.AutoMigrate(&Rating{})
 	db.AutoMigrate(&Tag{})
 	db.AutoMigrate(&User{})
-	db.AutoMigrate(&Version{})
+	db.AutoMigrate(&Revision{})
 }

@@ -10,10 +10,12 @@ type Blueprint struct {
 	User   User `gorm:"ForeignKey:UserID;AssociationForeignKey:ID"`
 	UserID uint `gorm:"index;not null"`
 
-	Name        string `gorm:"not null"`
-	Description string `gorm:"not null"`
-	Versions    []Version
-	Tags        []Tag `gorm:"many2many:blueprint_tags;"`
+	Name         string `gorm:"not null"`
+	Description  string `gorm:"not null"`
+	LastRevision uint   `gorm:"not null"`
+
+	Revisions []Revision
+	Tags      []Tag `gorm:"many2many:blueprint_tags;"`
 }
 
 func (m Blueprint) Save() {
@@ -24,7 +26,7 @@ func (m Blueprint) Delete() {
 	db.Delete(&m)
 }
 
-func GetBlueprintById(id string) *Blueprint {
+func GetBlueprintById(id uint) *Blueprint {
 	var blueprint Blueprint
 	db.First(&blueprint, id)
 
@@ -35,10 +37,10 @@ func GetBlueprintById(id string) *Blueprint {
 	return &blueprint
 }
 
-func (m Blueprint) GetVersions() []Version {
-	var versions []Version
-	db.Model(m).Related(&versions)
-	return versions
+func (m Blueprint) GetRevisions() []Revision {
+	var revisions []Revision
+	db.Model(m).Related(&revisions)
+	return revisions
 }
 
 func (m Blueprint) GetTags() []Tag {
@@ -51,4 +53,25 @@ func GetAllBlueprints() []Blueprint {
 	var blueprint []Blueprint
 	db.Find(&blueprint)
 	return blueprint
+}
+
+func (m Blueprint) IncrementAndGetRevision() uint {
+	m.LastRevision++
+	i := m.LastRevision
+	m.Save()
+	return i
+}
+
+func (m Blueprint) GetRevision(id uint) *Revision {
+	var revisions []Revision
+	db.Model(m).Related(&revisions)
+
+	for i := 0; i < len(revisions); i++ {
+		rev := revisions[i]
+		if rev.Revision == id {
+			return &rev
+		}
+	}
+
+	return nil
 }

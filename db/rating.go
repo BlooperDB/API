@@ -10,8 +10,8 @@ type Rating struct {
 	User   User `gorm:"ForeignKey:UserID;AssociationForeignKey:ID"`
 	UserID uint `gorm:"index; not null"`
 
-	Version   Version `gorm:"ForeignKey:VersionID;AssociationForeignKey:ID"`
-	VersionID uint    `gorm:"index; not null"`
+	Revision   Revision `gorm:"ForeignKey:RevisionID;AssociationForeignKey:ID"`
+	RevisionID uint     `gorm:"index; not null"`
 
 	ThumbsUp bool `gorm:"not null"`
 }
@@ -30,8 +30,8 @@ func (m Rating) GetUser() User {
 	return user
 }
 
-func (m Rating) GetVersion() Version {
-	var version Version
-	db.Model(m).Related(&version)
-	return version
+func (m Rating) GetRevision() Revision {
+	var revision Revision
+	db.Model(m).Related(&revision)
+	return revision
 }

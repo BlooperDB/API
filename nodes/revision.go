@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"time"
 
+	"strconv"
+
 	"github.com/BlooperDB/API/api"
 	"github.com/BlooperDB/API/db"
 	"github.com/BlooperDB/API/utils"
@@ -12,9 +14,9 @@ import (
 	"gopkg.in/validator.v2"
 )
 
-type Version struct {
+type Revision struct {
 	Id         uint      `json:"id"`
-	Version    string    `json:"version"`
+	Revision   uint      `json:"revision"`
 	Changes    string    `json:"changes"`
 	CreatedAt  time.Time `json:"created-at"`
 	UpdatedAt  time.Time `json:"updated-at"`
@@ -25,27 +27,27 @@ type Version struct {
 	Comments   []Comment `json:"comments"`
 }
 
-func RegisterVersionRoutes(router api.RegisterRoute) {
-	router("POST", "/version", api.AuthHandler(postVersion))
-	router("GET", "/version/{version}", getVersion)
-	router("PUT", "/version/{version}", api.AuthHandler(updateVersion))
-	router("DELETE", "/version/{version}", api.AuthHandler(deleteVersion))
-	router("GET", "/version/{version}/comments", getVersionComments)
+func RegisterRevisionRoutes(router api.RegisterRoute) {
+	router("POST", "/revision", api.AuthHandler(postRevision))
+	router("GET", "/revision/{revision}", getRevision)
+	router("PUT", "/revision/{revision}", api.AuthHandler(updateRevision))
+	router("DELETE", "/revision/{revision}", api.AuthHandler(deleteRevision))
+	router("GET", "/revision/{revision}/comments", getRevisionComments)
 }
 
 /*
-Get specific version
+Get specific revision
 */
-func getVersion(r *http.Request) (interface{}, *utils.ErrorResponse) {
-	versionId := mux.Vars(r)["version"]
+func getRevision(r *http.Request) (interface{}, *utils.ErrorResponse) {
+	revisionId, _ := strconv.ParseUint(mux.Vars(r)["revision"], 10, 32)
 
-	version := db.GetVersionById(versionId)
+	revision := db.GetRevisionById(uint(revisionId))
 
-	if version == nil {
-		return nil, &utils.Error_version_not_found
+	if revision == nil {
+		return nil, &utils.Error_revision_not_found
 	}
 
-	ratings := version.GetRatings()
+	ratings := revision.GetRatings()
 	thumbsUp, thumbsDown, userVote := 0, 0, 0
 
 	authUser := db.GetAuthUser(r)
@@ -70,7 +72,7 @@ func getVersion(r *http.Request) (interface{}, *utils.ErrorResponse) {
 		}
 	}
 
-	comments := version.GetComments()
+	comments := revision.GetComments()
 	reComment := make([]Comment, len(comments))
 
 	for j := 0; j < len(comments); j++ {
@@ -84,13 +86,13 @@ func getVersion(r *http.Request) (interface{}, *utils.ErrorResponse) {
 		}
 	}
 
-	return Version{
-		Id:         version.ID,
-		Version:    version.Version,
-		Changes:    version.Changes,
-		CreatedAt:  version.CreatedAt,
-		UpdatedAt:  version.UpdatedAt,
-		Blueprint:  version.BlueprintString,
+	return Revision{
+		Id:         revision.ID,
+		Revision:   revision.Revision,
+		Changes:    revision.Changes,
+		CreatedAt:  revision.CreatedAt,
+		UpdatedAt:  revision.UpdatedAt,
+		Blueprint:  revision.BlueprintString,
 		ThumbsUp:   thumbsUp,
 		ThumbsDown: thumbsDown,
 		UserVote:   userVote,
@@ -98,23 +100,26 @@ func getVersion(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	}, nil
 }
 
-type PostVersionRequest struct {
+type PostRevisionRequest struct {
 	BlueprintId uint   `json:"blueprint-id";validate:"nonzero"`
-	Version     string `json:"version";validate:"nonzero"`
 	Changes     string `json:"changes";validate:"nonzero"`
 	Blueprint   string `json:"blueprint";validate:"nonzero"`
 }
 
-type PostVersionResponse struct {
-	Id uint `json:"id"`
+type PostRevisionResponse struct {
+	// Global unique revision identifier
+	RevisionId uint `json:"revision-id"`
+
+	// Blueprint incremental version
+	Revision uint `json:"revision"`
 }
 
 /*
-Post a version
+Post a revision
 */
-func postVersion(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
+func postRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
 	decoder := json.NewDecoder(r.Body)
-	var request PostVersionRequest
+	var request PostRevisionRequest
 	err := decoder.Decode(&request)
 
 	if err != nil {
@@ -129,9 +134,9 @@ func postVersion(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse
 		}
 	}
 
-	blueprintId := mux.Vars(r)["blueprint"]
+	blueprintId, _ := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
 
-	blueprint := db.GetBlueprintById(blueprintId)
+	blueprint := db.GetBlueprintById(uint(blueprintId))
 
 	if blueprint == nil {
 		return nil, &utils.Error_blueprint_not_found
@@ -141,32 +146,34 @@ func postVersion(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse
 		return nil, &utils.Error_no_access
 	}
 
-	version := db.Version{
+	i := blueprint.IncrementAndGetRevision()
+
+	revision := db.Revision{
 		BlueprintID:     request.BlueprintId,
-		Version:         request.Version,
+		Revision:        i,
 		Changes:         request.Changes,
 		BlueprintString: request.Blueprint,
 	}
 
-	version.Save()
+	revision.Save()
 
-	return PostVersionResponse{
-		Id: version.ID,
+	return PostRevisionResponse{
+		RevisionId: revision.ID,
+		Revision:   revision.Revision,
 	}, nil
 }
 
-type PutVersionRequest struct {
-	Version   string `json:"version";validate:"nonzero"`
+type PutRevisionRequest struct {
 	Changes   string `json:"changes";validate:"nonzero"`
 	Blueprint string `json:"blueprint";validate:"nonzero"`
 }
 
 /*
-Update a version
+Update a revision
 */
-func updateVersion(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
+func updateRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
 	decoder := json.NewDecoder(r.Body)
-	var request PutVersionRequest
+	var request PutRevisionRequest
 	err := decoder.Decode(&request)
 
 	if err != nil {
@@ -181,71 +188,70 @@ func updateVersion(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespon
 		}
 	}
 
-	blueprintId := mux.Vars(r)["blueprint"]
+	blueprintId, _ := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
 
-	blueprint := db.GetBlueprintById(blueprintId)
+	blueprint := db.GetBlueprintById(uint(blueprintId))
 
 	if blueprint.UserID != u.ID {
 		return nil, &utils.Error_no_access
 	}
 
-	versionId := mux.Vars(r)["version"]
+	revisionId, _ := strconv.ParseUint(mux.Vars(r)["revision"], 10, 32)
 
-	version := db.GetVersionById(versionId)
+	revision := db.GetRevisionById(uint(revisionId))
 
-	if version == nil {
-		return nil, &utils.Error_version_not_found
+	if revision == nil {
+		return nil, &utils.Error_revision_not_found
 	}
 
-	version.Version = request.Version
-	version.Changes = request.Changes
-	version.BlueprintString = request.Blueprint
+	revision.Changes = request.Changes
+	revision.BlueprintString = request.Blueprint
 
 	return nil, nil
 }
 
 /*
-Delete a version
+Delete a revision
 */
-func deleteVersion(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
-	blueprintId := mux.Vars(r)["blueprint"]
+func deleteRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
+	blueprintId, _ := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
 
-	blueprint := db.GetBlueprintById(blueprintId)
+	blueprint := db.GetBlueprintById(uint(blueprintId))
 
 	if blueprint.UserID != u.ID {
 		return nil, &utils.Error_no_access
 	}
 
-	versionId := mux.Vars(r)["version"]
+	revisionId, _ := strconv.ParseUint(mux.Vars(r)["revision"], 10, 32)
 
-	version := db.GetVersionById(versionId)
+	revision := db.GetRevisionById(uint(revisionId))
 
-	if version == nil {
-		return nil, &utils.Error_version_not_found
+	if revision == nil {
+		return nil, &utils.Error_revision_not_found
 	}
 
-	version.Delete()
+	revision.Delete()
 
 	return nil, nil
 }
 
-type GetVersionCommentsResponse struct {
+type GetRevisionCommentsResponse struct {
 	Comments []Comment `json:"comments"`
 }
 
 /*
 Get all comments
 */
-func getVersionComments(r *http.Request) (interface{}, *utils.ErrorResponse) {
-	versionId := mux.Vars(r)["version"]
+func getRevisionComments(r *http.Request) (interface{}, *utils.ErrorResponse) {
+	revisionId, _ := strconv.ParseUint(mux.Vars(r)["revision"], 10, 32)
 
-	version := db.GetVersionById(versionId)
+	revision := db.GetRevisionById(uint(revisionId))
 
-	if version == nil {
-		return nil, &utils.Error_version_not_found
+	if revision == nil {
+		return nil, &utils.Error_revision_not_found
 	}
 
-	comments := version.GetComments()
+	comments := revision.GetComments()
 	reComment := make([]Comment, len(comments))
 
 	for j := 0; j < len(comments); j++ {
@@ -259,7 +265,7 @@ func getVersionComments(r *http.Request) (interface{}, *utils.ErrorResponse) {
 		}
 	}
 
-	return GetVersionCommentsResponse{
+	return GetRevisionCommentsResponse{
 		Comments: reComment,
 	}, nil
 }
