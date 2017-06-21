@@ -64,7 +64,9 @@ func (m Blueprint) IncrementAndGetRevision() uint {
 
 func (m Blueprint) GetRevision(id uint) *Revision {
 	var revisions []Revision
-	db.Model(m).Related(&revisions).Where("revision = ?", id).Limit(1)
+	db.Table("revisions").
+		Where("revision = ?", id).Limit(1).
+		Scan(&revisions)
 	if len(revisions) > 0 {
 		return &revisions[0]
 	}
@@ -73,7 +75,10 @@ func (m Blueprint) GetRevision(id uint) *Revision {
 
 func (m *Blueprint) FindLatestRevision() *Revision {
 	var revisions []Revision
-	db.Model(m).Related(&revisions).Order("revision desc").Limit(1)
+	db.Table("revisions").
+		Where("blueprint_id = ?", m.ID).
+		Order("revision desc").Limit(1).
+		Scan(&revisions)
 	if len(revisions) > 0 {
 		return &revisions[0]
 	}
