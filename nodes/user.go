@@ -43,6 +43,7 @@ type SmallBlueprint struct {
 func RegisterUserRoutes(router api.RegisterRoute) {
 	router("POST", "/user/signin", signIn)
 	router("GET", "/user/self", api.AuthHandler(getUserSelf))
+	router("GET", "/user/self/blueprints", api.AuthHandler(getUserSelfBlueprints))
 
 	router("GET", "/user/{user}", getUser)
 	router("PUT", "/user/{user}", api.AuthHandler(putUser))
@@ -232,6 +233,36 @@ func getUserBlueprints(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	user := db.GetUserById(uint(userId))
 
 	blueprints := user.GetUserBlueprints()
+	reBlueprint := make([]UserBlueprintResponseBlueprint, len(blueprints))
+
+	for i := 0; i < len(blueprints); i++ {
+		blueprint := blueprints[i]
+
+		tags := blueprint.GetTags()
+		reTags := make([]string, len(tags))
+
+		for i := 0; i < len(tags); i++ {
+			tag := tags[i]
+			reTags[i] = tag.Name
+		}
+
+		reBlueprint[i] = UserBlueprintResponseBlueprint{
+			Id:          blueprint.ID,
+			Name:        blueprint.Name,
+			Description: blueprint.Description,
+			Tags:        reTags,
+			CreatedAt:   blueprint.CreatedAt,
+			UpdatedAt:   blueprint.UpdatedAt,
+		}
+	}
+
+	return UserBlueprintResponse{
+		Blueprints: reBlueprint,
+	}, nil
+}
+
+func getUserSelfBlueprints(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
+	blueprints := u.GetUserBlueprints()
 	reBlueprint := make([]UserBlueprintResponseBlueprint, len(blueprints))
 
 	for i := 0; i < len(blueprints); i++ {
