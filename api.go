@@ -19,7 +19,9 @@ import (
 
 func Initialize() {
 	var port int
+	var dbhost string
 	flag.IntVar(&port, "port", 8080, "sets the port to run on")
+	flag.StringVar(&dbhost, "dbhost", "postgres", "sets the db host to query")
 	flag.Parse()
 
 	firebase.InitializeApp(&firebase.Options{
@@ -42,7 +44,7 @@ func Initialize() {
 		db_pass = os.Getenv("POSTGRES_PASSWORD")
 	)
 
-	orm_cmd := "host=postgres user="+db_user+" dbname="+db_name+" sslmode=disable password="+db_pass+""
+	orm_cmd := "host="+dbhost+" user="+db_user+" dbname="+db_name+" sslmode=disable password="+db_pass+""
 	connection, err := gorm.Open("postgres", orm_cmd)
 
 	if err != nil {
