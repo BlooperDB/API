@@ -1,13 +1,12 @@
 package blooper
 
 import (
-	"net/http"
-
+	"flag"
 	"fmt"
-
 	"log"
-
+	"net/http"
 	"os"
+	"time"
 
 	"github.com/BlooperDB/API/api"
 	"github.com/BlooperDB/API/db"
@@ -19,6 +18,10 @@ import (
 )
 
 func Initialize() {
+	var port int
+	flag.IntVar(&port, "port", 8080, "sets the port to run on")
+	flag.Parse()
+
 	firebase.InitializeApp(&firebase.Options{
 		ServiceAccountPath: "src/github.com/BlooperDB/API/blooper-firebase-adminsdk.json",
 	})
@@ -39,10 +42,15 @@ func Initialize() {
 		db_pass = os.Getenv("POSTGRES_PASSWORD")
 	)
 
-	connection, err := gorm.Open("postgres", "host=postgres user="+db_user+" dbname="+db_name+" sslmode=disable password="+db_pass+"")
+	orm_cmd := "host=postgres user="+db_user+" dbname="+db_name+" sslmode=disable password="+db_pass+""
+	connection, err := gorm.Open("postgres", orm_cmd)
 
 	if err != nil {
-		panic("failed to connect database")
+		time.Sleep(5 * time.Second)
+		connection, err = gorm.Open("postgres", orm_cmd)
+		if err != nil {
+			panic("failed to connect database")
+		}
 	}
 
 	defer connection.Close()
@@ -61,6 +69,6 @@ func Initialize() {
 	finalRouter = handlers.CompressHandler(finalRouter)
 	finalRouter = handlers.ProxyHeaders(finalRouter)
 
-	fmt.Println("Listening on port 8080")
-	log.Fatal(http.ListenAndServe(":8080", finalRouter))
+	fmt.Printf("Listening on port %d\n", port)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), finalRouter))
 }
