@@ -2,6 +2,7 @@ package db
 
 import (
 	"github.com/jinzhu/gorm"
+	"strconv"
 )
 
 type Blueprint struct {
@@ -18,6 +19,43 @@ type Blueprint struct {
 	Tags      []Tag `gorm:"many2many:blueprint_tags;"`
 }
 
+type BlueprintLatestRevision struct {
+	BlueprintId uint
+	Revision    uint
+}
+
+func GetAllBlueprints() []Blueprint {
+	var blueprint []Blueprint
+	db.Find(&blueprint)
+	return blueprint
+}
+
+func GetBlueprintById(id uint) *Blueprint {
+	var blueprint Blueprint
+	db.First(&blueprint, id)
+	if blueprint.ID == 0 {
+		return nil
+	}
+	return &blueprint
+}
+
+func GetLatestBlueprintRevisions(ids ...uint) []BlueprintLatestRevision {
+	var revs []BlueprintLatestRevision
+	idString := ""
+	for i, id := range ids {
+		if i != 0 {
+			idString += ", "
+		}
+		idString += strconv.FormatUint(uint64(id), 10)
+	}
+	db.Table("revisions").
+		Select("blueprint_id, revision").
+		Where("blueprint_id IN (" + idString + ")").
+		Where("revision = (SELECT revision FROM revisions WHERE deleted_at IS NULL ORDER BY revision desc LIMIT 1)").
+		Scan(&revs)
+	return revs
+}
+
 func (m *Blueprint) Save() {
 	db.Save(m)
 }
@@ -26,27 +64,10 @@ func (m *Blueprint) Delete() {
 	db.Delete(m)
 }
 
-func GetBlueprintById(id uint) *Blueprint {
-	var blueprint Blueprint
-	db.First(&blueprint, id)
-
-	if blueprint.ID == 0 {
-		return nil
-	}
-
-	return &blueprint
-}
-
 func (m Blueprint) GetTags() []Tag {
 	var tags []Tag
 	db.Model(m).Related(&tags)
 	return tags
-}
-
-func GetAllBlueprints() []Blueprint {
-	var blueprint []Blueprint
-	db.Find(&blueprint)
-	return blueprint
 }
 
 func (m Blueprint) IncrementAndGetRevision() uint {
