@@ -41,17 +41,19 @@ func GetBlueprintById(id uint) *Blueprint {
 
 func GetLatestBlueprintRevisions(ids ...uint) []BlueprintLatestRevision {
 	var revs []BlueprintLatestRevision
-	idString := ""
-	for i, id := range ids {
-		if i != 0 {
-			idString += ", "
+	q := db.Table("revisions").
+		Select("blueprint_id, revision")
+	if len(ids) > 0 {
+		idString := ""
+		for i, id := range ids {
+			if i != 0 {
+				idString += ", "
+			}
+			idString += strconv.FormatUint(uint64(id), 10)
 		}
-		idString += strconv.FormatUint(uint64(id), 10)
+		q = q.Where("blueprint_id IN (" + idString + ")")
 	}
-	db.Table("revisions").
-		Select("blueprint_id, revision").
-		Where("blueprint_id IN (" + idString + ")").
-		Where("revision = (SELECT revision FROM revisions WHERE deleted_at IS NULL ORDER BY revision desc LIMIT 1)").
+	q.Where("revision = (SELECT revision FROM revisions WHERE deleted_at IS NULL ORDER BY revision desc LIMIT 1)").
 		Scan(&revs)
 	return revs
 }
