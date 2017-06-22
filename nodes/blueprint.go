@@ -312,9 +312,9 @@ func getRevisionLatest(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	}
 
 	authUser := db.GetAuthUser(r)
-	revision := blueprint.GetRevision(blueprint.LastRevision)
+	revision := blueprint.GetLatestRevision()
 	if revision == nil || revision.DeletedAt != nil {
-		revision = blueprint.FindLatestRevision()
+		return nil, &utils.Error_revision_not_found
 	}
 	return revisionToJSON(authUser, revision)
 }

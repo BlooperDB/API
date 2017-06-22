@@ -35,6 +35,8 @@ type PublicUserResponse struct {
 }
 
 type SmallBlueprint struct {
+	Id          uint     `json:"id"`
+	Latest      uint     `json:"latest-revision"`
 	Name        string   `json:"name"`
 	Description string   `json:"description"`
 	Tags        []string `json:"tags"`
@@ -119,7 +121,14 @@ func getUser(r *http.Request) (interface{}, *utils.ErrorResponse) {
 			reTags[j] = tag.Name
 		}
 
+		var revId uint = 0
+		if rev := blueprint.GetLatestRevision(); rev != nil {
+			revId = rev.Revision
+		}
+
 		reBlueprint[i] = &SmallBlueprint{
+			Id:          blueprint.ID,
+			Latest:      revId,
 			Name:        blueprint.Name,
 			Description: blueprint.Description,
 			Tags:        reTags,
@@ -159,7 +168,14 @@ func getUserSelf(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse
 			reTags[j] = tag.Name
 		}
 
+		var revId uint = 0
+		if rev := blueprint.GetLatestRevision(); rev != nil {
+			revId = rev.Revision
+		}
+
 		reBlueprint[i] = &SmallBlueprint{
+			Id:          blueprint.ID,
+			Latest:      revId,
 			Name:        blueprint.Name,
 			Description: blueprint.Description,
 			Tags:        reTags,
