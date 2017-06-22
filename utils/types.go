@@ -21,6 +21,9 @@ var (
 	Error_blooper_token_invalid = ErrorResponse{101, "Blooper token invalid", 400}
 	Error_no_access             = ErrorResponse{102, "No access", 403}
 	Error_user_not_found        = ErrorResponse{103, "User not found", 404}
+	Error_invalid_username      = ErrorResponse{104, "Invalid username", 400}
+	Error_username_required     = ErrorResponse{105, "A username is required to do that", 400}
+	Error_username_taken        = ErrorResponse{106, "That username is already taken", 400}
 )
 
 var (

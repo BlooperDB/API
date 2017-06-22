@@ -46,6 +46,10 @@ func GenerateBlooperToken() string {
 	return utils.GenerateRandomString(32)
 }
 
+func GetAuthUser(r *http.Request) *User {
+	return GetUserByBlooperToken(r.Header.Get("BLOOPER-TOKEN"))
+}
+
 func GetUserById(userId uint) *User {
 	var user User
 	db.First(&user, userId)
@@ -55,8 +59,16 @@ func GetUserById(userId uint) *User {
 	return &user
 }
 
-func GetAuthUser(r *http.Request) *User {
-	return GetUserByBlooperToken(r.Header.Get("BLOOPER-TOKEN"))
+func GetUserByUsername(username string) *User {
+	if username == "" {
+		return nil
+	}
+	var user User
+	db.First(&user, "username = ?", username)
+	if user.ID == 0 {
+		return nil
+	}
+	return &user
 }
 
 func GetUserByBlooperToken(token string) *User {

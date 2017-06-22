@@ -44,11 +44,13 @@ type SmallBlueprint struct {
 
 func RegisterUserRoutes(router api.RegisterRoute) {
 	router("POST", "/user/signin", signIn)
+
+	router("PUT", "/user/", api.AuthHandler(putUser))
+
 	router("GET", "/user/self", api.AuthHandler(getUserSelf))
 	router("GET", "/user/self/blueprints", api.AuthHandler(getUserSelfBlueprints))
 
 	router("GET", "/user/{user}", getUser)
-	router("PUT", "/user/{user}", api.AuthHandler(putUser))
 	router("GET", "/user/{user}/blueprints", getUserBlueprints)
 }
 
@@ -214,13 +216,8 @@ func putUser(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
 		}
 	}
 
-	userId, err := strconv.ParseUint(mux.Vars(r)["user"], 10, 32)
-	if err != nil {
-		return nil, &utils.Error_user_not_found
-	}
-
-	if u.ID != uint(userId) {
-		return nil, &utils.Error_no_access
+	if existingUser := db.GetUserByUsername(request.Username); existingUser != nil {
+		return nil, &utils.Error_username_taken
 	}
 
 	u.Username = request.Username

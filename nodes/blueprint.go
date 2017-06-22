@@ -157,6 +157,10 @@ type PostBlueprintResponse struct {
 Post a new blueprint
 */
 func postBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
+	if u.Username == "" {
+		return nil, &utils.Error_username_required
+	}
+
 	decoder := json.NewDecoder(r.Body)
 	var request PostBlueprintRequest
 	err := decoder.Decode(&request)
@@ -179,7 +183,6 @@ func postBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespon
 		Description:  request.Description,
 		LastRevision: 1,
 	}
-
 	blueprint.Save()
 
 	revision := &db.Revision{
@@ -188,7 +191,6 @@ func postBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespon
 		Changes:         "",
 		BlueprintString: request.BlueprintString,
 	}
-
 	revision.Save()
 
 	return PostBlueprintResponse{
@@ -229,11 +231,9 @@ func updateBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorResp
 	}
 
 	blueprint := db.GetBlueprintById(uint(blueprintId))
-
 	if blueprint == nil {
 		return nil, &utils.Error_blueprint_not_found
 	}
-
 	if blueprint.UserID != u.ID {
 		return nil, &utils.Error_no_access
 	}

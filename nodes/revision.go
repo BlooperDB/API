@@ -71,6 +71,10 @@ type PostRevisionResponse struct {
 Post a revision
 */
 func postRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
+	if u.Username == "" {
+		return nil, &utils.Error_username_required
+	}
+
 	decoder := json.NewDecoder(r.Body)
 	var request PostRevisionRequest
 	err := decoder.Decode(&request)
