@@ -1,6 +1,12 @@
 package utils
 
-import "crypto/rand"
+import (
+	"crypto/rand"
+	"encoding/json"
+	"net/http"
+
+	"gopkg.in/validator.v2"
+)
 
 type Block struct {
 	Try     func()
@@ -48,4 +54,23 @@ func GenerateRandomString(n int) string {
 
 func GenerateRandomId() string {
 	return GenerateRandomString(8)
+}
+
+func ValidateRequestBody(r *http.Request, s interface{}) *ErrorResponse {
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(s)
+
+	if err != nil {
+		return &Error_invalid_request_data
+	}
+
+	if err = validator.Validate(s); err != nil {
+		return &ErrorResponse{
+			Code:    Error_invalid_request_data.Code,
+			Message: Error_invalid_request_data.Message + ": " + err.Error(),
+			Status:  Error_invalid_request_data.Status,
+		}
+	}
+
+	return nil
 }

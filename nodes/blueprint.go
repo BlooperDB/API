@@ -3,8 +3,6 @@ package nodes
 import (
 	"net/http"
 
-	"encoding/json"
-
 	"time"
 
 	"strconv"
@@ -13,7 +11,6 @@ import (
 	"github.com/BlooperDB/API/db"
 	"github.com/BlooperDB/API/utils"
 	"github.com/gorilla/mux"
-	"gopkg.in/validator.v2"
 )
 
 type BlueprintResponse struct {
@@ -157,24 +154,11 @@ type PostBlueprintResponse struct {
 Post a new blueprint
 */
 func postBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
-	if u.Username == "" {
-		return nil, &utils.Error_username_required
-	}
-
-	decoder := json.NewDecoder(r.Body)
 	var request PostBlueprintRequest
-	err := decoder.Decode(&request)
+	e := utils.ValidateRequestBody(r, &request)
 
-	if err != nil {
-		return nil, &utils.Error_invalid_request_data
-	}
-
-	if err = validator.Validate(request); err != nil {
-		return nil, &utils.ErrorResponse{
-			Code:    utils.Error_invalid_request_data.Code,
-			Message: utils.Error_invalid_request_data.Message + ": " + err.Error(),
-			Status:  utils.Error_invalid_request_data.Status,
-		}
+	if e != nil {
+		return nil, e
 	}
 
 	blueprint := &db.Blueprint{
@@ -209,20 +193,11 @@ type PutBlueprintRequest struct {
 Update a blueprint
 */
 func updateBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
-	decoder := json.NewDecoder(r.Body)
 	var request PutBlueprintRequest
-	err := decoder.Decode(&request)
+	e := utils.ValidateRequestBody(r, &request)
 
-	if err != nil {
-		return nil, &utils.Error_invalid_request_data
-	}
-
-	if err = validator.Validate(request); err != nil {
-		return nil, &utils.ErrorResponse{
-			Code:    utils.Error_invalid_request_data.Code,
-			Message: utils.Error_invalid_request_data.Message + ": " + err.Error(),
-			Status:  utils.Error_invalid_request_data.Status,
-		}
+	if e != nil {
+		return nil, e
 	}
 
 	blueprintId, err := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)

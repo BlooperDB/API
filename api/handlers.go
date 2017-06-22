@@ -175,6 +175,10 @@ func AuthHandler(handle AuthDataHandle) func(*http.Request) (interface{}, *utils
 			return nil, &utils.Error_blooper_token_invalid
 		}
 
+		if authUser.Username == "" {
+			return nil, &utils.Error_username_required
+		}
+
 		return handle(authUser, r)
 	}
 }
