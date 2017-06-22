@@ -37,12 +37,6 @@ func GetBlueprintById(id uint) *Blueprint {
 	return &blueprint
 }
 
-func (m Blueprint) GetRevisions() []Revision {
-	var revisions []Revision
-	db.Model(m).Related(&revisions)
-	return revisions
-}
-
 func (m Blueprint) GetTags() []Tag {
 	var tags []Tag
 	db.Model(m).Related(&tags)
@@ -60,6 +54,20 @@ func (m Blueprint) IncrementAndGetRevision() uint {
 	i := m.LastRevision
 	m.Save()
 	return i
+}
+
+func (m Blueprint) GetRevisions() []Revision {
+	var revisions []Revision
+	db.Model(m).Related(&revisions)
+	return revisions
+}
+
+func (m *Blueprint) CountRevisions() uint {
+	var count uint
+	db.Table("revisions").
+		Where("blueprint_id = ?", m.ID).
+		Count(&count)
+	return count
 }
 
 func (m Blueprint) GetRevision(id uint) *Revision {

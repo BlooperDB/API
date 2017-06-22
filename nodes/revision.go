@@ -194,6 +194,10 @@ func deleteRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespo
 
 	revision.Delete()
 
+	if blueprint.CountRevisions() == 0 {
+		blueprint.Delete()
+	}
+
 	return nil, nil
 }
 
