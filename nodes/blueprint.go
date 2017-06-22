@@ -54,6 +54,7 @@ type GetBlueprintsResponse struct {
 
 type SmallBlueprintResponse struct {
 	Id          uint   `json:"id"`
+	Latest      uint   `json:"latest-revision"`
 	UserId      uint   `json:"user-id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
@@ -67,8 +68,14 @@ func getBlueprints(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 	reBlueprint := make([]*SmallBlueprintResponse, len(blueprints))
 
 	for i, blueprint := range blueprints {
+		var revId uint = 0
+		if rev := blueprint.GetLatestRevision(); rev != nil {
+			revId = rev.Revision
+		}
+
 		reBlueprint[i] = &SmallBlueprintResponse{
 			Id:          blueprint.ID,
+			Latest:      revId,
 			UserId:      blueprint.UserID,
 			Name:        blueprint.Name,
 			Description: blueprint.Description,
