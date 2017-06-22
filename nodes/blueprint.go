@@ -88,15 +88,10 @@ func getBlueprints(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 Get a specific blueprint
 */
 func getBlueprint(r *http.Request) (interface{}, *utils.ErrorResponse) {
-	blueprintId, err := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
-	if err != nil {
-		return nil, &utils.Error_blueprint_not_found
-	}
+	blueprint, e := parseBlueprint(r)
 
-	blueprint := db.GetBlueprintById(uint(blueprintId))
-
-	if blueprint == nil {
-		return nil, &utils.Error_blueprint_not_found
+	if e != nil {
+		return nil, e
 	}
 
 	revisions := blueprint.GetRevisions()
@@ -200,15 +195,12 @@ func updateBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorResp
 		return nil, e
 	}
 
-	blueprintId, err := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
-	if err != nil {
-		return nil, &utils.Error_blueprint_not_found
+	blueprint, e := parseBlueprint(r)
+
+	if e != nil {
+		return nil, e
 	}
 
-	blueprint := db.GetBlueprintById(uint(blueprintId))
-	if blueprint == nil {
-		return nil, &utils.Error_blueprint_not_found
-	}
 	if blueprint.UserID != u.ID {
 		return nil, &utils.Error_no_access
 	}
@@ -225,15 +217,12 @@ func updateBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorResp
 Delete a blueprint
 */
 func deleteBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
-	blueprintId, err := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
-	if err != nil {
-		return nil, &utils.Error_blueprint_not_found
+	blueprint, e := parseBlueprint(r)
+
+	if e != nil {
+		return nil, e
 	}
 
-	blueprint := db.GetBlueprintById(uint(blueprintId))
-	if blueprint == nil || blueprint.DeletedAt != nil {
-		return nil, &utils.Error_blueprint_not_found
-	}
 	if blueprint.UserID != u.ID {
 		return nil, &utils.Error_no_access
 	}
@@ -251,14 +240,10 @@ type GetRevisionsResponse struct {
 Get all revisions
 */
 func getRevisions(r *http.Request) (interface{}, *utils.ErrorResponse) {
-	blueprintId, err := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
-	if err != nil {
-		return nil, &utils.Error_blueprint_not_found
-	}
+	blueprint, e := parseBlueprint(r)
 
-	blueprint := db.GetBlueprintById(uint(blueprintId))
-	if blueprint == nil || blueprint.DeletedAt != nil {
-		return nil, &utils.Error_blueprint_not_found
+	if e != nil {
+		return nil, e
 	}
 
 	revisions := blueprint.GetRevisions()
@@ -283,14 +268,10 @@ func getRevisions(r *http.Request) (interface{}, *utils.ErrorResponse) {
 Get latest revision from blueprint
 */
 func getRevisionLatest(r *http.Request) (interface{}, *utils.ErrorResponse) {
-	blueprintId, err := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
-	if err != nil {
-		return nil, &utils.Error_blueprint_not_found
-	}
+	blueprint, e := parseBlueprint(r)
 
-	blueprint := db.GetBlueprintById(uint(blueprintId))
-	if blueprint == nil || blueprint.DeletedAt != nil {
-		return nil, &utils.Error_blueprint_not_found
+	if e != nil {
+		return nil, e
 	}
 
 	authUser := db.GetAuthUser(r)
@@ -298,6 +279,7 @@ func getRevisionLatest(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	if revision == nil || revision.DeletedAt != nil {
 		return nil, &utils.Error_revision_not_found
 	}
+
 	return revisionToJSON(authUser, revision)
 }
 
@@ -305,14 +287,10 @@ func getRevisionLatest(r *http.Request) (interface{}, *utils.ErrorResponse) {
 Get specific revision from blueprint
 */
 func getRevisionIncremental(r *http.Request) (interface{}, *utils.ErrorResponse) {
-	blueprintId, err := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
-	if err != nil {
-		return nil, &utils.Error_blueprint_not_found
-	}
+	blueprint, e := parseBlueprint(r)
 
-	blueprint := db.GetBlueprintById(uint(blueprintId))
-	if blueprint == nil || blueprint.DeletedAt != nil {
-		return nil, &utils.Error_blueprint_not_found
+	if e != nil {
+		return nil, e
 	}
 
 	revisionI, err := strconv.ParseUint(mux.Vars(r)["revision"], 10, 32)
@@ -374,4 +352,20 @@ func revisionToJSON(authUser *db.User, revision *db.Revision) (*Revision, *utils
 		UserVote:   userVote,
 		Comments:   reComment,
 	}, nil
+}
+
+func parseBlueprint(r *http.Request) (*db.Blueprint, *utils.ErrorResponse) {
+	blueprintId, err := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
+
+	if err != nil {
+		return nil, &utils.Error_blueprint_not_found
+	}
+
+	blueprint := db.GetBlueprintById(uint(blueprintId))
+
+	if blueprint == nil {
+		return nil, &utils.Error_blueprint_not_found
+	}
+
+	return blueprint, nil
 }

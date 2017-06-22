@@ -52,10 +52,6 @@ func GenerateRandomString(n int) string {
 	return string(bytes)
 }
 
-func GenerateRandomId() string {
-	return GenerateRandomString(8)
-}
-
 func ValidateRequestBody(r *http.Request, s interface{}) *ErrorResponse {
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(s)

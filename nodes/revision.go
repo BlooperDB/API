@@ -37,14 +37,10 @@ func RegisterRevisionRoutes(router api.RegisterRoute) {
 Get specific revision
 */
 func getRevision(r *http.Request) (interface{}, *utils.ErrorResponse) {
-	revisionId, err := strconv.ParseUint(mux.Vars(r)["revision"], 10, 32)
-	if err == nil {
-		return nil, &utils.Error_revision_not_found
-	}
+	revision, e := parseRevision(r)
 
-	revision := db.GetRevisionById(uint(revisionId))
-	if revision == nil || revision.DeletedAt != nil {
-		return nil, &utils.Error_revision_not_found
+	if e != nil {
+		return nil, e
 	}
 
 	authUser := db.GetAuthUser(r)
@@ -76,15 +72,12 @@ func postRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespons
 		return nil, e
 	}
 
-	blueprintId, err := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
-	if err == nil {
-		return nil, &utils.Error_blueprint_not_found
+	blueprint, e := parseBlueprint(r)
+
+	if e != nil {
+		return nil, e
 	}
 
-	blueprint := db.GetBlueprintById(uint(blueprintId))
-	if blueprint == nil || blueprint.DeletedAt != nil {
-		return nil, &utils.Error_blueprint_not_found
-	}
 	if blueprint.UserID != u.ID {
 		return nil, &utils.Error_no_access
 	}
@@ -120,27 +113,20 @@ func updateRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespo
 		return nil, e
 	}
 
-	blueprintId, err := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
-	if err == nil {
-		return nil, &utils.Error_blueprint_not_found
+	blueprint, e := parseBlueprint(r)
+
+	if e != nil {
+		return nil, e
 	}
 
-	blueprint := db.GetBlueprintById(uint(blueprintId))
-	if blueprint == nil || blueprint.DeletedAt != nil {
-		return nil, &utils.Error_blueprint_not_found
-	}
 	if blueprint.UserID != u.ID {
 		return nil, &utils.Error_no_access
 	}
 
-	revisionId, err := strconv.ParseUint(mux.Vars(r)["revision"], 10, 32)
-	if err == nil {
-		return nil, &utils.Error_revision_not_found
-	}
+	revision, e := parseRevision(r)
 
-	revision := db.GetRevisionById(uint(revisionId))
-	if revision == nil || revision.DeletedAt != nil {
-		return nil, &utils.Error_revision_not_found
+	if e != nil {
+		return nil, e
 	}
 
 	revision.Changes = request.Changes
@@ -153,27 +139,20 @@ func updateRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespo
 Delete a revision
 */
 func deleteRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
-	blueprintId, err := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
-	if err == nil {
-		return nil, &utils.Error_blueprint_not_found
+	blueprint, e := parseBlueprint(r)
+
+	if e != nil {
+		return nil, e
 	}
 
-	blueprint := db.GetBlueprintById(uint(blueprintId))
-	if blueprint == nil || blueprint.DeletedAt != nil {
-		return nil, &utils.Error_blueprint_not_found
-	}
 	if blueprint.UserID != u.ID {
 		return nil, &utils.Error_no_access
 	}
 
-	revisionId, err := strconv.ParseUint(mux.Vars(r)["revision"], 10, 32)
-	if err == nil {
-		return nil, &utils.Error_revision_not_found
-	}
+	revision, e := parseRevision(r)
 
-	revision := db.GetRevisionById(uint(revisionId))
-	if revision == nil || revision.DeletedAt != nil {
-		return nil, &utils.Error_revision_not_found
+	if e != nil {
+		return nil, e
 	}
 
 	revision.Delete()
@@ -193,14 +172,10 @@ type GetRevisionCommentsResponse struct {
 Get all comments
 */
 func getRevisionComments(r *http.Request) (interface{}, *utils.ErrorResponse) {
-	revisionId, err := strconv.ParseUint(mux.Vars(r)["revision"], 10, 32)
-	if err == nil {
-		return nil, &utils.Error_revision_not_found
-	}
+	revision, e := parseRevision(r)
 
-	revision := db.GetRevisionById(uint(revisionId))
-	if revision == nil || revision.DeletedAt != nil {
-		return nil, &utils.Error_revision_not_found
+	if e != nil {
+		return nil, e
 	}
 
 	comments := revision.GetComments()
@@ -219,4 +194,20 @@ func getRevisionComments(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	return GetRevisionCommentsResponse{
 		Comments: reComment,
 	}, nil
+}
+
+func parseRevision(r *http.Request) (*db.Revision, *utils.ErrorResponse) {
+	revisionId, err := strconv.ParseUint(mux.Vars(r)["revision"], 10, 32)
+
+	if err != nil {
+		return nil, &utils.Error_revision_not_found
+	}
+
+	revision := db.GetRevisionById(uint(revisionId))
+
+	if revision == nil {
+		return nil, &utils.Error_revision_not_found
+	}
+
+	return revision, nil
 }
