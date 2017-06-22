@@ -1,7 +1,6 @@
 package nodes
 
 import (
-	"encoding/json"
 	"net/http"
 	"time"
 
@@ -11,7 +10,6 @@ import (
 	"github.com/BlooperDB/API/db"
 	"github.com/BlooperDB/API/utils"
 	"github.com/gorilla/mux"
-	"gopkg.in/validator.v2"
 )
 
 type Revision struct {
@@ -71,18 +69,11 @@ type PostRevisionResponse struct {
 Post a revision
 */
 func postRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
-	decoder := json.NewDecoder(r.Body)
 	var request PostRevisionRequest
-	err := decoder.Decode(&request)
-	if err != nil {
-		return nil, &utils.Error_invalid_request_data
-	}
-	if err = validator.Validate(request); err != nil {
-		return nil, &utils.ErrorResponse{
-			Code:    utils.Error_invalid_request_data.Code,
-			Message: utils.Error_invalid_request_data.Message + ": " + err.Error(),
-			Status:  utils.Error_invalid_request_data.Status,
-		}
+	e := utils.ValidateRequestBody(r, &request)
+
+	if e != nil {
+		return nil, e
 	}
 
 	blueprintId, err := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
@@ -122,18 +113,11 @@ type PutRevisionRequest struct {
 Update a revision
 */
 func updateRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
-	decoder := json.NewDecoder(r.Body)
 	var request PutRevisionRequest
-	err := decoder.Decode(&request)
-	if err != nil {
-		return nil, &utils.Error_invalid_request_data
-	}
-	if err = validator.Validate(request); err != nil {
-		return nil, &utils.ErrorResponse{
-			Code:    utils.Error_invalid_request_data.Code,
-			Message: utils.Error_invalid_request_data.Message + ": " + err.Error(),
-			Status:  utils.Error_invalid_request_data.Status,
-		}
+	e := utils.ValidateRequestBody(r, &request)
+
+	if e != nil {
+		return nil, e
 	}
 
 	blueprintId, err := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)

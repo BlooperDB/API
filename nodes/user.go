@@ -3,8 +3,6 @@ package nodes
 import (
 	"net/http"
 
-	"encoding/json"
-
 	"strconv"
 
 	"time"
@@ -14,7 +12,6 @@ import (
 	"github.com/BlooperDB/API/utils"
 	"github.com/gorilla/mux"
 	"github.com/wuman/firebase-server-sdk-go"
-	"gopkg.in/validator.v2"
 )
 
 type PrivateUserResponse struct {
@@ -64,20 +61,11 @@ type UserSignInRequest struct {
 }
 
 func signIn(r *http.Request) (interface{}, *utils.ErrorResponse) {
-	decoder := json.NewDecoder(r.Body)
 	var request UserSignInRequest
-	err := decoder.Decode(&request)
+	e := utils.ValidateRequestBody(r, &request)
 
-	if err != nil || request.FirebaseToken == "" {
-		return nil, &utils.Error_invalid_request_data
-	}
-
-	if err = validator.Validate(request); err != nil {
-		return nil, &utils.ErrorResponse{
-			Code:    utils.Error_invalid_request_data.Code,
-			Message: utils.Error_invalid_request_data.Message + ": " + err.Error(),
-			Status:  utils.Error_invalid_request_data.Status,
-		}
+	if e != nil {
+		return nil, e
 	}
 
 	auth, _ := firebase.GetAuth()
@@ -200,20 +188,11 @@ type PutUserRequest struct {
 }
 
 func putUser(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
-	decoder := json.NewDecoder(r.Body)
 	var request PutUserRequest
-	err := decoder.Decode(&request)
+	e := utils.ValidateRequestBody(r, &request)
 
-	if err != nil {
-		return nil, &utils.Error_invalid_request_data
-	}
-
-	if err = validator.Validate(request); err != nil {
-		return nil, &utils.ErrorResponse{
-			Code:    utils.Error_invalid_request_data.Code,
-			Message: utils.Error_invalid_request_data.Message + ": " + err.Error(),
-			Status:  utils.Error_invalid_request_data.Status,
-		}
+	if e != nil {
+		return nil, e
 	}
 
 	if existingUser := db.GetUserByUsername(request.Username); existingUser != nil {
