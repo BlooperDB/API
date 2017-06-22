@@ -8,20 +8,11 @@ import (
 type Blueprint struct {
 	gorm.Model
 
-	User   User `gorm:"ForeignKey:UserID;AssociationForeignKey:ID"`
 	UserID uint `gorm:"index;not null"`
 
 	Name         string `gorm:"not null"`
 	Description  string `gorm:"not null"`
 	LastRevision uint   `gorm:"not null"`
-
-	Revisions []Revision
-	Tags      []Tag `gorm:"many2many:blueprint_tags;"`
-}
-
-type BlueprintLatestRevision struct {
-	BlueprintId uint
-	Revision    uint
 }
 
 func GetAllBlueprints() []Blueprint {
@@ -39,8 +30,13 @@ func GetBlueprintById(id uint) *Blueprint {
 	return &blueprint
 }
 
-func GetLatestBlueprintRevisions(ids ...uint) []BlueprintLatestRevision {
-	var revs []BlueprintLatestRevision
+type blueprintLatestRevision struct {
+	BlueprintId uint
+	Revision    uint
+}
+
+func GetLatestBlueprintRevisions(ids ...uint) map[uint]uint {
+	var revs []blueprintLatestRevision
 	q := db.Table("revisions").
 		Select("blueprint_id, revision")
 	if len(ids) > 0 {
@@ -55,7 +51,12 @@ func GetLatestBlueprintRevisions(ids ...uint) []BlueprintLatestRevision {
 	}
 	q.Where("revision = (SELECT revision FROM revisions WHERE deleted_at IS NULL ORDER BY revision desc LIMIT 1)").
 		Scan(&revs)
-	return revs
+
+	ret := make(map[uint]uint)
+	for _, r := range revs {
+		ret[r.BlueprintId] = r.Revision
+	}
+	return ret
 }
 
 func (m *Blueprint) Save() {
@@ -66,10 +67,51 @@ func (m *Blueprint) Delete() {
 	db.Delete(m)
 }
 
+func (m Blueprint) GetAuthor() User {
+	var user User
+	db.Model(m).Related(&user)
+	return user
+}
+
 func (m Blueprint) GetTags() []Tag {
 	var tags []Tag
-	db.Model(m).Related(&tags)
+	db.Raw(`
+		SELECT t.*
+		FROM tags t
+		JOIN blueprint_tags bt ON (t.id = bt.tag_id)
+		WHERE bt.blueprint_id = ?`, m.ID).Scan(&tags)
 	return tags
+}
+
+func (m Blueprint) GetTag(tag uint) *BlueprintTag {
+	var blueprintTag BlueprintTag
+	println("a")
+	db.Where("blueprint_id = ? AND tag_id = ?", m.ID, tag).Find(&blueprintTag)
+	println("a")
+	if blueprintTag.ID != 0 {
+		return &blueprintTag
+	}
+	return nil
+}
+
+func (m Blueprint) AddTag(tag uint) bool {
+	if m.GetTag(tag) != nil {
+		return false
+	}
+	bt := BlueprintTag{
+		BlueprintId: m.ID,
+		TagId:       tag,
+	}
+	bt.Save()
+	return true
+}
+
+func (m Blueprint) RemoveTag(tag uint) bool {
+	if t := m.GetTag(tag); t != nil {
+		t.Delete()
+		return true
+	}
+	return false
 }
 
 func (m Blueprint) IncrementAndGetRevision() uint {

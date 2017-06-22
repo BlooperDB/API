@@ -19,33 +19,23 @@ type User struct {
 	Comments     []Comment
 }
 
-func (m *User) Save() {
-	db.Save(m)
-}
-
-func (m *User) Delete() {
-	db.Delete(m)
-}
-
 func SignIn(token *firebase.Token) (User, bool) {
 	email, _ := token.Email()
 
 	var user User
-	db.First(&user, "email = ?", email)
+	db.Where("email = ?", email).Find(&user)
 
 	if user.ID == 0 {
-		name, _ := token.Name()
 		avatar, _ := token.Picture()
 
 		user = User{
 			Email:        email,
-			Username:     name,
+			Username:     "",
 			Avatar:       avatar,
 			BlooperToken: GenerateBlooperToken(),
 		}
 
 		user.Save()
-
 		return user, true
 	}
 
@@ -56,36 +46,40 @@ func GenerateBlooperToken() string {
 	return utils.GenerateRandomString(32)
 }
 
-func GetUserByBlooperToken(token string) *User {
-	var user User
-	db.First(&user, "blooper_token = ?", token)
-
-	if user.ID == 0 {
-		return nil
-	}
-
-	return &user
-}
-
 func GetUserById(userId uint) *User {
 	var user User
 	db.First(&user, userId)
-
 	if user.ID == 0 {
 		return nil
 	}
-
 	return &user
+}
+
+func GetAuthUser(r *http.Request) *User {
+	return GetUserByBlooperToken(r.Header.Get("BLOOPER-TOKEN"))
+}
+
+func GetUserByBlooperToken(token string) *User {
+	var user User
+	db.First(&user, "blooper_token = ?", token)
+	if user.ID == 0 {
+		return nil
+	}
+	return &user
+}
+
+func (m *User) Save() {
+	db.Save(m)
+}
+
+func (m *User) Delete() {
+	db.Delete(m)
 }
 
 func (m User) GetUserBlueprints() []Blueprint {
 	var blueprints []Blueprint
 	db.Model(m).Related(&blueprints)
 	return blueprints
-}
-
-func GetAuthUser(r *http.Request) *User {
-	return GetUserByBlooperToken(r.Header.Get("BLOOPER-TOKEN"))
 }
 
 func (m User) GetComments() []Comment {

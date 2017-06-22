@@ -235,8 +235,11 @@ type UserBlueprintResponse struct {
 
 type UserBlueprintResponseBlueprint struct {
 	Id          uint      `json:"id"`
+	Latest      uint      `json:"latest-revision"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
+	UserID      uint      `json:"author-id"`
+	Username    string    `json:"author-username"`
 	Tags        []string  `json:"tags"`
 	CreatedAt   time.Time `json:"created-at"`
 	UpdatedAt   time.Time `json:"updated-at"`
@@ -249,37 +252,26 @@ func getUserBlueprints(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	}
 
 	user := db.GetUserById(uint(userId))
+	if user == nil {
+		return nil, &utils.Error_user_not_found
+	}
+	return getBlueprintsUser(user)
+}
 
+func getUserSelfBlueprints(user *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
+	return getBlueprintsUser(user)
+}
+
+func getBlueprintsUser(user *db.User) (interface{}, *utils.ErrorResponse) {
 	blueprints := user.GetUserBlueprints()
 	reBlueprint := make([]*UserBlueprintResponseBlueprint, len(blueprints))
 
+	blueprintIds := make([]uint, len(blueprints))
 	for i, blueprint := range blueprints {
-		tags := blueprint.GetTags()
-		reTags := make([]string, len(tags))
-
-		for j, tag := range tags {
-			reTags[j] = tag.Name
-		}
-
-		reBlueprint[i] = &UserBlueprintResponseBlueprint{
-			Id:          blueprint.ID,
-			Name:        blueprint.Name,
-			Description: blueprint.Description,
-			Tags:        reTags,
-			CreatedAt:   blueprint.CreatedAt,
-			UpdatedAt:   blueprint.UpdatedAt,
-		}
+		blueprintIds[i] = blueprint.ID
 	}
 
-	return UserBlueprintResponse{
-		Blueprints: reBlueprint,
-	}, nil
-}
-
-func getUserSelfBlueprints(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
-	blueprints := u.GetUserBlueprints()
-	reBlueprint := make([]*UserBlueprintResponseBlueprint, len(blueprints))
-
+	revisionIds := db.GetLatestBlueprintRevisions(blueprintIds...)
 	for i, blueprint := range blueprints {
 		tags := blueprint.GetTags()
 		reTags := make([]string, len(tags))
@@ -288,10 +280,15 @@ func getUserSelfBlueprints(u *db.User, r *http.Request) (interface{}, *utils.Err
 			reTags[j] = tag.Name
 		}
 
+		author := blueprint.GetAuthor()
+
 		reBlueprint[i] = &UserBlueprintResponseBlueprint{
 			Id:          blueprint.ID,
+			Latest:      revisionIds[blueprint.ID],
 			Name:        blueprint.Name,
 			Description: blueprint.Description,
+			UserID:      author.ID,
+			Username:    author.Username,
 			Tags:        reTags,
 			CreatedAt:   blueprint.CreatedAt,
 			UpdatedAt:   blueprint.UpdatedAt,

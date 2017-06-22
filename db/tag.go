@@ -1,8 +1,38 @@
 package db
 
+import "github.com/jinzhu/gorm"
+
 type Tag struct {
-	Name       string      `gorm:"primary_key"`
-	Blueprints []Blueprint `gorm:"many2many:blueprint_tags;"`
+	gorm.Model
+
+	Name       string `gorm:"not null;unique"`
+}
+
+type BlueprintTag struct {
+	gorm.Model
+
+	BlueprintId uint `gorm:"not null"`
+	TagId       uint `gorm:"not null"`
+}
+
+func GetTagById(id uint) *Tag {
+	var tag Tag
+	db.Where("id = ?", id).
+		Find(&tag)
+	if tag.ID != 0 {
+		return &tag
+	}
+	return nil
+}
+
+func GetTagByName(name string) *Tag {
+	var tag Tag
+	db.Where("name = ?", name).
+		Find(&tag)
+	if tag.ID != 0 {
+		return &tag
+	}
+	return nil
 }
 
 func (m *Tag) Save() {
@@ -13,13 +43,29 @@ func (m *Tag) Delete() {
 	db.Delete(m)
 }
 
-func GetTagById(id string) *Tag {
-	var tag Tag
-	db.First(&tag, id)
+func (m *Tag) GetBlueprints() []Blueprint {
+	var blueprints []Blueprint
+	db.Raw(`
+		SELECT b.*
+		FROM blueprint_tags bt
+		JOIN blueprints b ON (b.id = bt.blueprint_id)
+		WHERE bt.tag_id = ?
+	`, m.ID).Scan(&blueprints)
+	return blueprints
+}
 
-	if tag.Name == "" {
-		return nil
-	}
+func (m *BlueprintTag) Save() {
+	db.Save(m)
+}
 
-	return &tag
+func (m *BlueprintTag) Delete() {
+	db.Delete(m)
+}
+
+func (m *BlueprintTag) GetBlueprint() *Blueprint {
+	return GetBlueprintById(m.BlueprintId)
+}
+
+func (m *BlueprintTag) GetTag() *Tag {
+	return GetTagById(m.TagId)
 }

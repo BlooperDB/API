@@ -18,6 +18,7 @@ func migrations() {
 	db.AutoMigrate(&Comment{})
 	db.AutoMigrate(&Rating{})
 	db.AutoMigrate(&Tag{})
+	db.AutoMigrate(&BlueprintTag{})
 	db.AutoMigrate(&User{})
 	db.AutoMigrate(&Revision{})
 }
