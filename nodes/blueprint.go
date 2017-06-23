@@ -28,10 +28,10 @@ func RegisterBlueprintRoutes(router api.RegisterRoute) {
 	router("GET", "/blueprints", getBlueprints)
 	router("GET", "/blueprints/search/{query}", searchBlueprints)
 
-	router("POST", "/blueprint", api.AuthHandler(postBlueprint))
+	router("POST", "/blueprint", api.UsernameRequiredHandler(postBlueprint))
 	router("GET", "/blueprint/{blueprint}", getBlueprint)
-	router("PUT", "/blueprint/{blueprint}", api.AuthHandler(updateBlueprint))
-	router("DELETE", "/blueprint/{blueprint}", api.AuthHandler(deleteBlueprint))
+	router("PUT", "/blueprint/{blueprint}", api.UsernameRequiredHandler(updateBlueprint))
+	router("DELETE", "/blueprint/{blueprint}", api.UsernameRequiredHandler(deleteBlueprint))
 
 	router("GET", "/blueprint/{blueprint}/revisions", getRevisions)
 	router("GET", "/blueprint/{blueprint}/revision/latest", getRevisionLatest)
@@ -47,14 +47,16 @@ Search for blueprints
 */
 func searchBlueprints(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	var (
-		offset, _ = strconv.Atoi(r.URL.Query().Get("offset"))
-		count, _  = strconv.Atoi(r.URL.Query().Get("count"))
+		offset, err = strconv.Atoi(r.URL.Query().Get("offset"))
+		count, err0  = strconv.Atoi(r.URL.Query().Get("count"))
 	)
+	if err != nil || err0 != nil {
+		return nil, &utils.Error_invalid_request_data
+	}
 
 	if count == 0 {
 		count = 20
 	}
-
 	if count > 100 {
 		count = 100
 	}
@@ -110,14 +112,16 @@ Get all blueprints (paged)
 */
 func getBlueprints(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	var (
-		offset, _ = strconv.Atoi(r.URL.Query().Get("offset"))
-		count, _  = strconv.Atoi(r.URL.Query().Get("count"))
+		offset, err = strconv.Atoi(r.URL.Query().Get("offset"))
+		count, err0  = strconv.Atoi(r.URL.Query().Get("count"))
 	)
+	if err != nil || err0 != nil {
+		return nil, &utils.Error_invalid_request_data
+	}
 
 	if count == 0 {
 		count = 20
 	}
-
 	if count > 100 {
 		count = 100
 	}

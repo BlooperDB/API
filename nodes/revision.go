@@ -26,10 +26,10 @@ type Revision struct {
 }
 
 func RegisterRevisionRoutes(router api.RegisterRoute) {
-	router("POST", "/revision", api.AuthHandler(postRevision))
+	router("POST", "/revision", api.UsernameRequiredHandler(postRevision))
 	router("GET", "/revision/{revision}", getRevision)
-	router("PUT", "/revision/{revision}", api.AuthHandler(updateRevision))
-	router("DELETE", "/revision/{revision}", api.AuthHandler(deleteRevision))
+	router("PUT", "/revision/{revision}", api.UsernameRequiredHandler(updateRevision))
+	router("DELETE", "/revision/{revision}", api.UsernameRequiredHandler(deleteRevision))
 	router("GET", "/revision/{revision}/comments", getRevisionComments)
 }
 
