@@ -11,8 +11,8 @@ type Tag struct {
 type BlueprintTag struct {
 	gorm.Model
 
-	BlueprintId uint `gorm:"not null"`
-	TagId       uint `gorm:"not null"`
+	BlueprintId uint `gorm:"not null;unique_index:idx_bp_tag"`
+	TagId       uint `gorm:"not null;unique_index:idx_bp_tag"`
 }
 
 func GetTagById(id uint) *Tag {
