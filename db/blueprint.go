@@ -111,9 +111,7 @@ func (m Blueprint) GetTags() []Tag {
 
 func (m Blueprint) GetTag(tag uint) *BlueprintTag {
 	var blueprintTag BlueprintTag
-	println("a")
 	db.Where("blueprint_id = ? AND tag_id = ?", m.ID, tag).Find(&blueprintTag)
-	println("a")
 	if blueprintTag.ID != 0 {
 		return &blueprintTag
 	}
