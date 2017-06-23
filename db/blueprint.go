@@ -2,10 +2,7 @@ package db
 
 import (
 	"strconv"
-
 	"strings"
-
-	"fmt"
 
 	"github.com/jinzhu/gorm"
 )
@@ -25,45 +22,29 @@ func SearchBlueprints(query string, offset int, limit int) []*Blueprint {
 	split := strings.Split(query, " ")
 	joined := "%(" + strings.Join(split, "|") + ")%"
 
-	rows, err := db.Raw("SELECT *"+
-		"FROM blueprints "+
-		"WHERE id IN "+
-		"    ( SELECT blueprint_id "+
-		"     FROM blueprint_tags "+
-		"     WHERE tag_id IN "+
-		"         ( SELECT id "+
-		"          FROM tags "+
-		"          WHERE LOWER(\"name\") IN( ? ) ) ) "+
-		"  OR id IN "+
-		"    ( SELECT blueprint_id "+
-		"     FROM revisions "+
-		"     WHERE LOWER(\"changes\") SIMILAR TO ? ) "+
-		"  OR LOWER(\"name\") SIMILAR TO ? "+
-		"  OR LOWER(\"description\") SIMILAR TO ? "+
-		"OFFSET ? "+
-		"LIMIT ? ",
-		split,
-		joined,
-		joined,
-		joined,
-		offset,
-		limit,
-	).Rows()
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
 	var blueprints []*Blueprint
-	i := 0
-	for rows.Next() {
-		var blueprint Blueprint
-		db.ScanRows(rows, &blueprint)
-		blueprints = append(blueprints, &blueprint)
-		i++
-	}
-
-	rows.Close()
+	db.Raw(`
+		SELECT *
+		FROM blueprints
+		WHERE id IN (
+			SELECT blueprint_id
+			FROM blueprint_tags
+			WHERE tag_id IN (
+				SELECT id
+				FROM tags
+				WHERE LOWER("name") IN( ? )
+			)
+		)
+		OR id IN (
+			SELECT blueprint_id
+			FROM revisions
+			WHERE LOWER("changes") SIMILAR TO ?
+		)
+		OR LOWER("name") SIMILAR TO ?
+		OR LOWER("description") SIMILAR TO ?
+		OFFSET ?
+		LIMIT ?
+	`, split, joined, joined, joined, offset, limit).Scan(&blueprints)
 
 	return blueprints
 }
@@ -71,7 +52,6 @@ func SearchBlueprints(query string, offset int, limit int) []*Blueprint {
 func GetAllBlueprints(offset int, limit int) []*Blueprint {
 	var blueprints []*Blueprint
 	db.Offset(offset).Limit(limit).Find(&blueprints)
-	db.Offset(-1).Limit(-1)
 	return blueprints
 }
 
