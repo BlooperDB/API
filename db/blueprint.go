@@ -1,7 +1,6 @@
 package db
 
 import (
-	"strconv"
 	"strings"
 
 	"github.com/jinzhu/gorm"
@@ -74,14 +73,7 @@ func GetLatestBlueprintRevisions(ids ...uint) map[uint]uint {
 	q := db.Table("revisions").
 		Select("blueprint_id, revision")
 	if len(ids) > 0 {
-		idString := ""
-		for i, id := range ids {
-			if i != 0 {
-				idString += ", "
-			}
-			idString += strconv.FormatUint(uint64(id), 10)
-		}
-		q = q.Where("blueprint_id IN (" + idString + ")")
+		q = q.Where("blueprint_id IN (?)", ids)
 	}
 	q.Where("revision = (SELECT revision FROM revisions WHERE deleted_at IS NULL ORDER BY revision desc LIMIT 1)").
 		Scan(&revs)
