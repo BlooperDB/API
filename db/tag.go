@@ -5,7 +5,7 @@ import "github.com/jinzhu/gorm"
 type Tag struct {
 	gorm.Model
 
-	Name       string `gorm:"not null;unique"`
+	Name string `gorm:"not null;unique"`
 }
 
 type BlueprintTag struct {

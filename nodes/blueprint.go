@@ -38,30 +38,30 @@ func RegisterBlueprintRoutes(router api.RegisterRoute) {
 	router("GET", "/blueprint/{blueprint}/revision/{revision}", getRevisionIncremental)
 }
 
-/*
-Search for blueprints
-*/
-func searchBlueprints(_ *http.Request) (interface{}, *utils.ErrorResponse) {
-	return nil, nil
-}
-
-type GetBlueprintsResponse struct {
+type SearchBlueprintsResponse struct {
 	Blueprints []*SmallBlueprintResponse `json:"blueprints"`
 }
 
-type SmallBlueprintResponse struct {
-	Id          uint   `json:"id"`
-	Latest      uint   `json:"latest-revision"`
-	UserId      uint   `json:"user-id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-}
-
 /*
-Get all blueprints (paged)
+Search for blueprints
 */
-func getBlueprints(_ *http.Request) (interface{}, *utils.ErrorResponse) {
-	blueprints := db.GetAllBlueprints()
+func searchBlueprints(r *http.Request) (interface{}, *utils.ErrorResponse) {
+	var (
+		offset, _ = strconv.Atoi(r.URL.Query().Get("offset"))
+		count, _  = strconv.Atoi(r.URL.Query().Get("count"))
+	)
+
+	if count == 0 {
+		count = 20
+	}
+
+	if count > 100 {
+		count = 100
+	}
+
+	query := mux.Vars(r)["query"]
+
+	blueprints := db.SearchBlueprints(query, offset, count)
 	reBlueprint := make([]*SmallBlueprintResponse, len(blueprints))
 
 	for i, blueprint := range blueprints {
@@ -70,12 +70,81 @@ func getBlueprints(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 			revId = rev.Revision
 		}
 
+		tags := blueprint.GetTags()
+		reTags := make([]string, len(tags))
+
+		for i, tag := range tags {
+			reTags[i] = tag.Name
+		}
+
 		reBlueprint[i] = &SmallBlueprintResponse{
 			Id:          blueprint.ID,
 			Latest:      revId,
 			UserId:      blueprint.UserID,
 			Name:        blueprint.Name,
 			Description: blueprint.Description,
+			Tags:        reTags,
+		}
+	}
+
+	return SearchBlueprintsResponse{
+		Blueprints: reBlueprint,
+	}, nil
+}
+
+type GetBlueprintsResponse struct {
+	Blueprints []*SmallBlueprintResponse `json:"blueprints"`
+}
+
+type SmallBlueprintResponse struct {
+	Id          uint     `json:"id"`
+	Latest      uint     `json:"latest-revision"`
+	UserId      uint     `json:"user-id"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	Tags        []string `json:"tags"`
+}
+
+/*
+Get all blueprints (paged)
+*/
+func getBlueprints(r *http.Request) (interface{}, *utils.ErrorResponse) {
+	var (
+		offset, _ = strconv.Atoi(r.URL.Query().Get("offset"))
+		count, _  = strconv.Atoi(r.URL.Query().Get("count"))
+	)
+
+	if count == 0 {
+		count = 20
+	}
+
+	if count > 100 {
+		count = 100
+	}
+
+	blueprints := db.GetAllBlueprints(offset, count)
+	reBlueprint := make([]*SmallBlueprintResponse, len(blueprints))
+
+	for i, blueprint := range blueprints {
+		var revId uint = 0
+		if rev := blueprint.GetLatestRevision(); rev != nil {
+			revId = rev.Revision
+		}
+
+		tags := blueprint.GetTags()
+		reTags := make([]string, len(tags))
+
+		for i, tag := range tags {
+			reTags[i] = tag.Name
+		}
+
+		reBlueprint[i] = &SmallBlueprintResponse{
+			Id:          blueprint.ID,
+			Latest:      revId,
+			UserId:      blueprint.UserID,
+			Name:        blueprint.Name,
+			Description: blueprint.Description,
+			Tags:        reTags,
 		}
 	}
 
