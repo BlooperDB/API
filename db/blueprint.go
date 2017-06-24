@@ -24,7 +24,7 @@ func SearchBlueprints(query string, offset int, limit int) []*Blueprint {
 	var blueprints []*Blueprint
 	db.Raw(`
 		SELECT *
-		FROM blueprints
+		FROM blueprints b
 		WHERE id IN (
 			SELECT blueprint_id
 			FROM blueprint_tags
@@ -41,8 +41,23 @@ func SearchBlueprints(query string, offset int, limit int) []*Blueprint {
 		)
 		OR LOWER("name") SIMILAR TO ?
 		OR LOWER("description") SIMILAR TO ?
-		OFFSET ?
-		LIMIT ?
+		ORDER BY (
+			select (
+				SUM(case when thumbs_up = true then 1 else 0 end) 
+				- 
+				SUM(case when thumbs_up = false then 1 else 0 end)
+			)
+			from ratings
+			where revision_id = (
+				select id
+				from revisions
+				where blueprint_id = b.id
+				order by blueprint_string desc
+				limit 1
+			)
+		), ID DESC
+		OFFSET 0
+		LIMIT 100
 	`, joined, fullJoined, fullJoined, fullJoined, offset, limit).Scan(&blueprints)
 	return blueprints
 }
