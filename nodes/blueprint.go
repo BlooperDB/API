@@ -26,6 +26,7 @@ type BlueprintResponse struct {
 
 func RegisterBlueprintRoutes(router api.RegisterRoute) {
 	router("GET", "/blueprints", getBlueprints)
+	router("GET", "/blueprints/search/", searchBlueprints)
 	router("GET", "/blueprints/search/{query}", searchBlueprints)
 
 	router("POST", "/blueprint", api.UsernameRequiredHandler(postBlueprint))
@@ -58,7 +59,10 @@ func searchBlueprints(r *http.Request) (interface{}, *utils.ErrorResponse) {
 		count = 100
 	}
 
-	query := mux.Vars(r)["query"]
+	query, ok := mux.Vars(r)["query"]
+	if !ok {
+		return nil, &utils.Error_no_search_terms
+	}
 
 	blueprints := db.SearchBlueprints(query, offset, count)
 	reBlueprint := make([]*SmallBlueprintResponse, len(blueprints))

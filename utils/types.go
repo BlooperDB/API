@@ -42,3 +42,7 @@ var (
 var (
 	Error_comment_not_found = ErrorResponse{400, "Blueprint comment not found", 404}
 )
+
+var (
+	Error_no_search_terms = ErrorResponse{500, "No search terms given", 400}
+)
