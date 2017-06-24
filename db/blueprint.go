@@ -18,7 +18,8 @@ type Blueprint struct {
 func SearchBlueprints(query string, offset int, limit int) []*Blueprint {
 	query = strings.ToLower(query)
 	split := strings.Split(query, " ")
-	joined := "%(" + strings.Join(split, "|") + ")%"
+	joined := "(" + strings.Join(split, "|") + ")%"
+	fullJoined := "%" + joined
 
 	var blueprints []*Blueprint
 	db.Raw(`
@@ -30,7 +31,7 @@ func SearchBlueprints(query string, offset int, limit int) []*Blueprint {
 			WHERE tag_id IN (
 				SELECT id
 				FROM tags
-				WHERE LOWER("name") IN( ? )
+				WHERE LOWER("name") SIMILAR TO ?
 			)
 		)
 		OR id IN (
@@ -42,7 +43,7 @@ func SearchBlueprints(query string, offset int, limit int) []*Blueprint {
 		OR LOWER("description") SIMILAR TO ?
 		OFFSET ?
 		LIMIT ?
-	`, split, joined, joined, joined, offset, limit).Scan(&blueprints)
+	`, joined, fullJoined, fullJoined, fullJoined, offset, limit).Scan(&blueprints)
 	return blueprints
 }
 
