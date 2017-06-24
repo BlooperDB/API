@@ -184,15 +184,18 @@ func getUserSelf(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse
 }
 
 type PutUserRequest struct {
-	Username string `json:"username";validate:"nonzero"`
+	Username string `json:"username"`
 }
 
 func putUser(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
 	var request PutUserRequest
-	e := utils.ValidateRequestBody(r, &request)
 
-	if e != nil {
+	if e := utils.ValidateRequestBody(r, &request); e != nil {
 		return nil, e
+	}
+	uname := request.Username
+	if !utils.UsernameRegex.MatchString(uname) {
+		return nil, &utils.Error_invalid_username
 	}
 
 	if existingUser := db.GetUserByUsername(request.Username); existingUser != nil {
@@ -203,7 +206,7 @@ func putUser(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
 		}
 	}
 
-	u.Username = request.Username
+	u.Username = uname
 	u.Save()
 
 	return nil, nil

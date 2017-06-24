@@ -1,5 +1,7 @@
 package utils
 
+import "regexp"
+
 type ErrorResponse struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
@@ -11,6 +13,8 @@ type GenericResponse struct {
 	Error   *ErrorResponse `json:"error,omitempty"`
 	Data    interface{}    `json:"data,omitempty"`
 }
+
+var UsernameRegex = regexp.MustCompile("^[a-zA-Z0-9]{3,30}$")
 
 var (
 	Error_invalid_request_data = ErrorResponse{1, "Invalid request data", 400}
