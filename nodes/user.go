@@ -42,7 +42,7 @@ type SmallBlueprint struct {
 func RegisterUserRoutes(router api.RegisterRoute) {
 	router("POST", "/user/signin", signIn)
 
-	router("PUT", "/user/", api.AuthHandler(putUser))
+	router("PUT", "/user", api.AuthHandler(putUser))
 
 	router("GET", "/user/self", api.AuthHandler(getUserSelf))
 	router("GET", "/user/self/blueprints", api.AuthHandler(getUserSelfBlueprints))
@@ -196,7 +196,11 @@ func putUser(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
 	}
 
 	if existingUser := db.GetUserByUsername(request.Username); existingUser != nil {
-		return nil, &utils.Error_username_taken
+		if u.ID != existingUser.ID {
+			return nil, &utils.Error_username_taken
+		} else {
+			return nil, &utils.Error_nothing_changed
+		}
 	}
 
 	u.Username = request.Username

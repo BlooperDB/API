@@ -14,6 +14,7 @@ type GenericResponse struct {
 
 var (
 	Error_invalid_request_data = ErrorResponse{1, "Invalid request data", 400}
+	Error_nothing_changed      = ErrorResponse{2, "Nothing changed", 400}
 )
 
 var (
@@ -23,7 +24,7 @@ var (
 	Error_user_not_found        = ErrorResponse{103, "User not found", 404}
 	Error_invalid_username      = ErrorResponse{104, "Invalid username", 400}
 	Error_username_required     = ErrorResponse{105, "A username is required to do that", 400}
-	Error_username_taken        = ErrorResponse{106, "That username is already taken", 400}
+	Error_username_taken        = ErrorResponse{106, "Username taken", 400}
 )
 
 var (

@@ -64,7 +64,7 @@ func GetUserByUsername(username string) *User {
 		return nil
 	}
 	var user User
-	db.First(&user, "username = ?", username)
+	db.First(&user, "LOWER(username) = LOWER(?)", username)
 	if user.ID == 0 {
 		return nil
 	}
