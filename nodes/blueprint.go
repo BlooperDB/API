@@ -47,12 +47,9 @@ Search for blueprints
 */
 func searchBlueprints(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	var (
-		offset, err = strconv.Atoi(r.URL.Query().Get("offset"))
-		count, err0  = strconv.Atoi(r.URL.Query().Get("count"))
+		offset, _ = strconv.Atoi(r.URL.Query().Get("offset"))
+		count, _  = strconv.Atoi(r.URL.Query().Get("count"))
 	)
-	if err != nil || err0 != nil {
-		return nil, &utils.Error_invalid_request_data
-	}
 
 	if count == 0 {
 		count = 20
