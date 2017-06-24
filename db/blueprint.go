@@ -56,8 +56,8 @@ func SearchBlueprints(query string, offset int, limit int) []*Blueprint {
 				limit 1
 			)
 		), ID DESC
-		OFFSET 0
-		LIMIT 100
+		OFFSET ?
+		LIMIT ?
 	`, joined, fullJoined, fullJoined, fullJoined, offset, limit).Scan(&blueprints)
 	return blueprints
 }
