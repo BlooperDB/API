@@ -7,13 +7,9 @@ import (
 type Comment struct {
 	gorm.Model
 
-	Revision   Revision `gorm:"ForeignKey:RevisionID;AssociationForeignKey:ID"`
 	RevisionID uint     `gorm:"index; not null"`
-
-	User   User `gorm:"ForeignKey:UserID;AssociationForeignKey:ID"`
-	UserID uint `gorm:"index; not null"`
-
-	Message string `gorm:"not null"`
+	UserID     uint     `gorm:"index; not null"`
+	Message    string   `gorm:"not null"`
 }
 
 func (m *Comment) Save() {
@@ -26,23 +22,21 @@ func (m *Comment) Delete() {
 
 func GetCommentById(id uint) *Comment {
 	var comment Comment
-	db.First(&comment, id)
-
-	if comment.ID == 0 {
-		return nil
+	db.Where("id = ?", id).Find(&comment)
+	if comment.ID != 0 {
+		return &comment
 	}
-
-	return &comment
+	return nil
 }
 
 func (m Comment) GetUser() User {
 	var user User
-	db.Model(m).Related(&user)
+	db.Where("id = ?", m.UserID).Find(&user)
 	return user
 }
 
 func (m Comment) GetRevision() Revision {
 	var revision Revision
-	db.Model(m).Related(&revision)
+	db.Where("id = ?", m.RevisionID).Find(&revision)
 	return revision
 }

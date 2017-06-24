@@ -414,16 +414,17 @@ func revisionToJSON(authUser *db.User, revision *db.Revision) (*Revision, *utils
 	}
 
 	return &Revision{
-		Id:         revision.ID,
-		Revision:   revision.Revision,
-		Changes:    revision.Changes,
-		CreatedAt:  revision.CreatedAt,
-		UpdatedAt:  revision.UpdatedAt,
-		Blueprint:  revision.BlueprintString,
-		ThumbsUp:   thumbsUp,
-		ThumbsDown: thumbsDown,
-		UserVote:   userVote,
-		Comments:   reComment,
+		Id:          revision.ID,
+		Revision:    revision.Revision,
+		Changes:     revision.Changes,
+		CreatedAt:   revision.CreatedAt,
+		UpdatedAt:   revision.UpdatedAt,
+		BlueprintID: revision.BlueprintID,
+		Blueprint:   revision.BlueprintString,
+		ThumbsUp:    thumbsUp,
+		ThumbsDown:  thumbsDown,
+		UserVote:    userVote,
+		Comments:    reComment,
 	}, nil
 }
 

@@ -17,8 +17,7 @@ type BlueprintTag struct {
 
 func GetTagById(id uint) *Tag {
 	var tag Tag
-	db.Where("id = ?", id).
-		Find(&tag)
+	db.Where("id = ?", id).Find(&tag)
 	if tag.ID != 0 {
 		return &tag
 	}
@@ -27,8 +26,7 @@ func GetTagById(id uint) *Tag {
 
 func GetTagByName(name string) *Tag {
 	var tag Tag
-	db.Where("name = ?", name).
-		Find(&tag)
+	db.Where("name = ?", name).Find(&tag)
 	if tag.ID != 0 {
 		return &tag
 	}

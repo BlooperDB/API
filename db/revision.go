@@ -7,13 +7,10 @@ import (
 type Revision struct {
 	gorm.Model
 
-	Blueprint   Blueprint `gorm:"ForeignKey:BlueprintID;AssociationForeignKey:ID"`
-	BlueprintID uint      `gorm:"index not null"`
-
-	Revision        uint `gorm:"not null"`
-	Changes         string
+	BlueprintID     uint   `gorm:"index;not null;unique_index:idx_bp_rev"`
+	Revision        uint   `gorm:"not null;unique_index:idx_bp_rev"`
+	Changes         string `gorm:"not null"`
 	BlueprintString string `gorm:"not null"`
-	Comments        []Comment
 }
 
 func (m *Revision) Save() {
@@ -26,35 +23,27 @@ func (m *Revision) Delete() {
 
 func (m Revision) GetComments() []Comment {
 	var comments []Comment
-	db.Model(m).Related(&comments)
+	db.Where("revision_id = ?", m.ID).Find(&comments)
 	return comments
 }
 
 func (m Revision) GetRatings() []Rating {
 	var ratings []Rating
-	db.Model(m).Related(&ratings)
+	db.Where("revision_id = ?", m.ID).Find(&ratings)
 	return ratings
 }
 
 func (m Revision) GetBlueprint() Blueprint {
 	var blueprint Blueprint
-	db.Model(m).Related(&blueprint)
+	db.Where("id = ?", m.BlueprintID).Find(&blueprint)
 	return blueprint
-}
-
-func (m Revision) GetRevision() Revision {
-	var revision Revision
-	db.Model(m).Related(&revision)
-	return revision
 }
 
 func GetRevisionById(id uint) *Revision {
 	var revision Revision
-	db.First(&revision, id)
-
-	if revision.ID == 0 {
-		return nil
+	db.Where("id = ?", id).Find(&revision)
+	if revision.ID != 0 {
+		return &revision
 	}
-
-	return &revision
+	return nil
 }

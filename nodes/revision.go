@@ -13,16 +13,17 @@ import (
 )
 
 type Revision struct {
-	Id         uint       `json:"id"`
-	Revision   uint       `json:"revision"`
-	Changes    string     `json:"changes"`
-	CreatedAt  time.Time  `json:"created-at"`
-	UpdatedAt  time.Time  `json:"updated-at"`
-	Blueprint  string     `json:"blueprint"`
-	ThumbsUp   int        `json:"thumbs-up"`
-	ThumbsDown int        `json:"thumbs-down"`
-	UserVote   int        `json:"user-vote"`
-	Comments   []*Comment `json:"comments"`
+	Id          uint       `json:"id"`
+	Revision    uint       `json:"revision"`
+	Changes     string     `json:"changes"`
+	CreatedAt   time.Time  `json:"created-at"`
+	UpdatedAt   time.Time  `json:"updated-at"`
+	BlueprintID uint       `json:"blueprint-id"`
+	Blueprint   string     `json:"blueprint"`
+	ThumbsUp    int        `json:"thumbs-up"`
+	ThumbsDown  int        `json:"thumbs-down"`
+	UserVote    int        `json:"user-vote"`
+	Comments    []*Comment `json:"comments"`
 }
 
 func RegisterRevisionRoutes(router api.RegisterRoute) {

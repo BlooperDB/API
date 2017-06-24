@@ -7,13 +7,9 @@ import (
 type Rating struct {
 	gorm.Model
 
-	User   User `gorm:"ForeignKey:UserID;AssociationForeignKey:ID"`
-	UserID uint `gorm:"index; not null"`
-
-	Revision   Revision `gorm:"ForeignKey:RevisionID;AssociationForeignKey:ID"`
-	RevisionID uint     `gorm:"index; not null"`
-
-	ThumbsUp bool `gorm:"not null"`
+	UserID     uint `gorm:"index;not null;unique_index:idx_uid_rev"`
+	RevisionID uint `gorm:"index;not null;unique_index:idx_uid_rev"`
+	ThumbsUp   bool `gorm:"not null"`
 }
 
 func (m *Rating) Save() {
@@ -26,12 +22,12 @@ func (m *Rating) Delete() {
 
 func (m Rating) GetUser() User {
 	var user User
-	db.Model(m).Related(&user)
+	db.Where("id = ?", m.UserID).Find(&user)
 	return user
 }
 
 func (m Rating) GetRevision() Revision {
 	var revision Revision
-	db.Model(m).Related(&revision)
+	db.Where("id = ?", m.RevisionID).Find(&revision)
 	return revision
 }

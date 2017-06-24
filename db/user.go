@@ -50,13 +50,13 @@ func GetAuthUser(r *http.Request) *User {
 	return GetUserByBlooperToken(r.Header.Get("BLOOPER-TOKEN"))
 }
 
-func GetUserById(userId uint) *User {
+func GetUserById(id uint) *User {
 	var user User
-	db.First(&user, userId)
-	if user.ID == 0 {
-		return nil
+	db.Where("id = ?", id).Find(&user)
+	if user.ID != 0 {
+		return &user
 	}
-	return &user
+	return nil
 }
 
 func GetUserByUsername(username string) *User {
@@ -64,20 +64,32 @@ func GetUserByUsername(username string) *User {
 		return nil
 	}
 	var user User
-	db.First(&user, "LOWER(username) = LOWER(?)", username)
-	if user.ID == 0 {
-		return nil
+	db.Where("LOWER(username) = LOWER(?)", username).Find(&user)
+	if user.ID != 0 {
+		return &user
 	}
-	return &user
+	return nil
 }
 
 func GetUserByBlooperToken(token string) *User {
 	var user User
-	db.First(&user, "blooper_token = ?", token)
-	if user.ID == 0 {
-		return nil
+	db.Where("blooper_token = ?", token).Find(&user)
+	if user.ID != 0 {
+		return &user
 	}
-	return &user
+	return nil
+}
+
+func (m User) GetUserBlueprints() []Blueprint {
+	var blueprints []Blueprint
+	db.Where("user_id = ?", m.ID).Find(&blueprints)
+	return blueprints
+}
+
+func (m User) GetComments() []Comment {
+	var comments []Comment
+	db.Where("user_id = ?", m.ID).Find(&comments)
+	return comments
 }
 
 func (m *User) Save() {
@@ -86,16 +98,4 @@ func (m *User) Save() {
 
 func (m *User) Delete() {
 	db.Delete(m)
-}
-
-func (m User) GetUserBlueprints() []Blueprint {
-	var blueprints []Blueprint
-	db.Model(m).Related(&blueprints)
-	return blueprints
-}
-
-func (m User) GetComments() []Comment {
-	var comments []Comment
-	db.Model(m).Related(&comments)
-	return comments
 }

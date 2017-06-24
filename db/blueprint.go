@@ -9,8 +9,7 @@ import (
 type Blueprint struct {
 	gorm.Model
 
-	UserID uint `gorm:"index;not null"`
-
+	UserID       uint   `gorm:"index;not null"`
 	Name         string `gorm:"not null"`
 	Description  string `gorm:"not null"`
 	LastRevision uint   `gorm:"not null"`
@@ -44,7 +43,6 @@ func SearchBlueprints(query string, offset int, limit int) []*Blueprint {
 		OFFSET ?
 		LIMIT ?
 	`, split, joined, joined, joined, offset, limit).Scan(&blueprints)
-
 	return blueprints
 }
 
@@ -56,11 +54,11 @@ func GetAllBlueprints(offset int, limit int) []*Blueprint {
 
 func GetBlueprintById(id uint) *Blueprint {
 	var blueprint Blueprint
-	db.First(&blueprint, id)
-	if blueprint.ID == 0 {
-		return nil
+	db.Where("id = ?", id).Find(&blueprint)
+	if blueprint.ID != 0 {
+		return &blueprint
 	}
-	return &blueprint
+	return nil
 }
 
 type blueprintLatestRevision struct {
@@ -70,13 +68,19 @@ type blueprintLatestRevision struct {
 
 func GetLatestBlueprintRevisions(ids ...uint) map[uint]uint {
 	var revs []blueprintLatestRevision
-	q := db.Table("revisions").
-		Select("blueprint_id, revision")
+	q := db.Table("revisions").Select("blueprint_id, revision")
 	if len(ids) > 0 {
 		q = q.Where("blueprint_id IN (?)", ids)
 	}
-	q.Where("revision = (SELECT revision FROM revisions WHERE deleted_at IS NULL ORDER BY revision desc LIMIT 1)").
-		Scan(&revs)
+	q.Where(`
+		revision = (
+			SELECT revision
+			FROM revisions
+			WHERE deleted_at IS NULL
+			ORDER BY revision desc
+			LIMIT 1
+		)
+	`).Scan(&revs)
 
 	ret := make(map[uint]uint)
 	for _, r := range revs {
@@ -95,7 +99,7 @@ func (m *Blueprint) Delete() {
 
 func (m Blueprint) GetAuthor() User {
 	var user User
-	db.Model(m).Related(&user)
+	db.Where("id = ?", m.UserID).Find(&user)
 	return user
 }
 
@@ -147,15 +151,13 @@ func (m Blueprint) IncrementAndGetRevision() uint {
 
 func (m Blueprint) GetRevisions() []Revision {
 	var revisions []Revision
-	db.Model(m).Related(&revisions)
+	db.Where("blueprint_id = ?", m.ID).Find(&revisions)
 	return revisions
 }
 
 func (m *Blueprint) CountRevisions() uint {
 	var count uint
-	db.Table("revisions").
-		Where("blueprint_id = ?", m.ID).
-		Count(&count)
+	db.Table("revisions").Where("blueprint_id = ?", m.ID).Count(&count)
 	return count
 }
 
