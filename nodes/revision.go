@@ -49,9 +49,9 @@ func getRevision(r *http.Request) (interface{}, *utils.ErrorResponse) {
 }
 
 type PostRevisionRequest struct {
-	BlueprintId uint   `json:"blueprint-id";validate:"nonzero"`
-	Changes     string `json:"changes";validate:"nonzero"`
-	Blueprint   string `json:"blueprint";validate:"nonzero"`
+	BlueprintId uint   `json:"blueprint-id" validate:"nonzero"`
+	Changes     string `json:"changes" validate:"nonzero"`
+	Blueprint   string `json:"blueprint" validate:"nonzero"`
 }
 
 type PostRevisionResponse struct {
@@ -100,7 +100,7 @@ func postRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespons
 }
 
 type PutRevisionRequest struct {
-	Changes string `json:"changes";validate:"nonzero"`
+	Changes string `json:"changes" validate:"nonzero"`
 }
 
 /*

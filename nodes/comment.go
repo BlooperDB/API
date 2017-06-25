@@ -50,8 +50,8 @@ func getComment(r *http.Request) (interface{}, *utils.ErrorResponse) {
 }
 
 type PostCommentRequest struct {
-	Message    string `json:"message";validate:"nonzero"`
-	RevisionId uint   `json:"revision-id";validate:"nonzero"`
+	Message    string `json:"message" validate:"nonzero"`
+	RevisionId uint   `json:"revision-id" validate:"nonzero"`
 }
 
 type PostCommentResponse struct {
@@ -83,7 +83,7 @@ func postComment(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse
 }
 
 type PutCommentRequest struct {
-	Message string `json:"message";validate:"nonzero"`
+	Message string `json:"message" validate:"nonzero"`
 }
 
 /*

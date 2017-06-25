@@ -57,7 +57,7 @@ type UserSignInResponse struct {
 }
 
 type UserSignInRequest struct {
-	FirebaseToken string `json:"firebase-token";validate:"nonzero"`
+	FirebaseToken string `json:"firebase-token" validate:"nonzero"`
 }
 
 func signIn(r *http.Request) (interface{}, *utils.ErrorResponse) {
