@@ -23,7 +23,7 @@ type Revision struct {
 	ThumbsUp    int        `json:"thumbs-up"`
 	ThumbsDown  int        `json:"thumbs-down"`
 	UserVote    int        `json:"user-vote"`
-	Comments    []*Comment `json:"comments"`
+	Comments    []*Comment `json:"comments,omitempty"`
 	Version     int        `json:"version"`
 }
 
@@ -45,8 +45,10 @@ func getRevision(r *http.Request) (interface{}, *utils.ErrorResponse) {
 		return nil, e
 	}
 
+	getComments := len(r.URL.Query()["comments"]) > 0
+
 	authUser := db.GetAuthUser(r)
-	return revisionToJSON(authUser, revision)
+	return revisionToJSON(authUser, revision, getComments)
 }
 
 type PostRevisionRequest struct {

@@ -18,7 +18,7 @@ type BlueprintResponse struct {
 	UserId      uint        `json:"user"`
 	Name        string      `json:"name"`
 	Description string      `json:"description"`
-	Revisions   []*Revision `json:"revisions"`
+	Revisions   []*Revision `json:"revisions,omitempty"`
 	Tags        []string    `json:"tags"`
 	CreatedAt   time.Time   `json:"created-at"`
 	UpdatedAt   time.Time   `json:"updated-at"`
@@ -165,20 +165,27 @@ func getBlueprint(r *http.Request) (interface{}, *utils.ErrorResponse) {
 		return nil, e
 	}
 
-	revisions := blueprint.GetRevisions()
-	reRevision := make([]*Revision, len(revisions))
+	getRevisions := len(r.URL.Query()["revisions"]) > 0
+	getComments := len(r.URL.Query()["comments"]) > 0
 
-	authUser := db.GetAuthUser(r)
+	var reRevision []*Revision
 
-	for i, revision := range revisions {
-		if revision.DeletedAt != nil {
-			continue
+	if getRevisions {
+		revisions := blueprint.GetRevisions()
+		reRevision = make([]*Revision, len(revisions))
+
+		authUser := db.GetAuthUser(r)
+
+		for i, revision := range revisions {
+			if revision.DeletedAt != nil {
+				continue
+			}
+			rev, err := revisionToJSON(authUser, &revision, getComments)
+			if err != nil {
+				return nil, err
+			}
+			reRevision[i] = rev
 		}
-		rev, err := revisionToJSON(authUser, &revision)
-		if err != nil {
-			return nil, err
-		}
-		reRevision[i] = rev
 	}
 
 	tags := blueprint.GetTags()
@@ -338,13 +345,15 @@ func getRevisions(r *http.Request) (interface{}, *utils.ErrorResponse) {
 		return nil, e
 	}
 
+	getComments := len(r.URL.Query()["comments"]) > 0
+
 	revisions := blueprint.GetRevisions()
 	reRevision := make([]*Revision, len(revisions))
 
 	authUser := db.GetAuthUser(r)
 
 	for i, revision := range revisions {
-		rev, err := revisionToJSON(authUser, &revision)
+		rev, err := revisionToJSON(authUser, &revision, getComments)
 		if err != nil {
 			return nil, err
 		}
@@ -366,13 +375,15 @@ func getRevisionLatest(r *http.Request) (interface{}, *utils.ErrorResponse) {
 		return nil, e
 	}
 
+	getComments := len(r.URL.Query()["comments"]) > 0
+
 	authUser := db.GetAuthUser(r)
 	revision := blueprint.GetLatestRevision()
 	if revision == nil || revision.DeletedAt != nil {
 		return nil, &utils.Error_revision_not_found
 	}
 
-	return revisionToJSON(authUser, revision)
+	return revisionToJSON(authUser, revision, getComments)
 }
 
 /*
@@ -390,12 +401,14 @@ func getRevisionIncremental(r *http.Request) (interface{}, *utils.ErrorResponse)
 		return nil, &utils.Error_revision_not_found
 	}
 
+	getComments := len(r.URL.Query()["comments"]) > 0
+
 	authUser := db.GetAuthUser(r)
 	revision := blueprint.GetRevision(uint(revisionI))
-	return revisionToJSON(authUser, revision)
+	return revisionToJSON(authUser, revision, getComments)
 }
 
-func revisionToJSON(authUser *db.User, revision *db.Revision) (*Revision, *utils.ErrorResponse) {
+func revisionToJSON(authUser *db.User, revision *db.Revision, getComments bool) (*Revision, *utils.ErrorResponse) {
 	if revision == nil || revision.DeletedAt != nil {
 		return nil, &utils.Error_revision_not_found
 	}
@@ -419,16 +432,20 @@ func revisionToJSON(authUser *db.User, revision *db.Revision) (*Revision, *utils
 		}
 	}
 
-	comments := revision.GetComments()
-	reComment := make([]*Comment, len(comments))
+	var reComment []*Comment
 
-	for i, comment := range comments {
-		reComment[i] = &Comment{
-			Id:        comment.ID,
-			UserId:    comment.UserID,
-			CreatedAt: comment.CreatedAt,
-			UpdatedAt: comment.UpdatedAt,
-			Message:   comment.Message,
+	if getComments {
+		comments := revision.GetComments()
+		reComment = make([]*Comment, len(comments))
+
+		for i, comment := range comments {
+			reComment[i] = &Comment{
+				Id:        comment.ID,
+				UserId:    comment.UserID,
+				CreatedAt: comment.CreatedAt,
+				UpdatedAt: comment.UpdatedAt,
+				Message:   comment.Message,
+			}
 		}
 	}
 

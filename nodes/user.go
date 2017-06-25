@@ -21,14 +21,14 @@ type PrivateUserResponse struct {
 	Avatar     string            `json:"avatar"`
 	CreatedAt  time.Time         `json:"register-date"`
 	UpdatedAt  time.Time         `json:"register-date"`
-	Blueprints []*SmallBlueprint `json:"blueprints"`
+	Blueprints []*SmallBlueprint `json:"blueprints,omitempty"`
 }
 
 type PublicUserResponse struct {
 	Id         uint              `json:"id"`
 	Username   string            `json:"username"`
 	Avatar     string            `json:"avatar"`
-	Blueprints []*SmallBlueprint `json:"blueprints"`
+	Blueprints []*SmallBlueprint `json:"blueprints,omitempty"`
 }
 
 type SmallBlueprint struct {
@@ -101,27 +101,33 @@ func getUser(r *http.Request) (interface{}, *utils.ErrorResponse) {
 
 	user := db.GetUserById(uint(userId))
 
-	blueprints := user.GetUserBlueprints()
-	reBlueprint := make([]*SmallBlueprint, len(blueprints))
+	getBlueprints := len(r.URL.Query()["blueprints"]) > 0
 
-	for i, blueprint := range blueprints {
-		tags := blueprint.GetTags()
-		reTags := make([]string, len(tags))
-		for j, tag := range tags {
-			reTags[j] = tag.Name
-		}
+	var reBlueprint []*SmallBlueprint
 
-		var revId uint = 0
-		if rev := blueprint.GetLatestRevision(); rev != nil {
-			revId = rev.Revision
-		}
+	if getBlueprints {
+		blueprints := user.GetUserBlueprints()
+		reBlueprint = make([]*SmallBlueprint, len(blueprints))
 
-		reBlueprint[i] = &SmallBlueprint{
-			Id:          blueprint.ID,
-			Latest:      revId,
-			Name:        blueprint.Name,
-			Description: blueprint.Description,
-			Tags:        reTags,
+		for i, blueprint := range blueprints {
+			tags := blueprint.GetTags()
+			reTags := make([]string, len(tags))
+			for j, tag := range tags {
+				reTags[j] = tag.Name
+			}
+
+			var revId uint = 0
+			if rev := blueprint.GetLatestRevision(); rev != nil {
+				revId = rev.Revision
+			}
+
+			reBlueprint[i] = &SmallBlueprint{
+				Id:          blueprint.ID,
+				Latest:      revId,
+				Name:        blueprint.Name,
+				Description: blueprint.Description,
+				Tags:        reTags,
+			}
 		}
 	}
 
@@ -149,26 +155,33 @@ func getUser(r *http.Request) (interface{}, *utils.ErrorResponse) {
 
 func getUserSelf(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
 	blueprints := u.GetUserBlueprints()
-	reBlueprint := make([]*SmallBlueprint, len(blueprints))
 
-	for i, blueprint := range blueprints {
-		tags := blueprint.GetTags()
-		reTags := make([]string, len(tags))
-		for j, tag := range tags {
-			reTags[j] = tag.Name
-		}
+	getBlueprints := len(r.URL.Query()["blueprints"]) > 0
 
-		var revId uint = 0
-		if rev := blueprint.GetLatestRevision(); rev != nil {
-			revId = rev.Revision
-		}
+	var reBlueprint []*SmallBlueprint
 
-		reBlueprint[i] = &SmallBlueprint{
-			Id:          blueprint.ID,
-			Latest:      revId,
-			Name:        blueprint.Name,
-			Description: blueprint.Description,
-			Tags:        reTags,
+	if getBlueprints {
+		reBlueprint = make([]*SmallBlueprint, len(blueprints))
+
+		for i, blueprint := range blueprints {
+			tags := blueprint.GetTags()
+			reTags := make([]string, len(tags))
+			for j, tag := range tags {
+				reTags[j] = tag.Name
+			}
+
+			var revId uint = 0
+			if rev := blueprint.GetLatestRevision(); rev != nil {
+				revId = rev.Revision
+			}
+
+			reBlueprint[i] = &SmallBlueprint{
+				Id:          blueprint.ID,
+				Latest:      revId,
+				Name:        blueprint.Name,
+				Description: blueprint.Description,
+				Tags:        reTags,
+			}
 		}
 	}
 
