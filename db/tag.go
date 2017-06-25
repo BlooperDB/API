@@ -67,3 +67,39 @@ func (m *BlueprintTag) GetBlueprint() *Blueprint {
 func (m *BlueprintTag) GetTag() *Tag {
 	return GetTagById(m.TagId)
 }
+
+func PopularTags() []*Tag {
+	var tags []*Tag
+
+	db.Raw(`
+		SELECT *, (
+			SELECT count(*)
+			FROM blueprint_tags
+			WHERE tag_id = t.id
+			GROUP BY tag_id
+		) AS "usage"
+		FROM tags t
+		ORDER BY "usage" DESC NULLS LAST, "name" ASC
+		LIMIT 50
+	`).Scan(&tags)
+
+	return tags
+}
+
+func AutocompleteTag(query string) []*Tag {
+	var tags []*Tag
+
+	db.Raw(`
+		SELECT *, (
+			SELECT count(*)
+			FROM blueprint_tags
+			WHERE tag_id = t.id
+			GROUP BY tag_id
+		) AS "usage"
+		FROM tags t
+		WHERE name LIKE ?
+		ORDER BY "usage" DESC NULLS LAST, "name" ASC
+	`, query+"%").Scan(&tags)
+
+	return tags
+}
