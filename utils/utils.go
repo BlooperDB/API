@@ -8,6 +8,13 @@ import (
 	"gopkg.in/validator.v2"
 )
 
+var v *validator.Validator
+
+func Initialize() {
+	v = validator.NewValidator()
+	v.SetTag("validate")
+}
+
 type Block struct {
 	Try     func()
 	Catch   func(Exception)
@@ -60,8 +67,6 @@ func ValidateRequestBody(r *http.Request, s interface{}) *ErrorResponse {
 		return &Error_invalid_request_data
 	}
 
-	v := validator.NewValidator()
-	v.SetTag("validate")
 	if err = v.Validate(s); err != nil {
 		return &ErrorResponse{
 			Code:    Error_invalid_request_data.Code,

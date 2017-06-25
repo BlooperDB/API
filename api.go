@@ -11,6 +11,7 @@ import (
 	"github.com/BlooperDB/API/api"
 	"github.com/BlooperDB/API/db"
 	"github.com/BlooperDB/API/nodes"
+	"github.com/BlooperDB/API/utils"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
@@ -44,7 +45,7 @@ func Initialize() {
 		db_pass = os.Getenv("POSTGRES_PASSWORD")
 	)
 
-	orm_cmd := "host="+dbhost+" user="+db_user+" dbname="+db_name+" sslmode=disable password="+db_pass+""
+	orm_cmd := "host=" + dbhost + " user=" + db_user + " dbname=" + db_name + " sslmode=disable password=" + db_pass + ""
 	connection, err := gorm.Open("postgres", orm_cmd)
 
 	if err != nil {
@@ -57,6 +58,7 @@ func Initialize() {
 
 	defer connection.Close()
 
+	utils.Initialize()
 	db.Initialize(connection)
 
 	CORSHandler := handlers.CORS(
