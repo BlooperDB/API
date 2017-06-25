@@ -29,10 +29,10 @@ func RegisterBlueprintRoutes(router api.RegisterRoute) {
 	router("GET", "/blueprints/search/", searchBlueprints)
 	router("GET", "/blueprints/search/{query}", searchBlueprints)
 
-	router("POST", "/blueprint", api.UsernameRequiredHandler(postBlueprint))
+	router("POST", "/blueprint", api.AuthHandler(postBlueprint, true))
 	router("GET", "/blueprint/{blueprint}", getBlueprint)
-	router("PUT", "/blueprint/{blueprint}", api.UsernameRequiredHandler(updateBlueprint))
-	router("DELETE", "/blueprint/{blueprint}", api.UsernameRequiredHandler(deleteBlueprint))
+	router("PUT", "/blueprint/{blueprint}", api.AuthHandler(updateBlueprint, true))
+	router("DELETE", "/blueprint/{blueprint}", api.AuthHandler(deleteBlueprint, true))
 
 	router("GET", "/blueprint/{blueprint}/revisions", getRevisions)
 	router("GET", "/blueprint/{blueprint}/revision/latest", getRevisionLatest)

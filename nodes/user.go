@@ -42,10 +42,10 @@ type SmallBlueprint struct {
 func RegisterUserRoutes(router api.RegisterRoute) {
 	router("POST", "/user/signin", signIn)
 
-	router("PUT", "/user", api.AuthHandler(putUser))
+	router("PUT", "/user", api.AuthHandler(putUser, false))
 
-	router("GET", "/user/self", api.AuthHandler(getUserSelf))
-	router("GET", "/user/self/blueprints", api.AuthHandler(getUserSelfBlueprints))
+	router("GET", "/user/self", api.AuthHandler(getUserSelf, false))
+	router("GET", "/user/self/blueprints", api.AuthHandler(getUserSelfBlueprints, false))
 
 	router("GET", "/user/{user}", getUser)
 	router("GET", "/user/{user}/blueprints", getUserBlueprints)

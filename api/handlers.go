@@ -167,7 +167,7 @@ func NotFoundHandler() http.Handler {
 
 type AuthDataHandle func(*db.User, *http.Request) (interface{}, *utils.ErrorResponse)
 
-func AuthHandler(handle AuthDataHandle) func(*http.Request) (interface{}, *utils.ErrorResponse) {
+func AuthHandler(handle AuthDataHandle, requireUsername bool) func(*http.Request) (interface{}, *utils.ErrorResponse) {
 	return func(r *http.Request) (interface{}, *utils.ErrorResponse) {
 		authUser := db.GetAuthUser(r)
 
@@ -175,15 +175,12 @@ func AuthHandler(handle AuthDataHandle) func(*http.Request) (interface{}, *utils
 			return nil, &utils.Error_blooper_token_invalid
 		}
 
+		if requireUsername {
+			if authUser.Username == "" {
+				return nil, &utils.Error_username_required
+			}
+		}
+
 		return handle(authUser, r)
 	}
-}
-
-func UsernameRequiredHandler(handle AuthDataHandle) func(*http.Request) (interface{}, *utils.ErrorResponse) {
-	return AuthHandler(func(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
-		if u.Username == "" {
-			return nil, &utils.Error_username_required
-		}
-		return handle(u, r)
-	})
 }
