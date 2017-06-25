@@ -5,6 +5,15 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"encoding/base64"
+	"reflect"
+
+	"errors"
+
+	"bytes"
+	"compress/zlib"
+	"io"
+
 	"gopkg.in/validator.v2"
 )
 
@@ -13,6 +22,7 @@ var v *validator.Validator
 func Initialize() {
 	v = validator.NewValidator()
 	v.SetTag("validate")
+	v.SetValidationFunc("blueprint_string", validBlueprintString)
 }
 
 type Block struct {
@@ -73,6 +83,35 @@ func ValidateRequestBody(r *http.Request, s interface{}) *ErrorResponse {
 			Message: Error_invalid_request_data.Message + ": " + err.Error(),
 			Status:  Error_invalid_request_data.Status,
 		}
+	}
+
+	return nil
+}
+
+func validBlueprintString(v interface{}, _ string) error {
+	s := reflect.ValueOf(v).String()
+
+	decoded, err := base64.StdEncoding.DecodeString(s[1:])
+	if err != nil {
+		return errors.New("Not valid blueprint string")
+	}
+
+	b := bytes.NewReader(decoded)
+	r, err := zlib.NewReader(b)
+
+	if err != nil {
+		return errors.New("Not valid blueprint string")
+	}
+
+	var out bytes.Buffer
+	io.Copy(&out, r)
+	r.Close()
+
+	var js map[string]interface{}
+	err = json.Unmarshal([]byte(out.String()), &js)
+
+	if err != nil {
+		return errors.New("Not valid blueprint string")
 	}
 
 	return nil

@@ -203,7 +203,7 @@ func getBlueprint(r *http.Request) (interface{}, *utils.ErrorResponse) {
 type PostBlueprintRequest struct {
 	Name            string   `json:"name" validate:"min=5" `
 	Description     string   `json:"description" validate:"nonzero" `
-	BlueprintString string   `json:"blueprint-string" validate:"nonzero"`
+	BlueprintString string   `json:"blueprint-string" validate:"nonzero,blueprint_string"`
 	Tags            []string `json:"tags" validate:"min=1"`
 }
 
