@@ -3,14 +3,17 @@
 title: Blueprint API
 
 post:
+  securedBy: [BLOOPER-TOKEN]
   description: Post a new blueprint
 
 /{blueprint}:
   get:
     description: Get a specific blueprint
   put:
+    securedBy: [BLOOPER-TOKEN]
     description: Update a specific blueprint
   delete:
+    securedBy: [BLOOPER-TOKEN]
     description: Delete a specific blueprint
 
   /revisions:

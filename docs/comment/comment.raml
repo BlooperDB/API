@@ -3,12 +3,15 @@
 title: Comment API
 
 post:
+  securedBy: [BLOOPER-TOKEN]
   description: Post a new comment
 
 /{comment}:
   get:
     description: Get a specific comment
   put:
+    securedBy: [BLOOPER-TOKEN]
     description: Update a specific comment
   delete:
+    securedBy: [BLOOPER-TOKEN]
     description: Delete a specific comment

@@ -8,12 +8,15 @@ title: User API
 
 /self:
   get:
+    securedBy: [BLOOPER-TOKEN]
     description: Get authenticated user
   put:
+    securedBy: [BLOOPER-TOKEN]
     description: Update authenticated user
 
   /blueprints:
     get:
+      securedBy: [BLOOPER-TOKEN]
       description: Get authenticated user blueprints
 
 /{user}:
