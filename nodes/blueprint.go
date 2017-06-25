@@ -237,11 +237,14 @@ func postBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespon
 
 	blueprint.Save()
 
+	bpVersion, _ := strconv.Atoi(request.BlueprintString[0:1])
+
 	revision := &db.Revision{
-		BlueprintID:     blueprint.ID,
-		Revision:        blueprint.LastRevision,
-		Changes:         "",
-		BlueprintString: request.BlueprintString,
+		BlueprintID:      blueprint.ID,
+		Revision:         blueprint.LastRevision,
+		Changes:          "",
+		BlueprintString:  request.BlueprintString,
+		BlueprintVersion: bpVersion,
 	}
 
 	revision.Save()
@@ -441,6 +444,7 @@ func revisionToJSON(authUser *db.User, revision *db.Revision) (*Revision, *utils
 		ThumbsDown:  thumbsDown,
 		UserVote:    userVote,
 		Comments:    reComment,
+		Version:     revision.BlueprintVersion,
 	}, nil
 }
 

@@ -7,10 +7,11 @@ import (
 type Revision struct {
 	gorm.Model
 
-	BlueprintID     uint   `gorm:"index;not null;unique_index:idx_bp_rev"`
-	Revision        uint   `gorm:"not null;unique_index:idx_bp_rev"`
-	Changes         string `gorm:"not null"`
-	BlueprintString string `gorm:"not null"`
+	BlueprintID      uint   `gorm:"index;not null;unique_index:idx_bp_rev"`
+	Revision         uint   `gorm:"not null;unique_index:idx_bp_rev"`
+	Changes          string `gorm:"not null"`
+	BlueprintString  string `gorm:"not null"`
+	BlueprintVersion int    `gorm:"not null"`
 }
 
 func (m *Revision) Save() {

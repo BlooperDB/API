@@ -24,6 +24,7 @@ type Revision struct {
 	ThumbsDown  int        `json:"thumbs-down"`
 	UserVote    int        `json:"user-vote"`
 	Comments    []*Comment `json:"comments"`
+	Version     int        `json:"version"`
 }
 
 func RegisterRevisionRoutes(router api.RegisterRoute) {
@@ -85,12 +86,16 @@ func postRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespons
 
 	i := blueprint.IncrementAndGetRevision()
 
+	bpVersion, _ := strconv.Atoi(request.Blueprint[0:1])
+
 	revision := &db.Revision{
-		BlueprintID:     request.BlueprintId,
-		Revision:        i,
-		Changes:         request.Changes,
-		BlueprintString: request.Blueprint,
+		BlueprintID:      request.BlueprintId,
+		Revision:         i,
+		Changes:          request.Changes,
+		BlueprintString:  request.Blueprint,
+		BlueprintVersion: bpVersion,
 	}
+
 	revision.Save()
 
 	return PostRevisionResponse{
