@@ -1,0 +1,18 @@
+#%RAML 1.0
+
+title: Revision API
+
+post:
+  description: Post a revision
+
+/{revision}:
+  get:
+    description: Get a specific revision
+  put:
+    description: Update a specific revision
+  delete:
+    description: Delete a specific revision
+
+  /comments:
+    get:
+      description: Get comments of a specific revision

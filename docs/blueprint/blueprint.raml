@@ -1,0 +1,24 @@
+#%RAML 1.0
+
+title: Blueprint API
+
+post:
+  description: Post a new blueprint
+
+/{blueprint}:
+  get:
+    description: Get a specific blueprint
+  put:
+    description: Update a specific blueprint
+  delete:
+    description: Delete a specific blueprint
+
+  /revisions:
+    get:
+      description: Get all revisions
+  /revision/latest:
+    get:
+      description: Get latest revision
+  /revision/{revision}:
+    get:
+      description: Get specific revision

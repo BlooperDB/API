@@ -42,9 +42,8 @@ type SmallBlueprint struct {
 func RegisterUserRoutes(router api.RegisterRoute) {
 	router("POST", "/user/signin", signIn)
 
-	router("PUT", "/user", api.AuthHandler(putUser, false))
-
 	router("GET", "/user/self", api.AuthHandler(getUserSelf, false))
+	router("PUT", "/user/self", api.AuthHandler(putUserSelf, false))
 	router("GET", "/user/self/blueprints", api.AuthHandler(getUserSelfBlueprints, false))
 
 	router("GET", "/user/{user}", getUser)
@@ -200,7 +199,7 @@ type PutUserRequest struct {
 	Username string `json:"username"`
 }
 
-func putUser(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
+func putUserSelf(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
 	var request PutUserRequest
 
 	if e := utils.ValidateRequestBody(r, &request); e != nil {
