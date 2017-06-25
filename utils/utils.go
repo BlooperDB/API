@@ -60,7 +60,9 @@ func ValidateRequestBody(r *http.Request, s interface{}) *ErrorResponse {
 		return &Error_invalid_request_data
 	}
 
-	if err = validator.Validate(s); err != nil {
+	v := validator.NewValidator()
+	v.SetTag("validate")
+	if err = v.Validate(s); err != nil {
 		return &ErrorResponse{
 			Code:    Error_invalid_request_data.Code,
 			Message: Error_invalid_request_data.Message + ": " + err.Error(),

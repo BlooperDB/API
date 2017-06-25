@@ -7,8 +7,6 @@ import (
 
 	"strconv"
 
-	"fmt"
-
 	"github.com/BlooperDB/API/api"
 	"github.com/BlooperDB/API/db"
 	"github.com/BlooperDB/API/utils"
@@ -203,9 +201,10 @@ func getBlueprint(r *http.Request) (interface{}, *utils.ErrorResponse) {
 }
 
 type PostBlueprintRequest struct {
-	Name            string `json:"name" validate:"nonzero;min=5"`
-	Description     string `json:"description" validate:"nonzero;min=1"`
-	BlueprintString string `json:"blueprint-string" validate:"nonzero"`
+	Name            string   `json:"name" validate:"min=5" `
+	Description     string   `json:"description" validate:"nonzero" `
+	BlueprintString string   `json:"blueprint-string" validate:"nonzero"`
+	Tags            []string `json:"tags" validate:"min=1"`
 }
 
 type PostBlueprintResponse struct {
@@ -225,9 +224,6 @@ func postBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespon
 	var request PostBlueprintRequest
 	e := utils.ValidateRequestBody(r, &request)
 
-	fmt.Println(e)
-	fmt.Printf("%+v\n", request)
-
 	if e != nil {
 		return nil, e
 	}
@@ -238,6 +234,7 @@ func postBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespon
 		Description:  request.Description,
 		LastRevision: 1,
 	}
+
 	blueprint.Save()
 
 	revision := &db.Revision{
@@ -246,7 +243,23 @@ func postBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespon
 		Changes:         "",
 		BlueprintString: request.BlueprintString,
 	}
+
 	revision.Save()
+
+	for _, tag := range request.Tags {
+		t := &db.Tag{
+			Name: tag,
+		}
+
+		t.Save()
+
+		bt := db.BlueprintTag{
+			BlueprintId: blueprint.ID,
+			TagId:       t.ID,
+		}
+
+		bt.Save()
+	}
 
 	return PostBlueprintResponse{
 		BlueprintId: blueprint.ID,
@@ -256,7 +269,7 @@ func postBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespon
 }
 
 type PutBlueprintRequest struct {
-	Name        string `json:"name" validate:"nonzero"`
+	Name        string `json:"name" validate:"min=5"`
 	Description string `json:"description" validate:"nonzero"`
 }
 
