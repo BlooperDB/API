@@ -1,0 +1,21 @@
+post:
+  tags:
+  - User
+  summary: Sign in as user
+  responses:
+    '200':
+      description: Success
+      schema:
+        allOf:
+          - $ref: '#/definitions/GenericResponse'
+          - type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  blooper-token:
+                    type: string
+                    description: Blooper Token to use further as authentication header
+                  first-login:
+                    type: boolean
+                    description: Whether this was the first log in for this user

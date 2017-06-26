@@ -1,0 +1,15 @@
+get:
+  tags:
+  - Tag
+  summary: Autocomplete tag with several options
+  parameters:
+    - in: path
+      name: tag
+      required: true
+      type: string
+      description: 'Tag to autocomplete'
+  responses:
+    '200':
+      description: Success
+      schema:
+        $ref: '#/definitions/ArrayTagResponse'

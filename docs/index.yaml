@@ -1,0 +1,38 @@
+swagger: '2.0'
+
+consumes:
+  - application/json
+
+produces:
+  - application/json
+
+definitions: {}
+
+info:
+  $ref: ./info.yaml
+
+host: blooper-api.vil.so
+
+tags:
+- name: Blueprint
+- name: Comment
+- name: Revision
+- name: Tag
+- name: User
+
+schemes:
+- https
+
+securityDefinitions:
+  api_key:
+    type: apiKey
+    name: api_key
+    in: header
+
+basePath: "/v1"
+
+paths:
+  $ref: ./paths.yaml
+
+definitions:
+  $ref: ./definitions.yaml

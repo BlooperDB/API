@@ -1,0 +1,19 @@
+get:
+  tags:
+  - Blueprint
+  summary: Get latest revision
+  parameters:
+    - in: path
+      name: blueprint
+      required: true
+      type: integer
+      description: 'ID of blueprint'
+  responses:
+    '200':
+      description: Success
+      schema:
+        $ref: '#/definitions/RevisionResponse'
+    '404':
+      description: Revision not found
+      schema:
+        $ref: '#/definitions/GenericResponse'

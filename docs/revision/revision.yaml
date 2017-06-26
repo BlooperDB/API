@@ -1,0 +1,25 @@
+post:
+  tags:
+  - Revision
+  summary: Post a revision
+  responses:
+    '200':
+      description: Success
+      schema:
+        allOf:
+          - $ref: '#/definitions/GenericResponse'
+          - type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  revision-id:
+                    type: int
+                    description: The posted revision id
+                  revision:
+                    type: int
+                    description: The posted incremental revision id
+    '403':
+      description: User not authenticated
+      schema:
+        $ref: '#/definitions/GenericResponse'

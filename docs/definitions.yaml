@@ -1,0 +1,290 @@
+GenericResponse:
+  type: object
+  description: Generic data sent with every response
+  properties:
+    success:
+      type: boolean
+      description: Whether request was successful
+    error:
+      type: object
+      description: If request was unsuccessful
+      properties:
+        code:
+          type: integer
+          description: Error code
+        message:
+          type: string
+          description: Error message
+  required:
+    - success
+
+Revision:
+  description: Full representation of a revision
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Revision ID
+    revision:
+      type: integer
+      description: Incremental id of revision
+    changes:
+      type: string
+      description: Changes in this revision
+    created-at:
+      type: integer
+      description: Creation date of revision
+    updated-at:
+      type: integer
+      description: Last update of revision
+    blueprint-id:
+      type: integer
+      description: Blueprint ID
+    blueprint:
+      type: string
+      description: The blueprint string
+    thumbs-up:
+      type: integer
+      description: Thumbs up count
+    thumbs-down:
+      type: integer
+      description: Thumbs down count
+    user-vote:
+      type: integer
+      description: |
+        The authenticated user vote
+        0: User has not voted
+        1: User voted thumbs up
+        2: User voted thumbs down
+    comments:
+      type: array
+      description: |
+        Revision comments.
+        Requires `?comments` query parameter.
+        (may not work on every endpoint)
+      items:
+        $ref: '#/definitions/Comment'
+    version:
+      type: integer
+      description: Version of the blueprint
+  required:
+    - id
+    - revision
+    - changes
+    - created-at
+    - updated-at
+    - blueprint-id
+    - blueprint
+    - thumbs-up
+    - thumbs-down
+    - user-vote
+    - comments
+    - version
+
+RevisionResponse:
+  allOf:
+    - $ref: '#/definitions/GenericResponse'
+    - type: object
+      properties:
+        data:
+          $ref: '#/definitions/Revision'
+
+ArrayRevisionResponse:
+  allOf:
+    - $ref: '#/definitions/GenericResponse'
+    - type: object
+      properties:
+        data:
+          type: object
+          properties:
+            revisions:
+              type: array
+              items:
+                $ref: '#/definitions/Revision'
+
+Comment:
+  description: Full representation of a comment
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Comment ID
+    user:
+      type: integer
+      description: User ID
+    created-at:
+      type: integer
+      description: Creation date of comment
+    updated-at:
+      type: integer
+      description: Last update of comment
+    message:
+      type: string
+      description: The comment message
+    revision-id:
+      type: integer
+      description: Revision ID
+  required:
+    - id
+    - user
+    - created-at
+    - updated-at
+    - message
+    - revision-id
+
+CommentResponse:
+  allOf:
+    - $ref: '#/definitions/GenericResponse'
+    - type: object
+      properties:
+        data:
+          $ref: '#/definitions/Comment'
+
+ArrayCommentResponse:
+  allOf:
+    - $ref: '#/definitions/GenericResponse'
+    - type: object
+      properties:
+        data:
+          type: object
+          properties:
+            comments:
+              type: array
+              items:
+                $ref: '#/definitions/Comment'
+
+Blueprint:
+  description: Full representation of a blueprint
+  type: object
+  properties:
+    id:
+      type: integer
+      description: Comment ID
+    user:
+      type: integer
+      description: User ID
+    name:
+      type: string
+      description: The bluprint name
+    description:
+      type: string
+      description: The bluprint description
+    latest-revision:
+      type: integer
+      description: Latest revision incremental ID
+    revisions:
+      type: array
+      description: |
+        Blueprint revisions.
+        Requires `?revisions` query parameter.
+        (may not work on every endpoint)
+      items:
+        $ref: '#/definitions/Revision'
+    tags:
+      type: array
+      description: The blueprint tags
+      items:
+        type: string
+    created-at:
+      type: integer
+      description: Creation date of blueprint
+    updated-at:
+      type: integer
+      description: Last update of blueprint
+  required:
+    - id
+    - user
+    - name
+    - description
+    - tags
+    - created-at
+    - updated-at
+
+BlueprintResponse:
+  allOf:
+    - $ref: '#/definitions/GenericResponse'
+    - type: object
+      properties:
+        data:
+          $ref: '#/definitions/Blueprint'
+
+
+ArrayBlueprintResponse:
+  allOf:
+    - $ref: '#/definitions/GenericResponse'
+    - type: object
+      properties:
+        data:
+          type: object
+          properties:
+            blueprints:
+              type: array
+              items:
+                $ref: '#/definitions/Blueprint'
+
+ArrayTagResponse:
+  allOf:
+    - $ref: '#/definitions/GenericResponse'
+    - type: object
+      properties:
+        data:
+          type: object
+          properties:
+            tags:
+              type: array
+              items:
+                type: string
+
+PublicUser:
+  description: Public representation of a user
+  type: object
+  properties:
+    id:
+      type: integer
+      description: User ID
+    username:
+      type: string
+      description: Username
+    avatar:
+      type: string
+      description: User avatar URL
+    blueprints:
+      type: array
+      description: |
+        User blueprints.
+        Requires `?blueprints` query parameter.
+        (may not work on every endpoint)
+      items:
+        $ref: '#/definitions/Blueprint'
+
+PublicUserResponse:
+  allOf:
+    - $ref: '#/definitions/GenericResponse'
+    - type: object
+      properties:
+        data:
+          $ref: '#/definitions/PublicUser'
+
+PrivateUser:
+  description: Private representation of a user
+  allOf:
+    - $ref: '#/definitions/GenericResponse'
+    - type: object
+      properties:
+        email:
+          type: string
+          description: Email
+        created-at:
+          type: integer
+          description: Creation date of user
+        updated-at:
+          type: integer
+          description: Last update of user
+
+PrivateUserResponse:
+  allOf:
+    - $ref: '#/definitions/GenericResponse'
+    - type: object
+      properties:
+        data:
+          $ref: '#/definitions/PrivateUser'

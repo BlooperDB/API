@@ -1,0 +1,43 @@
+/blueprint:
+  $ref: ./blueprint/blueprint.yaml
+'/blueprint/{blueprint}':
+  $ref: ./blueprint/blueprint.blueprint.yaml
+'/blueprint/{blueprint}/revision/latest':
+  $ref: ./blueprint/blueprint.blueprint.revision.latest.yaml
+'/blueprint/{blueprint}/revision/{revision}':
+  $ref: ./blueprint/blueprint.blueprint.revision.revision.yaml
+'/blueprint/{blueprint}/revisions':
+  $ref: ./blueprint/blueprint.blueprint.revisions.yaml
+
+/blueprints:
+  $ref: ./blueprint/blueprints.yaml
+'/blueprints/search/{query}':
+  $ref: ./blueprint/blueprints.search.query.yaml
+
+/comment:
+  $ref: ./comment/comment.yaml
+'/comment/{comment}':
+  $ref: ./comment/comment.comment.yaml
+
+/revision:
+  $ref: ./revision/revision.yaml
+'/revision/{revision}':
+  $ref: ./revision/revision.revision.yaml
+'/revision/{revision}/comments':
+  $ref: ./revision/revision.revision.comments.yaml
+
+'/tags/autocomplete/{tag}':
+  $ref: ./tag/tags.autocomplete.tag.yaml
+/tags/popular:
+  $ref: ./tag/tags.popular.yaml
+
+/user/self:
+  $ref: ./user/user.self.yaml
+/user/self/blueprints:
+  $ref: ./user/user.self.blueprints.yaml
+/user/signin:
+  $ref: ./user/user.signin.yaml
+'/user/{user}':
+  $ref: ./user/user.user.yaml
+'/user/{user}/blueprints':
+  $ref: ./user/user.user.blueprints.yaml

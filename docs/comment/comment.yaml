@@ -1,0 +1,11 @@
+post:
+  tags:
+  - Comment
+  summary: Post a new comment
+  responses:
+    '200':
+      description: Success
+    '403':
+      description: User not authenticated
+      schema:
+        $ref: '#/definitions/GenericResponse'

@@ -1,0 +1,15 @@
+get:
+  tags:
+  - User
+  summary: Get authenticated user blueprints
+  security:
+    - api_key: []
+  responses:
+    '200':
+      description: Success
+      schema:
+        $ref: '#/definitions/ArrayBlueprintResponse'
+    '403':
+      description: User not authenticated
+      schema:
+        $ref: '#/definitions/GenericResponse'

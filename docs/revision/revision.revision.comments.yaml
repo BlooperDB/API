@@ -1,0 +1,19 @@
+get:
+  tags:
+  - Revision
+  summary: Get comments of a specific revision
+  parameters:
+    - in: path
+      name: revision
+      required: true
+      type: string
+      description: 'ID of revision'
+  responses:
+    '200':
+      description: Success
+      schema:
+        $ref: '#/definitions/ArrayCommentResponse'
+    '404':
+      description: Revision not found
+      schema:
+        $ref: '#/definitions/GenericResponse'

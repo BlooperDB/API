@@ -1,0 +1,15 @@
+get:
+  tags:
+  - Blueprint
+  summary: Search for blueprints
+  parameters:
+    - in: path
+      name: query
+      required: true
+      type: string
+      description: 'Search query'
+  responses:
+    '200':
+      description: Success
+      schema:
+        $ref: '#/definitions/ArrayBlueprintResponse'

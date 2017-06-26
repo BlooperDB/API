@@ -1,0 +1,65 @@
+get:
+  tags:
+  - Blueprint
+  summary: Get a specific blueprint
+  parameters:
+    - in: path
+      name: blueprint
+      required: true
+      type: string
+      description: 'ID of blueprint'
+  responses:
+    '200':
+      description: Success
+      schema:
+        $ref: '#/definitions/BlueprintResponse'
+    '404':
+      description: Blueprint not found
+      schema:
+        $ref: '#/definitions/GenericResponse'
+put:
+  tags:
+  - Blueprint
+  summary: Update a specific blueprint
+  parameters:
+    - in: path
+      name: blueprint
+      required: true
+      type: string
+      description: 'ID of blueprint'
+  responses:
+    '200':
+      description: Success
+      schema:
+        $ref: '#/definitions/GenericResponse'
+    '403':
+      description: User not authenticated
+      schema:
+        $ref: '#/definitions/GenericResponse'
+    '404':
+      description: Blueprint not found
+      schema:
+        $ref: '#/definitions/GenericResponse'
+delete:
+  tags:
+  - Blueprint
+  summary: Delete a specific blueprint
+  parameters:
+    - in: path
+      name: blueprint
+      required: true
+      type: string
+      description: 'ID of blueprint'
+  responses:
+    '200':
+      description: Success
+      schema:
+        $ref: '#/definitions/GenericResponse'
+    '403':
+      description: User not authenticated
+      schema:
+        $ref: '#/definitions/GenericResponse'
+    '404':
+      description: Blueprint not found
+      schema:
+        $ref: '#/definitions/GenericResponse'

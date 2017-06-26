@@ -1,0 +1,65 @@
+get:
+  tags:
+  - Comment
+  summary: Get a specific comment
+  parameters:
+    - in: path
+      name: comment
+      required: true
+      type: string
+      description: 'ID of comment'
+  responses:
+    '200':
+      description: Success
+      schema:
+        $ref: '#/definitions/Comment'
+    '404':
+      description: Comment not found
+      schema:
+        $ref: '#/definitions/GenericResponse'
+put:
+  tags:
+  - Comment
+  summary: Update a specific comment
+  parameters:
+    - in: path
+      name: comment
+      required: true
+      type: string
+      description: 'ID of comment'
+  responses:
+    '200':
+      description: Success
+      schema:
+        $ref: '#/definitions/GenericResponse'
+    '403':
+      description: User not authenticated
+      schema:
+        $ref: '#/definitions/GenericResponse'
+    '404':
+      description: Comment not found
+      schema:
+        $ref: '#/definitions/GenericResponse'
+delete:
+  tags:
+  - Comment
+  summary: Delete a specific comment
+  parameters:
+    - in: path
+      name: comment
+      required: true
+      type: string
+      description: 'ID of comment'
+  responses:
+    '200':
+      description: Success
+      schema:
+        $ref: '#/definitions/GenericResponse'
+    '403':
+      description: User not authenticated
+      schema:
+        $ref: '#/definitions/GenericResponse'
+    '404':
+      description: Comment not found
+      schema:
+        $ref: '#/definitions/GenericResponse'

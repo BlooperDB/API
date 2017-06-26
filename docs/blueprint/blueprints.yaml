@@ -1,0 +1,9 @@
+get:
+  tags:
+  - Blueprint
+  summary: Get all blueprints
+  responses:
+    '200':
+      description: Success
+      schema:
+        $ref: '#/definitions/ArrayBlueprintResponse'

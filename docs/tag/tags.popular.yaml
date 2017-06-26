@@ -1,0 +1,9 @@
+get:
+  tags:
+  - Tag
+  summary: Retrieve top 50 used tags
+  responses:
+    '200':
+      description: Success
+      schema:
+        $ref: '#/definitions/ArrayTagResponse'

@@ -1,0 +1,19 @@
+get:
+  tags:
+  - User
+  summary: Get specific user
+  parameters:
+    - in: path
+      name: user
+      required: true
+      type: string
+      description: 'ID of user'
+  responses:
+    '200':
+      description: Success
+      schema:
+        $ref: '#/definitions/PublicUserResponse'
+    '404':
+      description: User not found
+      schema:
+        $ref: '#/definitions/GenericResponse'

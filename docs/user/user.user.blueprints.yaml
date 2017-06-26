@@ -1,0 +1,19 @@
+get:
+  tags:
+  - User
+  summary: Get specific user blueprints
+  parameters:
+    - in: path
+      name: user
+      required: true
+      type: string
+      description: 'ID of user'
+  responses:
+    '200':
+      description: Success
+      schema:
+        $ref: '#/definitions/ArrayBlueprintResponse'
+    '404':
+      description: User not found
+      schema:
+        $ref: '#/definitions/GenericResponse'

@@ -14,6 +14,10 @@ func RegisterTagRoutes(router api.RegisterRoute) {
 	router("GET", "/tags/autocomplete/{tag}", autocompleteTag)
 }
 
+type TagListResponse struct {
+	Tags []string `json:"tags"`
+}
+
 func popularTags(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 	tags := db.PopularTags()
 	reTags := make([]string, len(tags))
@@ -22,13 +26,9 @@ func popularTags(_ *http.Request) (interface{}, *utils.ErrorResponse) {
 		reTags[i] = tag.Name
 	}
 
-	return AutocompleteTagResponse{
+	return TagListResponse{
 		Tags: reTags,
 	}, nil
-}
-
-type AutocompleteTagResponse struct {
-	Tags []string `json:"tags"`
 }
 
 func autocompleteTag(r *http.Request) (interface{}, *utils.ErrorResponse) {
@@ -41,7 +41,7 @@ func autocompleteTag(r *http.Request) (interface{}, *utils.ErrorResponse) {
 		reTags[i] = tag.Name
 	}
 
-	return AutocompleteTagResponse{
+	return TagListResponse{
 		Tags: reTags,
 	}, nil
 }

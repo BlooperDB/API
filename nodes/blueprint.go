@@ -18,6 +18,7 @@ type BlueprintResponse struct {
 	UserId      uint        `json:"user"`
 	Name        string      `json:"name"`
 	Description string      `json:"description"`
+	Latest      uint        `json:"latest-revision"`
 	Revisions   []*Revision `json:"revisions,omitempty"`
 	Tags        []string    `json:"tags"`
 	CreatedAt   time.Time   `json:"created-at"`
@@ -40,7 +41,7 @@ func RegisterBlueprintRoutes(router api.RegisterRoute) {
 }
 
 type SearchBlueprintsResponse struct {
-	Blueprints []*SmallBlueprintResponse `json:"blueprints"`
+	Blueprints []*BlueprintResponse `json:"blueprints"`
 }
 
 /*
@@ -65,7 +66,7 @@ func searchBlueprints(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	}
 
 	blueprints := db.SearchBlueprints(query, offset, count)
-	reBlueprint := make([]*SmallBlueprintResponse, len(blueprints))
+	reBlueprint := make([]*BlueprintResponse, len(blueprints))
 
 	for i, blueprint := range blueprints {
 		var revId uint = 0
@@ -80,12 +81,14 @@ func searchBlueprints(r *http.Request) (interface{}, *utils.ErrorResponse) {
 			reTags[i] = tag.Name
 		}
 
-		reBlueprint[i] = &SmallBlueprintResponse{
+		reBlueprint[i] = &BlueprintResponse{
 			Id:          blueprint.ID,
-			Latest:      revId,
 			UserId:      blueprint.UserID,
 			Name:        blueprint.Name,
 			Description: blueprint.Description,
+			CreatedAt:   blueprint.CreatedAt,
+			UpdatedAt:   blueprint.UpdatedAt,
+			Latest:      revId,
 			Tags:        reTags,
 		}
 	}
@@ -96,16 +99,7 @@ func searchBlueprints(r *http.Request) (interface{}, *utils.ErrorResponse) {
 }
 
 type GetBlueprintsResponse struct {
-	Blueprints []*SmallBlueprintResponse `json:"blueprints"`
-}
-
-type SmallBlueprintResponse struct {
-	Id          uint     `json:"id"`
-	Latest      uint     `json:"latest-revision"`
-	UserId      uint     `json:"user-id"`
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	Tags        []string `json:"tags"`
+	Blueprints []*BlueprintResponse `json:"blueprints"`
 }
 
 /*
@@ -125,7 +119,7 @@ func getBlueprints(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	}
 
 	blueprints := db.GetAllBlueprints(offset, count)
-	reBlueprint := make([]*SmallBlueprintResponse, len(blueprints))
+	reBlueprint := make([]*BlueprintResponse, len(blueprints))
 
 	for i, blueprint := range blueprints {
 		var revId uint = 0
@@ -140,12 +134,14 @@ func getBlueprints(r *http.Request) (interface{}, *utils.ErrorResponse) {
 			reTags[i] = tag.Name
 		}
 
-		reBlueprint[i] = &SmallBlueprintResponse{
+		reBlueprint[i] = &BlueprintResponse{
 			Id:          blueprint.ID,
-			Latest:      revId,
 			UserId:      blueprint.UserID,
 			Name:        blueprint.Name,
 			Description: blueprint.Description,
+			CreatedAt:   blueprint.CreatedAt,
+			UpdatedAt:   blueprint.UpdatedAt,
+			Latest:      revId,
 			Tags:        reTags,
 		}
 	}
@@ -195,6 +191,11 @@ func getBlueprint(r *http.Request) (interface{}, *utils.ErrorResponse) {
 		reTags[i] = tag.Name
 	}
 
+	var revId uint = 0
+	if rev := blueprint.GetLatestRevision(); rev != nil {
+		revId = rev.Revision
+	}
+
 	return BlueprintResponse{
 		Id:          blueprint.ID,
 		UserId:      blueprint.UserID,
@@ -202,6 +203,7 @@ func getBlueprint(r *http.Request) (interface{}, *utils.ErrorResponse) {
 		Description: blueprint.Description,
 		CreatedAt:   blueprint.CreatedAt,
 		UpdatedAt:   blueprint.UpdatedAt,
+		Latest:      revId,
 		Revisions:   reRevision,
 		Tags:        reTags,
 	}, nil

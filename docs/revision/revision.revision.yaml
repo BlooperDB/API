@@ -1,0 +1,65 @@
+get:
+  tags:
+  - Revision
+  summary: Get a specific revision
+  parameters:
+    - in: path
+      name: revision
+      required: true
+      type: string
+      description: 'ID of revision'
+  responses:
+    '200':
+      description: Success
+      schema:
+        $ref: '#/definitions/RevisionResponse'
+    '404':
+      description: Revision not found
+      schema:
+        $ref: '#/definitions/GenericResponse'
+put:
+  tags:
+  - Revision
+  summary: Update a specific revision
+  parameters:
+    - in: path
+      name: revision
+      required: true
+      type: string
+      description: 'ID of revision'
+  responses:
+    '200':
+      description: Success
+      schema:
+        $ref: '#/definitions/GenericResponse'
+    '403':
+      description: User not authenticated
+      schema:
+        $ref: '#/definitions/GenericResponse'
+    '404':
+      description: Revision not found
+      schema:
+        $ref: '#/definitions/GenericResponse'
+delete:
+  tags:
+  - Revision
+  summary: Delete a specific revision
+  parameters:
+    - in: path
+      name: revision
+      required: true
+      type: string
+      description: 'ID of revision'
+  responses:
+    '200':
+      description: Success
+      schema:
+        $ref: '#/definitions/GenericResponse'
+    '403':
+      description: User not authenticated
+      schema:
+        $ref: '#/definitions/GenericResponse'
+    '404':
+      description: Revision not found
+      schema:
+        $ref: '#/definitions/GenericResponse'

@@ -1,0 +1,26 @@
+get:
+  tags:
+  - User
+  summary: Get authenticated user
+  responses:
+    '200':
+      description: Success
+      schema:
+        $ref: '#/definitions/PrivateUserResponse'
+    '403':
+      description: User not authenticated
+      schema:
+        $ref: '#/definitions/GenericResponse'
+put:
+  tags:
+  - User
+  summary: Update authenticated user
+  responses:
+    '200':
+      description: Success
+      schema:
+        $ref: '#/definitions/GenericResponse'
+    '403':
+      description: User not authenticated
+      schema:
+        $ref: '#/definitions/GenericResponse'

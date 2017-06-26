@@ -1,0 +1,28 @@
+post:
+  tags:
+  - Blueprint
+  summary: Post a new blueprint
+  responses:
+    '200':
+      description: Success
+      schema:
+        allOf:
+          - $ref: '#/definitions/GenericResponse'
+          - type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  blueprint-id:
+                    type: int
+                    description: The posted blueprint id
+                  revision-id:
+                    type: int
+                    description: The posted revision id
+                  revision:
+                    type: int
+                    description: The posted incremental revision id
+    '403':
+      description: User not authenticated
+      schema:
+        $ref: '#/definitions/GenericResponse'
