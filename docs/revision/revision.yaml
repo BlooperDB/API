@@ -1,7 +1,7 @@
 post:
   tags:
   - Revision
-  summary: Post a revision
+  summary: Post a new revision
   responses:
     '200':
       description: Success
