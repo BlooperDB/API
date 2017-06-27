@@ -24,3 +24,13 @@ put:
       description: User not authenticated
       schema:
         $ref: '#/definitions/GenericResponse'
+  parameters:
+    - in: body
+      name: body
+      required: true
+      schema:
+        type: object
+        properties:
+          username:
+            type: string
+            description: User username

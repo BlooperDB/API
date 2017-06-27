@@ -24,9 +24,9 @@ schemes:
 - https
 
 securityDefinitions:
-  api_key:
+  BLOOPER-TOKEN:
     type: apiKey
-    name: api_key
+    name: BLOOPER-TOKEN
     in: header
 
 basePath: "/v1"

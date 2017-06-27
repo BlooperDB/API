@@ -281,8 +281,9 @@ func postBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespon
 }
 
 type PutBlueprintRequest struct {
-	Name        string `json:"name" validate:"min=5"`
-	Description string `json:"description" validate:"nonzero"`
+	Name        string   `json:"name" validate:"min=5"`
+	Description string   `json:"description" validate:"nonzero"`
+	Tags        []string `json:"tags" validate:"min=1"`
 }
 
 /*
@@ -304,6 +305,30 @@ func updateBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorResp
 
 	if blueprint.UserID != u.ID {
 		return nil, &utils.Error_no_access
+	}
+
+	for _, t := range blueprint.GetTags() {
+		bt := db.BlueprintTag{
+			BlueprintId: blueprint.ID,
+			TagId:       t.ID,
+		}
+
+		bt.Delete()
+	}
+
+	for _, tag := range request.Tags {
+		t := &db.Tag{
+			Name: tag,
+		}
+
+		t.Save()
+
+		bt := db.BlueprintTag{
+			BlueprintId: blueprint.ID,
+			TagId:       t.ID,
+		}
+
+		bt.Save()
 	}
 
 	blueprint.Name = request.Name

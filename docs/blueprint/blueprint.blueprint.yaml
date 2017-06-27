@@ -40,6 +40,24 @@ put:
       description: Blueprint not found
       schema:
         $ref: '#/definitions/GenericResponse'
+  parameters:
+    - in: body
+      name: body
+      required: true
+      schema:
+        type: object
+        properties:
+          name:
+            type: string
+            description: Blueprint name
+          description:
+            type: string
+            description: Blueprint description
+          tags:
+            type: array
+            description: Blueprint tags
+            items:
+              type: string
 delete:
   tags:
   - Blueprint

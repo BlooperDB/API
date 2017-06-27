@@ -14,15 +14,36 @@ post:
                 type: object
                 properties:
                   blueprint-id:
-                    type: int
-                    description: The posted blueprint id
+                    type: integer
+                    description: Blueprint id
                   revision-id:
-                    type: int
-                    description: The posted revision id
+                    type: integer
+                    description: Revision id
                   revision:
-                    type: int
-                    description: The posted incremental revision id
+                    type: integer
+                    description: Incremental revision id
     '403':
       description: User not authenticated
       schema:
         $ref: '#/definitions/GenericResponse'
+  parameters:
+    - in: body
+      name: body
+      required: true
+      schema:
+        type: object
+        properties:
+          name:
+            type: string
+            description: Blueprint name
+          description:
+            type: string
+            description: Blueprint description
+          blueprint-string:
+            type: string
+            description: Blueprint string
+          tags:
+            type: array
+            description: Blueprint tags
+            items:
+              type: string

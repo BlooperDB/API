@@ -19,3 +19,13 @@ post:
                   first-login:
                     type: boolean
                     description: Whether this was the first log in for this user
+  parameters:
+    - in: body
+      name: body
+      required: true
+      schema:
+        type: object
+        properties:
+          firebase-token:
+            type: string
+            description: Firebase Token received from Google

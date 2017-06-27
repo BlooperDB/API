@@ -5,7 +5,31 @@ post:
   responses:
     '200':
       description: Success
+      schema:
+        allOf:
+          - $ref: '#/definitions/GenericResponse'
+          - type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  comment-id:
+                    type: int
+                    description: Comment ID
     '403':
       description: User not authenticated
       schema:
         $ref: '#/definitions/GenericResponse'
+  parameters:
+    - in: body
+      name: body
+      required: true
+      schema:
+        type: object
+        properties:
+          message:
+            type: string
+            description: Comment message
+          revision-id:
+            type: int
+            description: Revision ID

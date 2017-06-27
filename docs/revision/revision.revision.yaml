@@ -40,6 +40,16 @@ put:
       description: Revision not found
       schema:
         $ref: '#/definitions/GenericResponse'
+  parameters:
+    - in: body
+      name: body
+      required: true
+      schema:
+        type: object
+        properties:
+          changes:
+            type: string
+            description: Revision changes
 delete:
   tags:
   - Revision

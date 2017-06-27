@@ -40,6 +40,16 @@ put:
       description: Comment not found
       schema:
         $ref: '#/definitions/GenericResponse'
+  parameters:
+    - in: body
+      name: body
+      required: true
+      schema:
+        type: object
+        properties:
+          message:
+            type: string
+            description: Comment message
 delete:
   tags:
   - Comment
