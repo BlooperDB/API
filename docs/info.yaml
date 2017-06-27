@@ -6,7 +6,7 @@ license:
 
 description: |
   This is the official documentation of the Blooper API
-  # Cross-Origin Resource Sharing
+  # CORS
   This API features Cross-Origin Resource Sharing (CORS) implemented in compliance with  [W3C spec](https://www.w3.org/TR/cors/).
   And that allows cross-domain communication from the browser.
   All responses have a wildcard same-origin which makes them completely public and accessible to everyone, including any code on any site.
