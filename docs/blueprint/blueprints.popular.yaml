@@ -1,0 +1,9 @@
+get:
+  tags:
+  - Blueprint
+  summary: Get popular blueprints
+  responses:
+    '200':
+      description: Success
+      schema:
+        $ref: '#/definitions/ArrayBlueprintResponse'

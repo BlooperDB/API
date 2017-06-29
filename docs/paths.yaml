@@ -11,6 +11,8 @@
 
 /blueprints:
   $ref: ./blueprint/blueprints.yaml
+'/blueprints/popular':
+  $ref: ./blueprint/blueprints.popular.yaml
 '/blueprints/search/{query}':
   $ref: ./blueprint/blueprints.search.query.yaml
 
