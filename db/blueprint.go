@@ -219,7 +219,7 @@ func PopularBlueprints(offset int, limit int) []*Blueprint {
 								*
 								log(10, greatest(abs(scoring.score), 1))
 								+
-								((EXTRACT(epoch FROM now()) - 1400000000) / 45000)
+								((EXTRACT(epoch FROM b.created_at) - 1400000000) / 45000)
 							) AS numeric
 						),
 						7
