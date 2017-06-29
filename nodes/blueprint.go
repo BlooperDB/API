@@ -27,6 +27,7 @@ type BlueprintResponse struct {
 
 func RegisterBlueprintRoutes(router api.RegisterRoute) {
 	router("GET", "/blueprints", getBlueprints)
+	router("GET", "/blueprints/popular", popularBlueprints)
 	router("GET", "/blueprints/search/", searchBlueprints)
 	router("GET", "/blueprints/search/{query}", searchBlueprints)
 
@@ -66,6 +67,55 @@ func searchBlueprints(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	}
 
 	blueprints := db.SearchBlueprints(query, offset, count)
+	reBlueprint := make([]*BlueprintResponse, len(blueprints))
+
+	for i, blueprint := range blueprints {
+		var revId uint = 0
+		if rev := blueprint.GetLatestRevision(); rev != nil {
+			revId = rev.Revision
+		}
+
+		tags := blueprint.GetTags()
+		reTags := make([]string, len(tags))
+
+		for i, tag := range tags {
+			reTags[i] = tag.Name
+		}
+
+		reBlueprint[i] = &BlueprintResponse{
+			Id:          blueprint.ID,
+			UserId:      blueprint.UserID,
+			Name:        blueprint.Name,
+			Description: blueprint.Description,
+			CreatedAt:   blueprint.CreatedAt,
+			UpdatedAt:   blueprint.UpdatedAt,
+			Latest:      revId,
+			Tags:        reTags,
+		}
+	}
+
+	return SearchBlueprintsResponse{
+		Blueprints: reBlueprint,
+	}, nil
+}
+
+/*
+Get popular blueprints
+*/
+func popularBlueprints(r *http.Request) (interface{}, *utils.ErrorResponse) {
+	var (
+		offset, _ = strconv.Atoi(r.URL.Query().Get("offset"))
+		count, _  = strconv.Atoi(r.URL.Query().Get("count"))
+	)
+
+	if count == 0 {
+		count = 20
+	}
+	if count > 100 {
+		count = 100
+	}
+
+	blueprints := db.PopularBlueprints(offset, count)
 	reBlueprint := make([]*BlueprintResponse, len(blueprints))
 
 	for i, blueprint := range blueprints {

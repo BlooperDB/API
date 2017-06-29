@@ -201,3 +201,51 @@ func (m *Blueprint) GetLatestRevision() *Revision {
 	}
 	return nil
 }
+
+func PopularBlueprints(offset int, limit int) []*Blueprint {
+	var blueprints []*Blueprint
+	db.Raw(`
+		SELECT *
+		FROM blueprints b
+		ORDER BY
+			(
+				SELECT inside.hotness
+				FROM (
+					SELECT
+					round(
+						CAST(
+							(
+								(CASE WHEN scoring.score > 0 THEN 1 WHEN 100 = 0 THEN 0 ELSE -1 END)
+								*
+								log(10, greatest(abs(scoring.score), 1))
+								+
+								((EXTRACT(epoch FROM now()) - 1400000000) / 45000)
+							) AS numeric
+						),
+						7
+					) AS hotness
+					FROM (
+						SELECT
+						(
+							SELECT (
+								SUM(CASE WHEN thumbs_up = true THEN 1 ELSE 0 END)
+								-
+								SUM(CASE WHEN thumbs_up = false THEN 1 ELSE 0 END)
+							)
+							FROM ratings
+							WHERE revision_id = (
+								SELECT id
+								FROM revisions
+								WHERE blueprint_id = b.id
+								LIMIT 1
+							)
+						) AS score
+					) AS scoring
+				) AS inside
+			) DESC,
+			id DESC
+		OFFSET ?
+		LIMIT ?
+	`, offset, limit).Scan(&blueprints)
+	return blueprints
+}
