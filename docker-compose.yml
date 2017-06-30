@@ -6,6 +6,7 @@ services:
      - 8080:8080
     links:
      - postgres
+     - minio
     env_file:
      - docker.env
 
@@ -17,3 +18,14 @@ services:
      - docker.env
     volumes:
      - ./postgresql:/var/lib/postgresql/data
+
+  minio:
+    image: minio/minio
+    command: server /export
+    ports:
+     - 9000:9000
+    env_file:
+     - docker.env
+    volumes:
+     - ./minio:/export
+     - ./minio-config:/root/.minio
