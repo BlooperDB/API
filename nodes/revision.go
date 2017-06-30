@@ -32,7 +32,11 @@ func RegisterRevisionRoutes(router api.RegisterRoute) {
 	router("GET", "/revision/{revision}", getRevision)
 	router("PUT", "/revision/{revision}", api.AuthHandler(updateRevision, true))
 	router("DELETE", "/revision/{revision}", api.AuthHandler(deleteRevision, true))
+
 	router("GET", "/revision/{revision}/comments", getRevisionComments)
+
+	router("POST", "/revision/{revision}/rating", api.AuthHandler(postRevisionRating, true))
+	router("DELETE", "/revision/{revision}/rating", api.AuthHandler(deleteRevisionRating, true))
 }
 
 /*
@@ -202,6 +206,58 @@ func getRevisionComments(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	return GetRevisionCommentsResponse{
 		Comments: reComment,
 	}, nil
+}
+
+type PostRevisionRating struct {
+	ThumbsUp bool `json:"thumbs-up"`
+}
+
+/*
+Post rating revision
+*/
+func postRevisionRating(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
+	var request PostRevisionRating
+	utils.ValidateRequestBody(r, &request)
+
+	revision, e := parseRevision(r)
+
+	if e != nil {
+		return nil, e
+	}
+
+	rating := db.FindRating(u.ID, revision.ID)
+
+	rating.UserID = u.ID
+	rating.RevisionID = revision.ID
+	rating.ThumbsUp = request.ThumbsUp
+	rating.DeletedAt = nil
+	rating.Save()
+
+	return nil, nil
+}
+
+/*
+Post rating revision
+*/
+func deleteRevisionRating(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse) {
+	var request PostRevisionRating
+	utils.ValidateRequestBody(r, &request)
+
+	revision, e := parseRevision(r)
+
+	if e != nil {
+		return nil, e
+	}
+
+	rating := db.FindRating(u.ID, revision.ID)
+
+	if rating.ID == 0 {
+		return nil, &utils.Error_rating_not_found
+	}
+
+	rating.Delete()
+
+	return nil, nil
 }
 
 func parseRevision(r *http.Request) (*db.Revision, *utils.ErrorResponse) {

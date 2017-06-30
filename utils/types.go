@@ -46,3 +46,7 @@ var (
 var (
 	Error_no_search_terms = ErrorResponse{500, "No search terms given", 400}
 )
+
+var (
+	Error_rating_not_found = ErrorResponse{600, "Rating not found", 404}
+)

@@ -27,6 +27,8 @@
   $ref: ./revision/revision.revision.yaml
 '/revision/{revision}/comments':
   $ref: ./revision/revision.revision.comments.yaml
+'/revision/{revision}/rating':
+  $ref: ./revision/revision.revision.rating.yaml
 
 '/tags/autocomplete/{tag}':
   $ref: ./tag/tags.autocomplete.tag.yaml

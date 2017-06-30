@@ -1,0 +1,56 @@
+post:
+  tags:
+  - Revision
+  summary: Post your rating
+  parameters:
+    - in: path
+      name: revision
+      required: true
+      type: string
+      description: 'ID of revision'
+  responses:
+    '200':
+      description: Success
+      schema:
+        $ref: '#/definitions/GenericResponse'
+    '403':
+      description: User not authenticated
+      schema:
+        $ref: '#/definitions/GenericResponse'
+    '404':
+      description: Revision not found
+      schema:
+        $ref: '#/definitions/GenericResponse'
+  parameters:
+    - in: body
+      name: body
+      required: true
+      schema:
+        type: object
+        properties:
+          changes:
+            type: string
+            description: Revision changes
+delete:
+  tags:
+  - Revision
+  summary: Delete your rating
+  parameters:
+    - in: path
+      name: revision
+      required: true
+      type: string
+      description: 'ID of revision'
+  responses:
+    '200':
+      description: Success
+      schema:
+        $ref: '#/definitions/GenericResponse'
+    '403':
+      description: User not authenticated
+      schema:
+        $ref: '#/definitions/GenericResponse'
+    '404':
+      description: Revision not found
+      schema:
+        $ref: '#/definitions/GenericResponse'

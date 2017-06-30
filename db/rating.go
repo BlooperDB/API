@@ -13,7 +13,7 @@ type Rating struct {
 }
 
 func (m *Rating) Save() {
-	db.Save(m)
+	db.Unscoped().Save(m)
 }
 
 func (m *Rating) Delete() {
@@ -30,4 +30,10 @@ func (m Rating) GetRevision() Revision {
 	var revision Revision
 	db.Where("id = ?", m.RevisionID).Find(&revision)
 	return revision
+}
+
+func FindRating(userId uint, revisionId uint) Rating {
+	var rating Rating
+	db.Unscoped().Where("user_id = ? AND revision_id = ?", userId, revisionId).Limit(1).Find(&rating)
+	return rating
 }
