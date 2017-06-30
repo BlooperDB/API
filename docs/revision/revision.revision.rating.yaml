@@ -28,9 +28,9 @@ post:
       schema:
         type: object
         properties:
-          changes:
-            type: string
-            description: Revision changes
+          thumbs-up:
+            type: boolean
+            description: Whether the rating is thumbs up or down
 delete:
   tags:
   - Revision
