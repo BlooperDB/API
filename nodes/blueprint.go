@@ -9,6 +9,7 @@ import (
 
 	"github.com/BlooperDB/API/api"
 	"github.com/BlooperDB/API/db"
+	"github.com/BlooperDB/API/storage"
 	"github.com/BlooperDB/API/utils"
 	"github.com/gorilla/mux"
 )
@@ -302,11 +303,12 @@ func postBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespon
 		BlueprintID:      blueprint.ID,
 		Revision:         blueprint.LastRevision,
 		Changes:          "",
-		BlueprintString:  request.BlueprintString,
 		BlueprintVersion: bpVersion,
 	}
 
 	revision.Save()
+
+	storage.SaveRevision(revision.ID, request.BlueprintString)
 
 	for _, tag := range request.Tags {
 		t := &db.Tag{
@@ -526,6 +528,12 @@ func revisionToJSON(authUser *db.User, revision *db.Revision, getComments bool) 
 		}
 	}
 
+	blueprintString, err := storage.LoadRevision(revision.ID)
+
+	if err != nil {
+		return nil, &utils.Error_internal_error
+	}
+
 	return &Revision{
 		Id:          revision.ID,
 		Revision:    revision.Revision,
@@ -533,7 +541,7 @@ func revisionToJSON(authUser *db.User, revision *db.Revision, getComments bool) 
 		CreatedAt:   revision.CreatedAt,
 		UpdatedAt:   revision.UpdatedAt,
 		BlueprintID: revision.BlueprintID,
-		Blueprint:   revision.BlueprintString,
+		Blueprint:   blueprintString,
 		ThumbsUp:    thumbsUp,
 		ThumbsDown:  thumbsDown,
 		UserVote:    userVote,
@@ -549,6 +557,10 @@ func parseBlueprint(r *http.Request) (*db.Blueprint, *utils.ErrorResponse) {
 		return nil, &utils.Error_blueprint_not_found
 	}
 
+	return findBlueprintById(uint(blueprintId))
+}
+
+func findBlueprintById(blueprintId uint) (*db.Blueprint, *utils.ErrorResponse) {
 	blueprint := db.GetBlueprintById(uint(blueprintId))
 
 	if blueprint == nil {

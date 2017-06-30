@@ -19,6 +19,7 @@ var UsernameRegex = regexp.MustCompile("^[a-zA-Z0-9]{3,30}$")
 var (
 	Error_invalid_request_data = ErrorResponse{1, "Invalid request data", 400}
 	Error_nothing_changed      = ErrorResponse{2, "Nothing changed", 400}
+	Error_internal_error       = ErrorResponse{3, "Internal error", 500}
 )
 
 var (

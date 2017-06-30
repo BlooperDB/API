@@ -7,3 +7,5 @@ import:
 - package: github.com/gorilla/handlers
   version: ^1.2.1
 - package: gopkg.in/validator.v2
+- package: github.com/minio/minio-go
+  version: ^2.1.0

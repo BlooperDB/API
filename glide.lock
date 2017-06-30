@@ -1,5 +1,5 @@
-hash: 29a820f55d46f50beb1a11397cf5dfc1e6b062df866ca8d0a425a7de2758c1ae
-updated: 2017-06-21T01:36:10.7827143+03:00
+hash: 75e1747d29ac05243a52bd35c1977b5cd87b8e91c8c1e457c83d3c4055b9b9dd
+updated: 2017-06-30T19:26:39.5565899+03:00
 imports:
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
@@ -18,6 +18,8 @@ imports:
   subpackages:
   - hstore
   - oid
+- name: github.com/minio/minio-go
+  version: 2f03abaa07d8bc57faef16cda7655ea62a7e0bed
 - name: github.com/SermoDigital/jose
   version: 2bd9b81ac51d6d6134fcd4fd846bd2e7347a15f9
   subpackages:

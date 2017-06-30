@@ -52,7 +52,6 @@ func SearchBlueprints(query string, offset int, limit int) []*Blueprint {
 				select id
 				from revisions
 				where blueprint_id = b.id
-				order by blueprint_string desc
 				limit 1
 			)
 		), ID DESC

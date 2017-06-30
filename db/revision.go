@@ -10,8 +10,7 @@ type Revision struct {
 	BlueprintID      uint   `gorm:"index;not null;unique_index:idx_bp_rev"`
 	Revision         uint   `gorm:"not null;unique_index:idx_bp_rev"`
 	Changes          string `gorm:"not null"`
-	BlueprintString  string `gorm:"not null"`
-	BlueprintVersion int    `gorm:"not null"`
+	BlueprintVersion int    `gorm:"not null" sql:"type:int4; DEFAULT:0"`
 }
 
 func (m *Revision) Save() {

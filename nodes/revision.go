@@ -8,6 +8,7 @@ import (
 
 	"github.com/BlooperDB/API/api"
 	"github.com/BlooperDB/API/db"
+	"github.com/BlooperDB/API/storage"
 	"github.com/BlooperDB/API/utils"
 	"github.com/gorilla/mux"
 )
@@ -80,7 +81,7 @@ func postRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespons
 		return nil, e
 	}
 
-	blueprint, e := parseBlueprint(r)
+	blueprint, e := findBlueprintById(request.BlueprintId)
 
 	if e != nil {
 		return nil, e
@@ -98,11 +99,12 @@ func postRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespons
 		BlueprintID:      request.BlueprintId,
 		Revision:         i,
 		Changes:          request.Changes,
-		BlueprintString:  request.Blueprint,
 		BlueprintVersion: bpVersion,
 	}
 
 	revision.Save()
+
+	storage.SaveRevision(revision.ID, request.Blueprint)
 
 	return PostRevisionResponse{
 		RevisionId: revision.ID,
