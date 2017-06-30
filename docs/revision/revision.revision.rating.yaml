@@ -8,6 +8,15 @@ post:
       required: true
       type: string
       description: 'ID of revision'
+    - in: body
+      name: body
+      required: true
+      schema:
+        type: object
+        properties:
+          thumbs-up:
+            type: boolean
+            description: Whether the rating is thumbs up or down
   responses:
     '200':
       description: Success
@@ -21,16 +30,6 @@ post:
       description: Revision not found
       schema:
         $ref: '#/definitions/GenericResponse'
-  parameters:
-    - in: body
-      name: body
-      required: true
-      schema:
-        type: object
-        properties:
-          thumbs-up:
-            type: boolean
-            description: Whether the rating is thumbs up or down
 delete:
   tags:
   - Revision

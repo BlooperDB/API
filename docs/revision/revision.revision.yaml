@@ -27,6 +27,15 @@ put:
       required: true
       type: string
       description: 'ID of revision'
+    - in: body
+      name: body
+      required: true
+      schema:
+        type: object
+        properties:
+          changes:
+            type: string
+            description: Revision changes
   responses:
     '200':
       description: Success
@@ -40,16 +49,6 @@ put:
       description: Revision not found
       schema:
         $ref: '#/definitions/GenericResponse'
-  parameters:
-    - in: body
-      name: body
-      required: true
-      schema:
-        type: object
-        properties:
-          changes:
-            type: string
-            description: Revision changes
 delete:
   tags:
   - Revision

@@ -27,20 +27,6 @@ put:
       required: true
       type: string
       description: 'ID of blueprint'
-  responses:
-    '200':
-      description: Success
-      schema:
-        $ref: '#/definitions/GenericResponse'
-    '403':
-      description: User not authenticated
-      schema:
-        $ref: '#/definitions/GenericResponse'
-    '404':
-      description: Blueprint not found
-      schema:
-        $ref: '#/definitions/GenericResponse'
-  parameters:
     - in: body
       name: body
       required: true
@@ -58,6 +44,19 @@ put:
             description: Blueprint tags
             items:
               type: string
+  responses:
+    '200':
+      description: Success
+      schema:
+        $ref: '#/definitions/GenericResponse'
+    '403':
+      description: User not authenticated
+      schema:
+        $ref: '#/definitions/GenericResponse'
+    '404':
+      description: Blueprint not found
+      schema:
+        $ref: '#/definitions/GenericResponse'
 delete:
   tags:
   - Blueprint
