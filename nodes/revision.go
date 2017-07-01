@@ -95,11 +95,18 @@ func postRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespons
 
 	bpVersion, _ := strconv.Atoi(request.Blueprint[0:1])
 
+	sha265 := utils.SHA265(request.Blueprint)
+
+	if db.FindRevisionByChecksum(sha265) != nil {
+		return nil, &utils.Error_blueprint_string_already_exists
+	}
+
 	revision := &db.Revision{
-		BlueprintID:      request.BlueprintId,
-		Revision:         i,
-		Changes:          request.Changes,
-		BlueprintVersion: bpVersion,
+		BlueprintID:       request.BlueprintId,
+		Revision:          i,
+		Changes:           request.Changes,
+		BlueprintVersion:  bpVersion,
+		BlueprintChecksum: sha265,
 	}
 
 	revision.Save()

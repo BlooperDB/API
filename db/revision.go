@@ -7,10 +7,11 @@ import (
 type Revision struct {
 	gorm.Model
 
-	BlueprintID      uint   `gorm:"index;not null;unique_index:idx_bp_rev"`
-	Revision         uint   `gorm:"not null;unique_index:idx_bp_rev"`
-	Changes          string `gorm:"not null"`
-	BlueprintVersion int    `gorm:"not null" sql:"type:int4; DEFAULT:0"`
+	BlueprintID       uint   `gorm:"index;not null;unique_index:idx_bp_rev"`
+	Revision          uint   `gorm:"not null;unique_index:idx_bp_rev"`
+	Changes           string `gorm:"not null"`
+	BlueprintVersion  int    `gorm:"not null" sql:"type:int4; DEFAULT:0"`
+	BlueprintChecksum string `gorm:"not null;unique_index"`
 }
 
 func (m *Revision) Save() {
@@ -42,6 +43,15 @@ func (m Revision) GetBlueprint() Blueprint {
 func GetRevisionById(id uint) *Revision {
 	var revision Revision
 	db.Where("id = ?", id).Find(&revision)
+	if revision.ID != 0 {
+		return &revision
+	}
+	return nil
+}
+
+func FindRevisionByChecksum(checksum string) *Revision {
+	var revision Revision
+	db.Where("blueprint_checksum = ?", checksum).Find(&revision)
 	if revision.ID != 0 {
 		return &revision
 	}

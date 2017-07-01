@@ -14,6 +14,9 @@ import (
 	"compress/zlib"
 	"io"
 
+	"crypto/sha256"
+	"fmt"
+
 	"gopkg.in/validator.v2"
 )
 
@@ -115,4 +118,10 @@ func validBlueprintString(v interface{}, _ string) error {
 	}
 
 	return nil
+}
+
+func SHA265(s string) string {
+	h := sha256.New()
+	h.Write([]byte(s))
+	return fmt.Sprintf("%x", h.Sum(nil))
 }

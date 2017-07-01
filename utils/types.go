@@ -37,7 +37,8 @@ var (
 )
 
 var (
-	Error_revision_not_found = ErrorResponse{300, "Blueprint revision not found", 404}
+	Error_revision_not_found              = ErrorResponse{300, "Blueprint revision not found", 404}
+	Error_blueprint_string_already_exists = ErrorResponse{301, "Blueprint string already exists", 400}
 )
 
 var (

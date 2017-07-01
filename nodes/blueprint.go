@@ -288,6 +288,12 @@ func postBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespon
 		return nil, e
 	}
 
+	sha265 := utils.SHA265(request.BlueprintString)
+
+	if db.FindRevisionByChecksum(sha265) != nil {
+		return nil, &utils.Error_blueprint_string_already_exists
+	}
+
 	blueprint := &db.Blueprint{
 		UserID:       u.ID,
 		Name:         request.Name,
@@ -300,10 +306,11 @@ func postBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespon
 	bpVersion, _ := strconv.Atoi(request.BlueprintString[0:1])
 
 	revision := &db.Revision{
-		BlueprintID:      blueprint.ID,
-		Revision:         blueprint.LastRevision,
-		Changes:          "",
-		BlueprintVersion: bpVersion,
+		BlueprintID:       blueprint.ID,
+		Revision:          blueprint.LastRevision,
+		Changes:           "",
+		BlueprintVersion:  bpVersion,
+		BlueprintChecksum: sha265,
 	}
 
 	revision.Save()
@@ -311,11 +318,16 @@ func postBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespon
 	storage.SaveRevision(revision.ID, request.BlueprintString)
 
 	for _, tag := range request.Tags {
-		t := &db.Tag{
-			Name: tag,
-		}
 
-		t.Save()
+		t := db.GetTagByName(tag)
+
+		if t == nil {
+			t = &db.Tag{
+				Name: tag,
+			}
+
+			t.Save()
+		}
 
 		bt := db.BlueprintTag{
 			BlueprintId: blueprint.ID,
