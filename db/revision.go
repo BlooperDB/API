@@ -22,8 +22,8 @@ func (m *Revision) Delete() {
 	db.Delete(m)
 }
 
-func (m Revision) GetComments() []Comment {
-	var comments []Comment
+func (m Revision) GetComments() []*Comment {
+	var comments []*Comment
 	db.Where("revision_id = ?", m.ID).Find(&comments)
 	return comments
 }

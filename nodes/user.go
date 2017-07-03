@@ -98,31 +98,7 @@ func getUser(r *http.Request) (interface{}, *utils.ErrorResponse) {
 
 	if getBlueprints {
 		blueprints := user.GetUserBlueprints()
-		reBlueprint = make([]*BlueprintResponse, len(blueprints))
-
-		for i, blueprint := range blueprints {
-			tags := blueprint.GetTags()
-			reTags := make([]string, len(tags))
-			for j, tag := range tags {
-				reTags[j] = tag.Name
-			}
-
-			var revId uint = 0
-			if rev := blueprint.GetLatestRevision(); rev != nil {
-				revId = rev.Revision
-			}
-
-			reBlueprint[i] = &BlueprintResponse{
-				Id:          blueprint.ID,
-				UserId:      blueprint.UserID,
-				Name:        blueprint.Name,
-				Description: blueprint.Description,
-				CreatedAt:   blueprint.CreatedAt,
-				UpdatedAt:   blueprint.UpdatedAt,
-				Latest:      revId,
-				Tags:        reTags,
-			}
-		}
+		reBlueprint = reBlueprintData(blueprints)
 	}
 
 	authUser := db.GetAuthUser(r)
@@ -155,31 +131,7 @@ func getUserSelf(u *db.User, r *http.Request) (interface{}, *utils.ErrorResponse
 	var reBlueprint []*BlueprintResponse
 
 	if getBlueprints {
-		reBlueprint = make([]*BlueprintResponse, len(blueprints))
-
-		for i, blueprint := range blueprints {
-			tags := blueprint.GetTags()
-			reTags := make([]string, len(tags))
-			for j, tag := range tags {
-				reTags[j] = tag.Name
-			}
-
-			var revId uint = 0
-			if rev := blueprint.GetLatestRevision(); rev != nil {
-				revId = rev.Revision
-			}
-
-			reBlueprint[i] = &BlueprintResponse{
-				Id:          blueprint.ID,
-				UserId:      blueprint.UserID,
-				Name:        blueprint.Name,
-				Description: blueprint.Description,
-				CreatedAt:   blueprint.CreatedAt,
-				UpdatedAt:   blueprint.UpdatedAt,
-				Latest:      revId,
-				Tags:        reTags,
-			}
-		}
+		reBlueprint = reBlueprintData(blueprints)
 	}
 
 	return PrivateUserResponse{
@@ -245,33 +197,7 @@ func getUserSelfBlueprints(user *db.User, r *http.Request) (interface{}, *utils.
 
 func getBlueprintsUser(user *db.User) (interface{}, *utils.ErrorResponse) {
 	blueprints := user.GetUserBlueprints()
-	reBlueprint := make([]*BlueprintResponse, len(blueprints))
-
-	blueprintIds := make([]uint, len(blueprints))
-	for i, blueprint := range blueprints {
-		blueprintIds[i] = blueprint.ID
-	}
-
-	revisionIds := db.GetLatestBlueprintRevisions(blueprintIds...)
-	for i, blueprint := range blueprints {
-		tags := blueprint.GetTags()
-		reTags := make([]string, len(tags))
-
-		for j, tag := range tags {
-			reTags[j] = tag.Name
-		}
-
-		reBlueprint[i] = &BlueprintResponse{
-			Id:          blueprint.ID,
-			UserId:      blueprint.UserID,
-			Name:        blueprint.Name,
-			Description: blueprint.Description,
-			CreatedAt:   blueprint.CreatedAt,
-			UpdatedAt:   blueprint.UpdatedAt,
-			Latest:      revisionIds[blueprint.ID],
-			Tags:        reTags,
-		}
-	}
+	reBlueprint := reBlueprintData(blueprints)
 
 	return UserBlueprintResponse{
 		Blueprints: reBlueprint,

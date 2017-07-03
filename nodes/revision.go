@@ -200,17 +200,7 @@ func getRevisionComments(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	}
 
 	comments := revision.GetComments()
-	reComment := make([]*Comment, len(comments))
-
-	for i, comment := range comments {
-		reComment[i] = &Comment{
-			Id:        comment.ID,
-			UserId:    comment.UserID,
-			CreatedAt: comment.CreatedAt,
-			UpdatedAt: comment.UpdatedAt,
-			Message:   comment.Message,
-		}
-	}
+	reComment := reCommentData(comments)
 
 	return GetRevisionCommentsResponse{
 		Comments: reComment,
@@ -283,4 +273,77 @@ func parseRevision(r *http.Request) (*db.Revision, *utils.ErrorResponse) {
 	}
 
 	return revision, nil
+}
+
+func revisionToJSON(authUser *db.User, revision *db.Revision, getComments bool) (*Revision, *utils.ErrorResponse) {
+	if revision == nil || revision.DeletedAt != nil {
+		return nil, &utils.Error_revision_not_found
+	}
+
+	ratings := revision.GetRatings()
+	thumbsUp, thumbsDown, userVote := 0, 0, 0
+
+	for _, rating := range ratings {
+		if rating.ThumbsUp {
+			thumbsUp++
+		} else {
+			thumbsDown++
+		}
+
+		if authUser != nil && authUser.ID == rating.UserID {
+			if rating.ThumbsUp {
+				userVote = 1
+			} else {
+				userVote = 2
+			}
+		}
+	}
+
+	var reComment []*Comment
+
+	if getComments {
+		comments := revision.GetComments()
+		reComment = reCommentData(comments)
+	}
+
+	blueprintString, err := storage.LoadRevision(revision.ID)
+
+	if err != nil {
+		return nil, &utils.Error_internal_error
+	}
+
+	return &Revision{
+		Id:          revision.ID,
+		Revision:    revision.Revision,
+		Changes:     revision.Changes,
+		CreatedAt:   revision.CreatedAt,
+		UpdatedAt:   revision.UpdatedAt,
+		BlueprintID: revision.BlueprintID,
+		Blueprint:   blueprintString,
+		ThumbsUp:    thumbsUp,
+		ThumbsDown:  thumbsDown,
+		UserVote:    userVote,
+		Comments:    reComment,
+		Version:     revision.BlueprintVersion,
+	}, nil
+}
+
+func reRevisionData(authUser *db.User, revisions []*db.Revision, getComments bool) ([]*Revision, *utils.ErrorResponse) {
+	reRevision := make([]*Revision, len(revisions))
+
+	for i, revision := range revisions {
+		if revision.DeletedAt != nil {
+			continue
+		}
+
+		rev, err := revisionToJSON(authUser, revision, getComments)
+
+		if err != nil {
+			return nil, err
+		}
+
+		reRevision[i] = rev
+	}
+
+	return reRevision, nil
 }

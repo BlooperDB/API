@@ -45,3 +45,13 @@ func autocompleteTag(r *http.Request) (interface{}, *utils.ErrorResponse) {
 		Tags: reTags,
 	}, nil
 }
+
+func reTagData(tags []*db.Tag) []string {
+	reTags := make([]string, len(tags))
+
+	for i, tag := range tags {
+		reTags[i] = tag.Name
+	}
+
+	return reTags
+}

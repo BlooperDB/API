@@ -147,3 +147,19 @@ func parseComment(r *http.Request) (*db.Comment, *utils.ErrorResponse) {
 
 	return comment, nil
 }
+
+func reCommentData(comments []*db.Comment) []*Comment {
+	reComment := make([]*Comment, len(comments))
+
+	for i, comment := range comments {
+		reComment[i] = &Comment{
+			Id:        comment.ID,
+			UserId:    comment.UserID,
+			CreatedAt: comment.CreatedAt,
+			UpdatedAt: comment.UpdatedAt,
+			Message:   comment.Message,
+		}
+	}
+
+	return reComment
+}

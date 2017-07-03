@@ -80,8 +80,8 @@ func GetUserByBlooperToken(token string) *User {
 	return nil
 }
 
-func (m User) GetUserBlueprints() []Blueprint {
-	var blueprints []Blueprint
+func (m User) GetUserBlueprints() []*Blueprint {
+	var blueprints []*Blueprint
 	db.Where("user_id = ?", m.ID).Find(&blueprints)
 	return blueprints
 }

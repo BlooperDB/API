@@ -29,6 +29,8 @@ type BlueprintResponse struct {
 func RegisterBlueprintRoutes(router api.RegisterRoute) {
 	router("GET", "/blueprints", getBlueprints)
 	router("GET", "/blueprints/popular", popularBlueprints)
+	router("GET", "/blueprints/top", topBlueprints)
+	router("GET", "/blueprints/new", newBlueprints)
 	router("GET", "/blueprints/search/", searchBlueprints)
 	router("GET", "/blueprints/search/{query}", searchBlueprints)
 
@@ -68,32 +70,7 @@ func searchBlueprints(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	}
 
 	blueprints := db.SearchBlueprints(query, offset, count)
-	reBlueprint := make([]*BlueprintResponse, len(blueprints))
-
-	for i, blueprint := range blueprints {
-		var revId uint = 0
-		if rev := blueprint.GetLatestRevision(); rev != nil {
-			revId = rev.Revision
-		}
-
-		tags := blueprint.GetTags()
-		reTags := make([]string, len(tags))
-
-		for i, tag := range tags {
-			reTags[i] = tag.Name
-		}
-
-		reBlueprint[i] = &BlueprintResponse{
-			Id:          blueprint.ID,
-			UserId:      blueprint.UserID,
-			Name:        blueprint.Name,
-			Description: blueprint.Description,
-			CreatedAt:   blueprint.CreatedAt,
-			UpdatedAt:   blueprint.UpdatedAt,
-			Latest:      revId,
-			Tags:        reTags,
-		}
-	}
+	reBlueprint := reBlueprintData(blueprints)
 
 	return SearchBlueprintsResponse{
 		Blueprints: reBlueprint,
@@ -117,32 +94,55 @@ func popularBlueprints(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	}
 
 	blueprints := db.PopularBlueprints(offset, count)
-	reBlueprint := make([]*BlueprintResponse, len(blueprints))
+	reBlueprint := reBlueprintData(blueprints)
 
-	for i, blueprint := range blueprints {
-		var revId uint = 0
-		if rev := blueprint.GetLatestRevision(); rev != nil {
-			revId = rev.Revision
-		}
+	return SearchBlueprintsResponse{
+		Blueprints: reBlueprint,
+	}, nil
+}
 
-		tags := blueprint.GetTags()
-		reTags := make([]string, len(tags))
+/*
+Get popular blueprints
+*/
+func topBlueprints(r *http.Request) (interface{}, *utils.ErrorResponse) {
+	var (
+		offset, _ = strconv.Atoi(r.URL.Query().Get("offset"))
+		count, _  = strconv.Atoi(r.URL.Query().Get("count"))
+	)
 
-		for i, tag := range tags {
-			reTags[i] = tag.Name
-		}
-
-		reBlueprint[i] = &BlueprintResponse{
-			Id:          blueprint.ID,
-			UserId:      blueprint.UserID,
-			Name:        blueprint.Name,
-			Description: blueprint.Description,
-			CreatedAt:   blueprint.CreatedAt,
-			UpdatedAt:   blueprint.UpdatedAt,
-			Latest:      revId,
-			Tags:        reTags,
-		}
+	if count == 0 {
+		count = 20
 	}
+	if count > 100 {
+		count = 100
+	}
+
+	blueprints := db.TopBlueprints(offset, count)
+	reBlueprint := reBlueprintData(blueprints)
+
+	return SearchBlueprintsResponse{
+		Blueprints: reBlueprint,
+	}, nil
+}
+
+/*
+Get popular blueprints
+*/
+func newBlueprints(r *http.Request) (interface{}, *utils.ErrorResponse) {
+	var (
+		offset, _ = strconv.Atoi(r.URL.Query().Get("offset"))
+		count, _  = strconv.Atoi(r.URL.Query().Get("count"))
+	)
+
+	if count == 0 {
+		count = 20
+	}
+	if count > 100 {
+		count = 100
+	}
+
+	blueprints := db.NewBlueprints(offset, count)
+	reBlueprint := reBlueprintData(blueprints)
 
 	return SearchBlueprintsResponse{
 		Blueprints: reBlueprint,
@@ -170,32 +170,7 @@ func getBlueprints(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	}
 
 	blueprints := db.GetAllBlueprints(offset, count)
-	reBlueprint := make([]*BlueprintResponse, len(blueprints))
-
-	for i, blueprint := range blueprints {
-		var revId uint = 0
-		if rev := blueprint.GetLatestRevision(); rev != nil {
-			revId = rev.Revision
-		}
-
-		tags := blueprint.GetTags()
-		reTags := make([]string, len(tags))
-
-		for i, tag := range tags {
-			reTags[i] = tag.Name
-		}
-
-		reBlueprint[i] = &BlueprintResponse{
-			Id:          blueprint.ID,
-			UserId:      blueprint.UserID,
-			Name:        blueprint.Name,
-			Description: blueprint.Description,
-			CreatedAt:   blueprint.CreatedAt,
-			UpdatedAt:   blueprint.UpdatedAt,
-			Latest:      revId,
-			Tags:        reTags,
-		}
-	}
+	reBlueprint := reBlueprintData(blueprints)
 
 	return GetBlueprintsResponse{
 		Blueprints: reBlueprint,
@@ -219,28 +194,17 @@ func getBlueprint(r *http.Request) (interface{}, *utils.ErrorResponse) {
 
 	if getRevisions {
 		revisions := blueprint.GetRevisions()
-		reRevision = make([]*Revision, len(revisions))
+		reRevisions, err := reRevisionData(db.GetAuthUser(r), revisions, getComments)
 
-		authUser := db.GetAuthUser(r)
-
-		for i, revision := range revisions {
-			if revision.DeletedAt != nil {
-				continue
-			}
-			rev, err := revisionToJSON(authUser, &revision, getComments)
-			if err != nil {
-				return nil, err
-			}
-			reRevision[i] = rev
+		if err != nil {
+			return nil, err
 		}
+
+		reRevision = reRevisions
 	}
 
 	tags := blueprint.GetTags()
-	reTags := make([]string, len(tags))
-
-	for i, tag := range tags {
-		reTags[i] = tag.Name
-	}
+	reTags := reTagData(tags)
 
 	var revId uint = 0
 	if rev := blueprint.GetLatestRevision(); rev != nil {
@@ -439,16 +403,10 @@ func getRevisions(r *http.Request) (interface{}, *utils.ErrorResponse) {
 	getComments := len(r.URL.Query()["comments"]) > 0
 
 	revisions := blueprint.GetRevisions()
-	reRevision := make([]*Revision, len(revisions))
+	reRevision, err := reRevisionData(db.GetAuthUser(r), revisions, getComments)
 
-	authUser := db.GetAuthUser(r)
-
-	for i, revision := range revisions {
-		rev, err := revisionToJSON(authUser, &revision, getComments)
-		if err != nil {
-			return nil, err
-		}
-		reRevision[i] = rev
+	if err != nil {
+		return nil, err
 	}
 
 	return GetRevisionsResponse{
@@ -499,69 +457,6 @@ func getRevisionIncremental(r *http.Request) (interface{}, *utils.ErrorResponse)
 	return revisionToJSON(authUser, revision, getComments)
 }
 
-func revisionToJSON(authUser *db.User, revision *db.Revision, getComments bool) (*Revision, *utils.ErrorResponse) {
-	if revision == nil || revision.DeletedAt != nil {
-		return nil, &utils.Error_revision_not_found
-	}
-
-	ratings := revision.GetRatings()
-	thumbsUp, thumbsDown, userVote := 0, 0, 0
-
-	for _, rating := range ratings {
-		if rating.ThumbsUp {
-			thumbsUp++
-		} else {
-			thumbsDown++
-		}
-
-		if authUser != nil && authUser.ID == rating.UserID {
-			if rating.ThumbsUp {
-				userVote = 1
-			} else {
-				userVote = 2
-			}
-		}
-	}
-
-	var reComment []*Comment
-
-	if getComments {
-		comments := revision.GetComments()
-		reComment = make([]*Comment, len(comments))
-
-		for i, comment := range comments {
-			reComment[i] = &Comment{
-				Id:        comment.ID,
-				UserId:    comment.UserID,
-				CreatedAt: comment.CreatedAt,
-				UpdatedAt: comment.UpdatedAt,
-				Message:   comment.Message,
-			}
-		}
-	}
-
-	blueprintString, err := storage.LoadRevision(revision.ID)
-
-	if err != nil {
-		return nil, &utils.Error_internal_error
-	}
-
-	return &Revision{
-		Id:          revision.ID,
-		Revision:    revision.Revision,
-		Changes:     revision.Changes,
-		CreatedAt:   revision.CreatedAt,
-		UpdatedAt:   revision.UpdatedAt,
-		BlueprintID: revision.BlueprintID,
-		Blueprint:   blueprintString,
-		ThumbsUp:    thumbsUp,
-		ThumbsDown:  thumbsDown,
-		UserVote:    userVote,
-		Comments:    reComment,
-		Version:     revision.BlueprintVersion,
-	}, nil
-}
-
 func parseBlueprint(r *http.Request) (*db.Blueprint, *utils.ErrorResponse) {
 	blueprintId, err := strconv.ParseUint(mux.Vars(r)["blueprint"], 10, 32)
 
@@ -580,4 +475,31 @@ func findBlueprintById(blueprintId uint) (*db.Blueprint, *utils.ErrorResponse) {
 	}
 
 	return blueprint, nil
+}
+
+func reBlueprintData(blueprints []*db.Blueprint) []*BlueprintResponse {
+	reBlueprint := make([]*BlueprintResponse, len(blueprints))
+
+	for i, blueprint := range blueprints {
+		var revId uint = 0
+		if rev := blueprint.GetLatestRevision(); rev != nil {
+			revId = rev.Revision
+		}
+
+		tags := blueprint.GetTags()
+		reTags := reTagData(tags)
+
+		reBlueprint[i] = &BlueprintResponse{
+			Id:          blueprint.ID,
+			UserId:      blueprint.UserID,
+			Name:        blueprint.Name,
+			Description: blueprint.Description,
+			CreatedAt:   blueprint.CreatedAt,
+			UpdatedAt:   blueprint.UpdatedAt,
+			Latest:      revId,
+			Tags:        reTags,
+		}
+	}
+
+	return reBlueprint
 }

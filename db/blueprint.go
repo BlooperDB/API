@@ -54,7 +54,7 @@ func SearchBlueprints(query string, offset int, limit int) []*Blueprint {
 				where blueprint_id = b.id
 				limit 1
 			)
-		), ID DESC
+		), id DESC
 		OFFSET ?
 		LIMIT ?
 	`, joined, fullJoined, fullJoined, fullJoined, offset, limit).Scan(&blueprints)
@@ -92,7 +92,7 @@ func GetLatestBlueprintRevisions(ids ...uint) map[uint]uint {
 			SELECT revision
 			FROM revisions
 			WHERE deleted_at IS NULL
-			ORDER BY revision desc
+			ORDER BY revision DESC
 			LIMIT 1
 		)
 	`).Scan(&revs)
@@ -118,8 +118,8 @@ func (m Blueprint) GetAuthor() User {
 	return user
 }
 
-func (m Blueprint) GetTags() []Tag {
-	var tags []Tag
+func (m Blueprint) GetTags() []*Tag {
+	var tags []*Tag
 	db.Raw(`
 		SELECT t.*
 		FROM tags t
@@ -164,8 +164,8 @@ func (m Blueprint) IncrementAndGetRevision() uint {
 	return i
 }
 
-func (m Blueprint) GetRevisions() []Revision {
-	var revisions []Revision
+func (m Blueprint) GetRevisions() []*Revision {
+	var revisions []*Revision
 	db.Where("blueprint_id = ?", m.ID).Find(&revisions)
 	return revisions
 }
@@ -243,6 +243,43 @@ func PopularBlueprints(offset int, limit int) []*Blueprint {
 				) AS inside
 			) DESC,
 			id DESC
+		OFFSET ?
+		LIMIT ?
+	`, offset, limit).Scan(&blueprints)
+	return blueprints
+}
+
+func TopBlueprints(offset int, limit int) []*Blueprint {
+	var blueprints []*Blueprint
+	db.Raw(`
+		SELECT *
+		FROM blueprints b
+		ORDER BY (
+			select (
+				SUM(case when thumbs_up = true then 1 else 0 end)
+				-
+				SUM(case when thumbs_up = false then 1 else 0 end)
+			)
+			from ratings
+			where revision_id = (
+				select id
+				from revisions
+				where blueprint_id = b.id
+				limit 1
+			)
+		), id DESC
+		OFFSET ?
+		LIMIT ?
+	`, offset, limit).Scan(&blueprints)
+	return blueprints
+}
+
+func NewBlueprints(offset int, limit int) []*Blueprint {
+	var blueprints []*Blueprint
+	db.Raw(`
+		SELECT *
+		FROM blueprints b
+		ORDER BY created_at DESC, id DESC
 		OFFSET ?
 		LIMIT ?
 	`, offset, limit).Scan(&blueprints)

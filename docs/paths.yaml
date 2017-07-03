@@ -13,6 +13,10 @@
   $ref: ./blueprint/blueprints.yaml
 '/blueprints/popular':
   $ref: ./blueprint/blueprints.popular.yaml
+'/blueprints/top':
+  $ref: ./blueprint/blueprints.top.yaml
+'/blueprints/new':
+  $ref: ./blueprint/blueprints.new.yaml
 '/blueprints/search/{query}':
   $ref: ./blueprint/blueprints.search.query.yaml
 
