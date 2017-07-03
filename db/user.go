@@ -12,7 +12,7 @@ type User struct {
 	gorm.Model
 
 	Email        string `gorm:"unique_index;not null"`
-	Username     string `gorm:"unique_index;not null"`
+	Username     string
 	Avatar       string `gorm:"not null"`
 	BlooperToken string `gorm:"unique_index;not null"`
 	Blueprints   []Blueprint
