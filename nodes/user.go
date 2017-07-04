@@ -92,6 +92,10 @@ func getUser(r *http.Request) (interface{}, *utils.ErrorResponse) {
 
 	user := db.GetUserById(uint(userId))
 
+	if user == nil {
+		return nil, &utils.Error_user_not_found
+	}
+
 	getBlueprints := len(r.URL.Query()["blueprints"]) > 0
 
 	var reBlueprint []*BlueprintResponse
