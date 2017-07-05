@@ -1,5 +1,5 @@
-hash: 75e1747d29ac05243a52bd35c1977b5cd87b8e91c8c1e457c83d3c4055b9b9dd
-updated: 2017-06-30T19:26:39.5565899+03:00
+hash: 9e49d6bf5726543934ab47228f1da4b56f33321d5d391440e2723b0ef5031a36
+updated: 2017-07-04T13:16:02.0052932+03:00
 imports:
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
@@ -8,7 +8,7 @@ imports:
 - name: github.com/gorilla/mux
   version: bcd8bc72b08df0f70df986b97f95590779502d31
 - name: github.com/jinzhu/gorm
-  version: eae7f6be603af3190e032fe3c4d465ddaf6ea3d4
+  version: 2a1463811ee1dc85d168fd639a2d4251d030e6e5
   subpackages:
   - dialects/postgres
 - name: github.com/jinzhu/inflection
@@ -20,6 +20,12 @@ imports:
   - oid
 - name: github.com/minio/minio-go
   version: 2f03abaa07d8bc57faef16cda7655ea62a7e0bed
+  subpackages:
+  - pkg/encrypt
+  - pkg/policy
+  - pkg/s3signer
+  - pkg/s3utils
+  - pkg/set
 - name: github.com/SermoDigital/jose
   version: 2bd9b81ac51d6d6134fcd4fd846bd2e7347a15f9
   subpackages:
@@ -28,6 +34,16 @@ imports:
   - jwt
 - name: github.com/wuman/firebase-server-sdk-go
   version: e95694472a4d7070a4ae36a8cd990daadeee81a6
+- name: github.com/yuin/gopher-lua
+  version: 2243d714d6c94951d8ccca8c851836ff47d401c9
+  subpackages:
+  - ast
+  - parse
+  - pm
+- name: golang.org/x/net
+  version: 570fa1c91359c1869590e9cedf3b53162a51a167
+  subpackages:
+  - context
 - name: gopkg.in/validator.v2
   version: 07ffaad256c8e957050ad83d6472eb97d785013d
 testImports: []

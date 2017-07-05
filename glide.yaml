@@ -9,3 +9,5 @@ import:
 - package: gopkg.in/validator.v2
 - package: github.com/minio/minio-go
   version: ^2.1.0
+- package: github.com/yuin/gopher-lua
+- package: golang.org/x/net/context
