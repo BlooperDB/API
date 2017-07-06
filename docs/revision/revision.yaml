@@ -19,6 +19,12 @@ post:
                   revision:
                     type: integer
                     description: The posted incremental revision id
+                  thumbnail:
+                    type: string
+                    description: The URL to thumbnail
+                  render:
+                    type: string
+                    description: The URL to full render
     '403':
       description: User not authenticated
       schema:

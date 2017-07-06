@@ -42,7 +42,7 @@ Revision:
       description: Blueprint ID
     blueprint:
       type: string
-      description: The blueprint string
+      description: URL to blueprint string
     thumbs-up:
       type: integer
       description: Thumbs up count
@@ -67,6 +67,12 @@ Revision:
     version:
       type: integer
       description: Version of the blueprint
+    thumbnail:
+      type: string
+      description: The URL to thumbnail
+    render:
+      type: string
+      description: The URL to full render
   required:
     - id
     - revision
@@ -80,6 +86,8 @@ Revision:
     - user-vote
     - comments
     - version
+    - thumbnail
+    - render
 
 RevisionResponse:
   allOf:
