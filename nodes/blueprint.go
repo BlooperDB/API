@@ -239,6 +239,9 @@ type PostBlueprintResponse struct {
 
 	// Blueprint incremental version
 	Revision uint `json:"revision"`
+
+	Thumbnail string `json:"thumbnail"`
+	Render    string `json:"render"`
 }
 
 /*
@@ -280,6 +283,7 @@ func postBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespon
 	revision.Save()
 
 	storage.SaveRevision(revision.ID, request.BlueprintString)
+	go storage.RenderAndSaveBlueprint(request.BlueprintString)
 
 	for _, tag := range request.Tags {
 
@@ -301,10 +305,14 @@ func postBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespon
 		bt.Save()
 	}
 
+	baseRenderStorageURL := storage.PublicURL + "/" + storage.BlueprintRenderBucket + "/" + revision.BlueprintChecksum
+
 	return PostBlueprintResponse{
 		BlueprintId: blueprint.ID,
 		RevisionId:  revision.ID,
 		Revision:    revision.Revision,
+		Thumbnail:   baseRenderStorageURL + "-thumbnail.png",
+		Render:      baseRenderStorageURL + ".png",
 	}, nil
 }
 

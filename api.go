@@ -67,18 +67,6 @@ func Initialize() {
 		os.Exit(1)
 	}
 
-	err = minioClient.MakeBucket(storage.BucketName, "")
-	if err != nil {
-		exists, err := minioClient.BucketExists(storage.BucketName)
-		if err == nil && !exists {
-			fmt.Println(err)
-			os.Exit(1)
-		} else if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-	}
-
 	storage.Initialize(minioClient)
 
 	router := mux.NewRouter()

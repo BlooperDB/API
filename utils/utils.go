@@ -94,6 +94,10 @@ func ValidateRequestBody(r *http.Request, s interface{}) *ErrorResponse {
 func validBlueprintString(v interface{}, _ string) error {
 	s := reflect.ValueOf(v).String()
 
+	if len(s) == 0 {
+		return errors.New("Not valid blueprint string")
+	}
+
 	decoded, err := base64.StdEncoding.DecodeString(s[1:])
 	if err != nil {
 		return errors.New("Not valid blueprint string")

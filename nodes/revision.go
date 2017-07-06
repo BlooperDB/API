@@ -26,6 +26,8 @@ type Revision struct {
 	UserVote    int        `json:"user-vote"`
 	Comments    []*Comment `json:"comments,omitempty"`
 	Version     int        `json:"version"`
+	Thumbnail   string     `json:"thumbnail"`
+	Render      string     `json:"render"`
 }
 
 func RegisterRevisionRoutes(router api.RegisterRoute) {
@@ -68,6 +70,9 @@ type PostRevisionResponse struct {
 
 	// Blueprint incremental version
 	Revision uint `json:"revision"`
+
+	Thumbnail string `json:"thumbnail"`
+	Render    string `json:"render"`
 }
 
 /*
@@ -112,10 +117,15 @@ func postRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespons
 	revision.Save()
 
 	storage.SaveRevision(revision.ID, request.Blueprint)
+	go storage.RenderAndSaveBlueprint(request.Blueprint)
+
+	baseRenderStorageURL := storage.PublicURL + "/" + storage.BlueprintRenderBucket + "/" + revision.BlueprintChecksum
 
 	return PostRevisionResponse{
 		RevisionId: revision.ID,
 		Revision:   revision.Revision,
+		Thumbnail:  baseRenderStorageURL + "-thumbnail.png",
+		Render:     baseRenderStorageURL + ".png",
 	}, nil
 }
 
@@ -306,11 +316,7 @@ func revisionToJSON(authUser *db.User, revision *db.Revision, getComments bool) 
 		reComment = reCommentData(comments)
 	}
 
-	blueprintString, err := storage.LoadRevision(revision.ID)
-
-	if err != nil {
-		return nil, &utils.Error_internal_error
-	}
+	baseRenderStorageURL := storage.PublicURL + "/" + storage.BlueprintRenderBucket + "/" + revision.BlueprintChecksum
 
 	return &Revision{
 		Id:          revision.ID,
@@ -319,12 +325,14 @@ func revisionToJSON(authUser *db.User, revision *db.Revision, getComments bool) 
 		CreatedAt:   revision.CreatedAt,
 		UpdatedAt:   revision.UpdatedAt,
 		BlueprintID: revision.BlueprintID,
-		Blueprint:   blueprintString,
+		Blueprint:   storage.PublicURL + "/" + storage.BlueprintStringBucket + "/" + storage.RevisionToString(revision.ID),
 		ThumbsUp:    thumbsUp,
 		ThumbsDown:  thumbsDown,
 		UserVote:    userVote,
 		Comments:    reComment,
 		Version:     revision.BlueprintVersion,
+		Thumbnail:   baseRenderStorageURL + "-thumbnail.png",
+		Render:      baseRenderStorageURL + ".png",
 	}, nil
 }
 
