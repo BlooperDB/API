@@ -60,16 +60,16 @@ func RenderAndSaveBlueprint(blueprintString string) {
 
 	// Normal
 	reader := strings.NewReader(blueprintString)
-	resp, _ := http.Post("http://blueprintrenderer:9681/", "text/plain", reader)
+	resp, _ := http.Post(os.Getenv("RENDERER_URL")+"/", "text/plain", reader)
 	client.PutObject(BlueprintRenderBucket, sha265+".png", resp.Body, "image/png")
 
 	// Square
 	reader = strings.NewReader(blueprintString)
-	resp, _ = http.Post("http://blueprintrenderer:9681/?square", "text/plain", reader)
+	resp, _ = http.Post(os.Getenv("RENDERER_URL")+"/?square", "text/plain", reader)
 	client.PutObject(BlueprintRenderBucket, sha265+"-square.png", resp.Body, "image/png")
 
 	// Thumbnail
 	reader = strings.NewReader(blueprintString)
-	resp, _ = http.Post("http://blueprintrenderer:9681/?squarethumb", "text/plain", reader)
+	resp, _ = http.Post(os.Getenv("RENDERER_URL")+"/?squarethumb", "text/plain", reader)
 	client.PutObject(BlueprintRenderBucket, sha265+"-thumbnail.png", resp.Body, "image/png")
 }
