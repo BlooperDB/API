@@ -24,6 +24,7 @@ type BlueprintResponse struct {
 	Tags        []string    `json:"tags"`
 	CreatedAt   time.Time   `json:"created-at"`
 	UpdatedAt   time.Time   `json:"updated-at"`
+	Thumbnail   string      `json:"thumbnail"`
 }
 
 func RegisterBlueprintRoutes(router api.RegisterRoute) {
@@ -221,6 +222,7 @@ func getBlueprint(r *http.Request) (interface{}, *utils.ErrorResponse) {
 		Latest:      revId,
 		Revisions:   reRevision,
 		Tags:        reTags,
+		Thumbnail:   blueprint.GetThumbnail(),
 	}, nil
 }
 
@@ -506,6 +508,7 @@ func reBlueprintData(blueprints []*db.Blueprint) []*BlueprintResponse {
 			UpdatedAt:   blueprint.UpdatedAt,
 			Latest:      revId,
 			Tags:        reTags,
+			Thumbnail:   blueprint.GetThumbnail(),
 		}
 	}
 

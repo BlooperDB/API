@@ -201,6 +201,19 @@ func (m *Blueprint) GetLatestRevision() *Revision {
 	return nil
 }
 
+func (m *Blueprint) GetThumbnail() string {
+	var checksum []string
+
+	db.Model(&Revision{}).
+		Where("blueprint_id = ?", m.ID).
+		Select("blueprint_checksum").
+		Order("revision desc").
+		Limit(1).
+		Pluck("blueprint_checksum", &checksum)
+
+	return checksum[0]
+}
+
 func PopularBlueprints(offset int, limit int) []*Blueprint {
 	var blueprints []*Blueprint
 	db.Raw(`
