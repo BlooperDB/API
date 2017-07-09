@@ -492,12 +492,12 @@ func reBlueprintData(blueprints []*db.Blueprint) []*BlueprintResponse {
 
 	for i, blueprint := range blueprints {
 		var revId uint = 0
-		if rev := blueprint.GetLatestRevision(); rev != nil {
-			revId = rev.Revision
-		}
+		rev := blueprint.GetLatestRevision()
 
 		tags := blueprint.GetTags()
 		reTags := reTagData(tags)
+
+		baseRenderStorageURL := storage.PublicURL + "/" + storage.BlueprintRenderBucket + "/" + rev.BlueprintChecksum
 
 		reBlueprint[i] = &BlueprintResponse{
 			Id:          blueprint.ID,
@@ -508,7 +508,7 @@ func reBlueprintData(blueprints []*db.Blueprint) []*BlueprintResponse {
 			UpdatedAt:   blueprint.UpdatedAt,
 			Latest:      revId,
 			Tags:        reTags,
-			Thumbnail:   blueprint.GetThumbnail(),
+			Thumbnail:   baseRenderStorageURL + "-thumbnail.png",
 		}
 	}
 
