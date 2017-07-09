@@ -222,7 +222,7 @@ func getBlueprint(r *http.Request) (interface{}, *utils.ErrorResponse) {
 		Latest:      revId,
 		Revisions:   reRevision,
 		Tags:        reTags,
-		Thumbnail:   blueprint.GetThumbnail(),
+		Thumbnail:   storage.PublicURL + "/" + storage.BlueprintRenderBucket + "/" + blueprint.GetThumbnail() + "-thumbnail.png",
 	}, nil
 }
 
