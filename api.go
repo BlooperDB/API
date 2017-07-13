@@ -67,7 +67,7 @@ func Initialize() {
 		os.Exit(1)
 	}
 
-	storage.Initialize(minioClient)
+	storage.Initialize(minioClient, os.Getenv("STORAGE_BASE_URL"))
 
 	router := mux.NewRouter()
 

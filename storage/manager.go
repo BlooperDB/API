@@ -15,15 +15,16 @@ import (
 	"github.com/minio/minio-go/pkg/policy"
 )
 
-var PublicURL = "https://storage.blooper.io"
+var PublicURL string
 
 var BlueprintStringBucket = "blooper-blueprints"
 var BlueprintRenderBucket = "blooper-blueprint-renders"
 
 var client *minio.Client
 
-func Initialize(minioClient *minio.Client) {
+func Initialize(minioClient *minio.Client, url string) {
 	client = minioClient
+	PublicURL = url
 
 	MakeBucket(BlueprintStringBucket)
 	MakeBucket(BlueprintRenderBucket)
