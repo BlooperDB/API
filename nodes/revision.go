@@ -117,7 +117,7 @@ func postRevision(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespons
 	revision.Save()
 
 	storage.SaveRevision(revision.ID, request.Blueprint)
-	go storage.RenderAndSaveBlueprint(request.Blueprint)
+	go storage.RenderAndSaveAndUpdateBlueprint(request.Blueprint, revision)
 
 	baseRenderStorageURL := storage.PublicURL + "/" + storage.BlueprintRenderBucket + "/" + revision.BlueprintChecksum
 

@@ -285,7 +285,7 @@ func postBlueprint(u *db.User, r *http.Request) (interface{}, *utils.ErrorRespon
 	revision.Save()
 
 	storage.SaveRevision(revision.ID, request.BlueprintString)
-	go storage.RenderAndSaveBlueprint(request.BlueprintString)
+	go storage.RenderAndSaveAndUpdateBlueprint(request.BlueprintString, revision)
 
 	for _, tag := range request.Tags {
 

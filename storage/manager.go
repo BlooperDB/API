@@ -10,6 +10,9 @@ import (
 
 	"net/http"
 
+	"bytes"
+
+	"github.com/BlooperDB/API/db"
 	"github.com/BlooperDB/API/utils"
 	"github.com/minio/minio-go"
 	"github.com/minio/minio-go/pkg/policy"
@@ -52,8 +55,27 @@ func SaveRevision(revisionId uint, blueprintString string) {
 	client.PutObject(BlueprintStringBucket, RevisionToString(revisionId), reader, "text/plain")
 }
 
+func GetRevision(revisionId uint) *string {
+	object, err := client.GetObject(BlueprintStringBucket, RevisionToString(revisionId))
+
+	if err != nil {
+		return nil
+	}
+
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(object)
+	s := buf.String()
+	return &s
+}
+
 func RevisionToString(revisionId uint) string {
 	return "revision-blueprint-" + strconv.FormatUint(uint64(revisionId), 10)
+}
+
+func RenderAndSaveAndUpdateBlueprint(blueprintString string, revision *db.Revision) {
+	RenderAndSaveBlueprint(blueprintString)
+	revision.Rendered = true
+	revision.Save()
 }
 
 func RenderAndSaveBlueprint(blueprintString string) {

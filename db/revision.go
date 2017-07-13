@@ -12,6 +12,7 @@ type Revision struct {
 	Changes           string `gorm:"not null"`
 	BlueprintVersion  int    `gorm:"not null" sql:"type:int4; DEFAULT:0"`
 	BlueprintChecksum string `gorm:"not null;unique_index"`
+	Rendered          bool   `gorm:"not null" sql:"type:boolean; DEFAULT:false"`
 }
 
 func (m *Revision) Save() {
@@ -56,4 +57,10 @@ func FindRevisionByChecksum(checksum string) *Revision {
 		return &revision
 	}
 	return nil
+}
+
+func FindUnrenderedRevisions() []*Revision {
+	var revisions []*Revision
+	db.Where("rendered = ?", false).Find(&revisions)
+	return revisions
 }
