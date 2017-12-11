@@ -8,7 +8,7 @@ before_install:
  - go get github.com/tools/godep
 
 install:
- - glide install
+ - dep ensure
  - go vet
  - go build
 
