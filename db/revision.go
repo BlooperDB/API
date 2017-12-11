@@ -64,3 +64,14 @@ func FindUnrenderedRevisions() []*Revision {
 	db.Where("rendered = ?", false).Find(&revisions)
 	return revisions
 }
+
+func FindLatestRevisionFromBlueprint(blueprint uint) *Revision {
+	var revisions []Revision
+	db.Where("blueprint_id = ?", blueprint).
+		Order("revision desc").Limit(1).
+		Find(&revisions)
+	if len(revisions) > 0 {
+		return &revisions[0]
+	}
+	return nil
+}

@@ -119,13 +119,7 @@ func (m Blueprint) GetAuthor() User {
 }
 
 func (m Blueprint) GetTags() []*Tag {
-	var tags []*Tag
-	db.Raw(`
-		SELECT t.*
-		FROM tags t
-		JOIN blueprint_tags bt ON (t.id = bt.tag_id)
-		WHERE bt.blueprint_id = ?`, m.ID).Scan(&tags)
-	return tags
+	return GetTagsFromBlueprint(m.ID)
 }
 
 func (m Blueprint) GetTag(tag uint) *BlueprintTag {
@@ -191,14 +185,7 @@ func (m *Blueprint) GetLatestRevision() *Revision {
 	if rev != nil {
 		return rev
 	}
-	var revisions []Revision
-	db.Where("blueprint_id = ?", m.ID).
-		Order("revision desc").Limit(1).
-		Find(&revisions)
-	if len(revisions) > 0 {
-		return &revisions[0]
-	}
-	return nil
+	return FindLatestRevisionFromBlueprint(m.ID)
 }
 
 func (m *Blueprint) GetThumbnail() string {
@@ -296,5 +283,118 @@ func NewBlueprints(offset int, limit int) []*Blueprint {
 		OFFSET ?
 		LIMIT ?
 	`, offset, limit).Scan(&blueprints)
+	return blueprints
+}
+
+func FindBlueprintsDynamic(query string, offset int, limit int, order string, ascending bool) []*Blueprint {
+	query = strings.ToLower(query)
+	split := strings.Split(query, " ")
+	joined := "(" + strings.Join(split, "|") + ")%"
+	fullJoined := "%" + joined
+
+	ascdesc := "DESC"
+
+	if ascending {
+		ascdesc = "ASC"
+	}
+
+	ordering := "ORDER BY created_at " + ascdesc + ", id " + ascdesc
+
+	switch order {
+	case "TOP":
+		ordering = `
+		ORDER BY (
+			select (
+				SUM(case when thumbs_up = true then 1 else 0 end)
+				-
+				SUM(case when thumbs_up = false then 1 else 0 end)
+			)
+			from ratings
+			where revision_id = (
+				select id
+				from revisions
+				where blueprint_id = b.id
+				limit 1
+			)
+		), id
+		` + ascdesc
+	case "POPULAR":
+		ordering = `
+		ORDER BY
+			(
+				SELECT inside.hotness
+				FROM (
+					SELECT
+					round(
+						CAST(
+							(
+								(CASE WHEN scoring.score > 0 THEN 1 WHEN 100 = 0 THEN 0 ELSE -1 END)
+								*
+								log(10, greatest(abs(scoring.score), 1))
+								+
+								((EXTRACT(epoch FROM b.created_at) - 1400000000) / 45000)
+							) AS numeric
+						),
+						7
+					) AS hotness
+					FROM (
+						SELECT
+						(
+							SELECT (
+								SUM(CASE WHEN thumbs_up = true THEN 1 ELSE 0 END)
+								-
+								SUM(CASE WHEN thumbs_up = false THEN 1 ELSE 0 END)
+							)
+							FROM ratings
+							WHERE revision_id = (
+								SELECT id
+								FROM revisions
+								WHERE blueprint_id = b.id
+								LIMIT 1
+							)
+						) AS score
+					) AS scoring
+				) AS inside
+			) ` + ascdesc + `,
+			id
+		` + ascdesc
+	}
+
+	var blueprints []*Blueprint
+
+	if query != "" {
+		db.Raw(`
+			SELECT *
+			FROM blueprints b
+			WHERE id IN (
+				SELECT blueprint_id
+				FROM blueprint_tags
+				WHERE tag_id IN (
+					SELECT id
+					FROM tags
+					WHERE LOWER("name") SIMILAR TO ?
+				)
+			)
+			OR id IN (
+				SELECT blueprint_id
+				FROM revisions
+				WHERE LOWER("changes") SIMILAR TO ?
+			)
+			OR LOWER("name") SIMILAR TO ?
+			OR LOWER("description") SIMILAR TO ?
+			`+ordering+`
+			OFFSET ?
+			LIMIT ?
+		`, joined, fullJoined, fullJoined, fullJoined, offset, limit).Scan(&blueprints)
+	} else {
+		db.Raw(`
+			SELECT *
+			FROM blueprints b
+			`+ordering+`
+			OFFSET ?
+			LIMIT ?
+		`, offset, limit).Scan(&blueprints)
+	}
+
 	return blueprints
 }

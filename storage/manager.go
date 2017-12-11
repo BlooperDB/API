@@ -52,11 +52,13 @@ func MakeBucket(name string) {
 
 func SaveRevision(revisionId uint, blueprintString string) {
 	reader := strings.NewReader(blueprintString)
-	client.PutObject(BlueprintStringBucket, RevisionToString(revisionId), reader, "text/plain")
+	client.PutObject(BlueprintStringBucket, RevisionToString(revisionId), reader, -1, minio.PutObjectOptions{
+		ContentType: "text/plain",
+	})
 }
 
 func GetRevision(revisionId uint) *string {
-	object, err := client.GetObject(BlueprintStringBucket, RevisionToString(revisionId))
+	object, err := client.GetObject(BlueprintStringBucket, RevisionToString(revisionId), minio.GetObjectOptions{})
 
 	if err != nil {
 		return nil
@@ -84,15 +86,21 @@ func RenderAndSaveBlueprint(blueprintString string) {
 	// Normal
 	reader := strings.NewReader(blueprintString)
 	resp, _ := http.Post(os.Getenv("RENDERER_URL")+"/", "text/plain", reader)
-	client.PutObject(BlueprintRenderBucket, sha265+".png", resp.Body, "image/png")
+	client.PutObject(BlueprintRenderBucket, sha265+".png", resp.Body, -1, minio.PutObjectOptions{
+		ContentType: "image/png",
+	})
 
 	// Square
 	reader = strings.NewReader(blueprintString)
 	resp, _ = http.Post(os.Getenv("RENDERER_URL")+"/?square", "text/plain", reader)
-	client.PutObject(BlueprintRenderBucket, sha265+"-square.png", resp.Body, "image/png")
+	client.PutObject(BlueprintRenderBucket, sha265+"-square.png", resp.Body, -1, minio.PutObjectOptions{
+		ContentType: "image/png",
+	})
 
 	// Thumbnail
 	reader = strings.NewReader(blueprintString)
 	resp, _ = http.Post(os.Getenv("RENDERER_URL")+"/?squarethumb", "text/plain", reader)
-	client.PutObject(BlueprintRenderBucket, sha265+"-thumbnail.png", resp.Body, "image/png")
+	client.PutObject(BlueprintRenderBucket, sha265+"-thumbnail.png", resp.Body, -1, minio.PutObjectOptions{
+		ContentType: "image/png",
+	})
 }

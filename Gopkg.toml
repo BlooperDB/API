@@ -1,0 +1,27 @@
+[[constraint]]
+  name = "github.com/gorilla/handlers"
+  version = "1.3.0"
+
+[[constraint]]
+  name = "github.com/gorilla/mux"
+  version = "1.6.0"
+
+[[constraint]]
+  name = "github.com/graphql-go/graphql"
+  version = "0.7.3"
+
+[[constraint]]
+  name = "github.com/jinzhu/gorm"
+  version = "1.0.0"
+
+[[constraint]]
+  name = "github.com/minio/minio-go"
+  version = "4.0.3"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/wuman/firebase-server-sdk-go"
+
+[[constraint]]
+  branch = "v2"
+  name = "gopkg.in/validator.v2"

@@ -17,6 +17,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 
+	"github.com/graphql-go/graphql"
 	"gopkg.in/validator.v2"
 )
 
@@ -128,4 +129,20 @@ func SHA265(s string) string {
 	h := sha256.New()
 	h.Write([]byte(s))
 	return fmt.Sprintf("%x", h.Sum(nil))
+}
+
+func Source(p graphql.ResolveParams, key string) interface{} {
+	return p.Source.(map[string]interface{})[key]
+}
+
+func MinMax(min int, value int, max int) int {
+	if value < min {
+		return min
+	}
+
+	if value > max {
+		return max
+	}
+
+	return value
 }

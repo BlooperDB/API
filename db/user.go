@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/BlooperDB/API/utils"
+	"github.com/graphql-go/graphql"
 	"github.com/jinzhu/gorm"
 	"github.com/wuman/firebase-server-sdk-go"
 )
@@ -48,6 +49,10 @@ func GenerateBlooperToken() string {
 
 func GetAuthUser(r *http.Request) *User {
 	return GetUserByBlooperToken(r.Header.Get("BLOOPER-TOKEN"))
+}
+
+func GetAuthUserGraphQL(p graphql.ResolveParams) *User {
+	return GetUserByBlooperToken(p.Context.Value("blooper-token").(string))
 }
 
 func GetUserById(id uint) *User {

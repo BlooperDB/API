@@ -33,6 +33,16 @@ func GetTagByName(name string) *Tag {
 	return nil
 }
 
+func GetTagsFromBlueprint(id uint) []*Tag {
+	var tags []*Tag
+	db.Raw(`
+		SELECT t.*
+		FROM tags t
+		JOIN blueprint_tags bt ON (t.id = bt.tag_id)
+		WHERE bt.blueprint_id = ?`, id).Scan(&tags)
+	return tags
+}
+
 func (m *Tag) Save() {
 	db.Save(m)
 }

@@ -1,6 +1,7 @@
 package blooper
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -15,6 +16,7 @@ import (
 	"github.com/BlooperDB/API/utils"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/graphql-go/handler"
 	"github.com/jinzhu/gorm"
 	"github.com/minio/minio-go"
 	"github.com/wuman/firebase-server-sdk-go"
@@ -40,6 +42,14 @@ func Initialize() {
 
 	InitializeStorage(minioHost)
 
+	nodes.InitializeGraphs()
+
+	h := handler.New(&handler.Config{
+		Schema:   nodes.GetSchema(),
+		Pretty:   true,
+		GraphiQL: true,
+	})
+
 	router := mux.NewRouter()
 
 	router.NotFoundHandler = api.LoggerHandler(api.NotFoundHandler())
@@ -50,6 +60,11 @@ func Initialize() {
 	nodes.RegisterCommentRoutes(v1)
 	nodes.RegisterRevisionRoutes(v1)
 	nodes.RegisterTagRoutes(v1)
+
+	router.HandleFunc("/api/v2", func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.WithValue(r.Context(), "blooper-token", r.Header.Get("blooper-token"))
+		h.ContextHandler(ctx, w, r)
+	})
 
 	CORSHandler := handlers.CORS(
 		handlers.AllowedOrigins([]string{"*"}),
