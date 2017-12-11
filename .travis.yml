@@ -5,10 +5,10 @@ go:
 
 before_install:
  - mkdir -p $GOPATH/bin
- - go get github.com/tools/godep
+ - go get -u github.com/golang/dep/cmd/dep
 
 install:
- - godep ensure
+ - dep ensure
  - go vet
  - go build
 

@@ -4,14 +4,14 @@ ENV GOPATH=/go
 
 RUN apk add --no-cache curl git
 
-RUN go get github.com/tools/godep
+RUN go get -u github.com/golang/dep/cmd/dep
 
 RUN mkdir -p /go/src/github.com/BlooperDB/API
 WORKDIR /go/src/github.com/BlooperDB/API
 
 COPY Gopkg.lock /go/src/github.com/BlooperDB/API/
 COPY Gopkg.toml /go/src/github.com/BlooperDB/API/
-RUN godep ensure
+RUN dep ensure
 
 COPY . /go/src/github.com/BlooperDB/API/
 
