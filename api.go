@@ -61,7 +61,7 @@ func Initialize() {
 	nodes.RegisterRevisionRoutes(v1)
 	nodes.RegisterTagRoutes(v1)
 
-	router.HandleFunc("/api/v2", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("/v2", func(w http.ResponseWriter, r *http.Request) {
 		ctx := context.WithValue(r.Context(), "blooper-token", r.Header.Get("blooper-token"))
 		h.ContextHandler(ctx, w, r)
 	})
