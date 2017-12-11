@@ -11,7 +11,7 @@ WORKDIR /go/src/github.com/BlooperDB/API
 
 COPY Gopkg.lock /go/src/github.com/BlooperDB/API/
 COPY Gopkg.toml /go/src/github.com/BlooperDB/API/
-RUN dep ensure
+RUN godep ensure
 
 COPY . /go/src/github.com/BlooperDB/API/
 
